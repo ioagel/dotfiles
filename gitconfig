@@ -12,6 +12,7 @@
   co = checkout
   pf = push --force-with-lease
   st = status
+  l = log --pretty=colored
 [core]
   excludesfile = ~/.gitignore
   autocrlf = input
@@ -27,3 +28,8 @@
   path = ~/.gitconfig.local
 [diff]
   colorMoved = zebra
+[pretty]
+  colored = format:%Cred%h%Creset %s %Cgreen(%cr) %C(bold blue)%an%Creset
+[user]
+  name = Ioannis Angelakopoulos
+  email = ioangel@gmail.com

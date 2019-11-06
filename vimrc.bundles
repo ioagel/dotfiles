@@ -14,9 +14,79 @@ let g:has_async = v:version >= 800 || has('nvim')
 
 call plug#begin('~/.vim/bundle')
 
-" Define bundles via Github repos
-Plug 'christoomey/vim-run-interactive'
+" Coc - Intellisense engine for vim8 & neovim, full language server protocol support as VSCode
+" --------------
+let g:coc_global_extensions = [
+      \ 'coc-prettier',
+      \ 'coc-eslint',
+      \ 'coc-css',
+      \ 'coc-highlight',
+      \ 'coc-json',
+      \ 'coc-html',
+      \ 'coc-yaml',
+      \ 'coc-yank',
+      \ 'coc-sh',
+      \ 'coc-solargraph',
+      \ 'coc-java',
+      \ 'coc-snippets'
+      \ ]
+" for coc-java needs openjdk and for maven project: maven
+" and in root path run the following commands:
+" mvn eclipse:eclipse && mvn dependency:sources && mvn dependency:resolve -Dclassifier=javadoc
+" maybe you need to change the fir of the project to match the name of it
+" in the pom.xml file
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
+" JavaScript
+" ----------
+" Prettier - JavaScript auto-formatting tool
+Plug 'prettier/vim-prettier', {
+      \ 'do': 'yarn install',
+      \ 'for': ['javascript', 'typescript', 'css', 'scss', 'json', 'graphql']
+      \ }
+Plug 'kchmck/vim-coffee-script'
+Plug 'leafgarland/typescript-vim'
+Plug 'pangloss/vim-javascript'
+" JSON - Syntax highlighting for JSON
+" Fancy tricks with hiding quotes around attributes, includes ftdetect
+Plug 'elzr/vim-json'
+" CSS3 - Enhanced keyword and syntax definitions for CSS3
+Plug 'hail2u/vim-css3-syntax'
+" Emmet - Generate HTML markup from css-like selector strings
+Plug 'mattn/emmet-vim'
+
+" Ruby/Rails
+" ---------
+Plug 'tpope/vim-bundler'
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-rake', { 'for': ['ruby'] }
+Plug 'vim-ruby/vim-ruby'
+" Allow `cir` to change inside ruby block, etc
+Plug 'nelstrom/vim-textobj-rubyblock'
+Plug 'tpope/vim-projectionist'
+Plug 'janko-m/vim-test'
+
+" GoLang
+" ------------
+Plug 'fatih/vim-go'
+
+" tmux
+" -------
+" Vim Tmux Navigator - Seamlessly navigate between vim splits and tmux panes
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'christoomey/vim-tmux-runner'
+
+" Syntax
+" -------
+Plug 'pearofducks/ansible-vim'
+Plug 'shmup/vim-sql-syntax'
+Plug 'slim-template/vim-slim'
+Plug 'Glench/Vim-Jinja2-Syntax'
+Plug 'gisphm/vim-gitignore'
+
+" Plumbing that makes everything nicer
+" ----------------------------------
+" Fuzzy-finder
 " If fzf has already been installed via Homebrew, use the existing fzf
 " Otherwise, install fzf. The `--all` flag makes fzf accessible outside of vim
 if isdirectory("/usr/local/opt/fzf")
@@ -24,25 +94,95 @@ if isdirectory("/usr/local/opt/fzf")
 else
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 endif
-
 Plug 'junegunn/fzf.vim'
-Plug 'fatih/vim-go'
-Plug 'janko-m/vim-test'
-Plug 'pangloss/vim-javascript'
-Plug 'pbrisbin/vim-mkdir'
-Plug 'slim-template/vim-slim'
-Plug 'tpope/vim-bundler'
-Plug 'tpope/vim-endwise'
-Plug 'tpope/vim-eunuch'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-projectionist'
-Plug 'tpope/vim-rails'
-Plug 'tpope/vim-rake'
-Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-rhubarb'
-Plug 'tpope/vim-surround'
-Plug 'vim-ruby/vim-ruby'
+" Easily comment/uncomment lines in many languages
 Plug 'tomtom/tcomment_vim'
+" Cool commands and syntax highlighting for Vim.
+" The GitHub version is a little ahead of the official Vim versions,
+" so use the GitHub version.
+Plug 'tpope/vim-git'
+" Git bindings
+Plug 'tpope/vim-fugitive'
+" The Hub to vim-fugitive's git
+Plug 'tpope/vim-rhubarb'
+" A Vim plugin which shows a git diff in the 'gutter' (sign column).
+" It shows which lines have been added, modified, or removed.
+" You can also preview, stage, and undo individual hunks;
+" and stage partial hunks. The plugin also provides a hunk text object.
+Plug 'airblade/vim-gitgutter'
+" Ease your git workflow within vim.
+Plug 'jreybert/vimagit'
+" :Gist
+Plug 'mattn/webapi-vim' | Plug 'mattn/gist-vim'
+" Auto-add `end` in Ruby, `endfunction` in Vim, etc
+Plug 'tpope/vim-endwise'
+" When editing deeply/nested/file, auto-create deeply/nested/ dirs
+Plug 'pbrisbin/vim-mkdir'
+" Make working with shell scripts nicer ("vim-unix")
+Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-surround'
+" Make `.` work to repeat plugin actions too
+Plug 'tpope/vim-repeat'
+Plug 'easymotion/vim-easymotion'
+" Intelligently reopen files where you left off
+Plug 'farmergreg/vim-lastplace'
+" Instead of always copying to the system clipboard, use `cp` (plus motions) to
+" copy to the system clipboard. `cP` copies the current line. `cv` pastes.
+Plug 'christoomey/vim-system-copy'
+" Sort motion - sort based on motion or text object
+Plug 'christoomey/vim-sort-motion'
+" Define bundles via Github repos
+Plug 'christoomey/vim-run-interactive'
+" Plug 'flazz/vim-colorschemes'
+Plug 'morhetz/gruvbox'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'edkolev/tmuxline.vim'
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'sjl/gundo.vim'
+Plug 'junegunn/vim-peekaboo'
+Plug 'AndrewRadev/splitjoin.vim'
+" Unimpaired - Pairs of mappings for changing options, adding lines, etc.
+Plug 'tpope/vim-unimpaired'
+" Visual-star-search
+Plug 'nelstrom/vim-visual-star-search'
+" Insert or delete brackets, parens, quotes in pair.
+Plug 'jiangmiao/auto-pairs'
+" Snippets
+Plug 'honza/vim-snippets'
+" Exchange.vim - Operator for exchanging text regions
+Plug 'tommcdo/vim-exchange'
+" Golden Ratio - resize buffers to keep active one sane
+Plug 'roman/golden-ratio'
+" Vim plugin that displays tags in a window, ordered by scope
+Plug 'majutsushi/tagbar'
+" Search Dash.app from Vim
+Plug 'rizzatti/dash.vim'
+Plug 'tmux-plugins/vim-tmux-focus-events'
+
+" Text objects
+" -----------------
+" required for all the vim-textobj-* plugins
+Plug 'kana/vim-textobj-user'
+" `ae` text object, so `gcae` comments whole file
+Plug 'kana/vim-textobj-entire'
+" `l` text object for the current line excluding leading whitespace
+Plug 'kana/vim-textobj-line'
+
+" Markdown
+" ----------
+" Markdown - Syntax file for Markdowm files
+" Plug 'tpope/vim-markdown'
+Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown'
+" Markdown Folding - Fold based on markdown heading level
+Plug 'nelstrom/vim-markdown-folding'
+" `gx` so that `gx` works on [Markdown](links).
+Plug 'christoomey/vim-quicklink', { 'for': 'markdown' }
+" Make `gx` work on 'gabebw/dotfiles' too
+Plug 'gabebw/vim-github-link-opener'
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
+Plug 'itspriddle/vim-marked'
 
 " if g:has_async
 "   Plug 'dense-analysis/ale'
