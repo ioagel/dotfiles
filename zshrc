@@ -34,8 +34,18 @@ _load_settings() {
 }
 _load_settings "$HOME/.zsh/configs"
 
-# Local config
+# pygments default style
+ZSH_COLORIZE_STYLE="monokai"
+
+# setup fasd
+eval "$(fasd --init auto)"
+
+# asdf completions
+. $HOME/.asdf/completions/asdf.bash
+
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 # aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

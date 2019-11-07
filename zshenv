@@ -27,3 +27,9 @@ MSG
 fi
 
 unset _old_path
+
+if [[ -r ~/.terminfo/78/xterm-256color-italic ]]; then
+  export TERM=xterm-256color-italic
+else
+  export TERM=xterm-256color
+fi

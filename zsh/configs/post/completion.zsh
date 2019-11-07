@@ -12,3 +12,6 @@ fi;
 # disable zsh bundled function mtools command mcd
 # which causes a conflict.
 compdef -d mcd
+
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
