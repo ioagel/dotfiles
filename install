@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Download and execute the 'mac' script from Thoughtbot/laptop repo
+# at https://github.com/thoughtbot/laptop
+# install with: $ env RC_WITH_SECRET='-t secret' sh install
+# DO NOT USE "env RC_WITH_SECRET='-t secret'", they are personal
+# encrypted secrets.
+mac_script=$(mktemp)
+curl -o "$mac_script" https://raw.githubusercontent.com/thoughtbot/laptop/master/mac
+sh "$mac_script" 2>&1 | tee ~/laptop.log

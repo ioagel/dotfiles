@@ -1,23 +1,7 @@
 #!/bin/sh
 
-brew bundle --file=- <<EOF
-tap "homebrew/cask-fonts"
-tap "AdoptOpenJDK/openjdk"
-brew "fasd"
-brew "pygments"
-brew "shellcheck"
-brew "jq"
-brew "tree"
-brew "diff-so-fancy"
-brew "ripgrep"
-brew "mosh"
-brew "git-lfs"
-brew "chrome-cli"
-brew "bat"
-cask "adoptopenjdk8"
-brew "maven"
-cask "font-fira-code"
-EOF
+# Installing Homebrew packages
+brew bundle --file=~/dotfiles/Brewfile
 
 install_asdf_python() {
   python2_version="$(asdf list-all python| grep -v "[a-z3]" | tail -1)"
@@ -107,5 +91,5 @@ fi
 
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
-  rcup
+  rcup "$RC_WITH_SECRET"
 fi

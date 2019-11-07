@@ -1,7 +1,3 @@
-tap "homebrew/cask-fonts"
-tap "AdoptOpenJDK/openjdk"
-tap "jesseduffield/lazydocker"
-
 # CLI tool for quick access to files and directories
 brew "fasd"
 # Generic syntax highlighter
@@ -31,14 +27,26 @@ brew "wget"
 # Mac App Store command-line interface
 brew "mas"
 # A simple terminal UI for docker, written in Go
-brew "jesseduffield/lazydocker/lazydocker"
+tap "jesseduffield/lazydocker"
+brew "lazydocker"
 # Cross-platform make
 brew "cmake"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
+# https://unused.codes/ NOTE: it takes to long to compile in staging mac
+# tap "joshuaclayton/formulae"
+# brew "unused"
+# Command-line Spotify interface
+# https://github.com/hnarayanan/shpotify
+brew "shpotify"
 
+####### Casks #############
+tap "AdoptOpenJDK/openjdk"
 cask "adoptopenjdk8"
+
+tap "homebrew/cask-fonts"
 cask "font-fira-code"
+
 cask "chronosync"
 cask "intellij-idea"
 cask "datagrip"
@@ -57,3 +65,5 @@ cask "vmware-fusion"
 cask "insync"
 cask "calibre"
 cask "send-to-kindle"
+cask "dash"
+cask "ngrok"
