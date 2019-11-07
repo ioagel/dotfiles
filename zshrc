@@ -40,12 +40,8 @@ ZSH_COLORIZE_STYLE="monokai"
 # setup fasd
 eval "$(fasd --init auto)"
 
-PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-
 # asdf completions
 . $HOME/.asdf/completions/asdf.bash
-
-export PATH="$HOME/.bin:$PATH"
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 

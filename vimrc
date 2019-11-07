@@ -82,7 +82,7 @@ augroup vimrcEx
   autocmd BufRead,BufNewFile .gitignore*,gitignore* set filetype=gitignore
   autocmd BufRead,BufNewFile vimrc.local set filetype=vim
   au BufRead,BufNewFile *.es6 setf javascript
-  au BufRead,BufNewFile *.ru,Gemfile,Guardfile,.simplecov,*.step,*.json.jbuilder,Vagrantfile setf ruby
+  au BufRead,BufNewFile *.ru,Gemfile,Guardfile,.simplecov,*.step,*.json.jbuilder,Vagrantfile,Brewfile* setf ruby
   " The `sql` filetype doesn't have good highlighting but `plsql` does!
   au BufRead,BufNewFile *.sql set ft=plsql
   au BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux

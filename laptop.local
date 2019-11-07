@@ -2,12 +2,21 @@
 
 brew bundle --file=- <<EOF
 tap "homebrew/cask-fonts"
-cask "font-fira-code"
+tap "AdoptOpenJDK/openjdk"
 brew "fasd"
 brew "pygments"
 brew "shellcheck"
 brew "jq"
 brew "tree"
+brew "diff-so-fancy"
+brew "ripgrep"
+brew "mosh"
+brew "git-lfs"
+brew "chrome-cli"
+brew "bat"
+cask "adoptopenjdk8"
+brew "maven"
+cask "font-fira-code"
 EOF
 
 install_asdf_python() {
@@ -60,6 +69,12 @@ if [ ! -d "$OH_ZSH" ]; then
     "$OH_ZSH/custom/themes/spaceship-prompt"
   ln -s "$OH_ZSH/custom/themes/spaceship-prompt/spaceship.zsh-theme" \
     "$OH_ZSH/custom/themes/spaceship.zsh-theme"
+  # install zsh-syntax-highlighting
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+  # install zsh-history-substring-search
+  git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+  # install zsh-completions
+  git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
 fi
 
 # install ruby gems
@@ -80,6 +95,15 @@ pip_install_or_update pynvim 2
 # install node packages
 fancy_echo "Installing latest npm packages ..."
 yarn_install_or_update neovim
+
+# iTerm2, vim, tmux support for italics
+fancy_echo "Installing italics-capable terminfo files for iTerm2, vim, tmux..."
+if [ ! -r ~/.terminfo/78/xterm-256color-italic ]; then
+  tic -x ~/dotfiles/iterm2/xterm-256color-italic.terminfo
+fi
+if [ ! -r ~/.terminfo/74/tmux-256color ]; then
+  tic -x ~/dotfiles/iterm2/tmux-256color.terminfo
+fi
 
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
