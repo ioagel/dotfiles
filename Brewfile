@@ -1,3 +1,31 @@
+tap "thoughtbot/formulae"
+tap "homebrew/services"
+tap "universal-ctags/universal-ctags"
+
+# Unix
+brew "universal-ctags", args: ["HEAD"]
+brew "git"
+brew "openssl"
+brew "rcm"
+brew "reattach-to-user-namespace"
+brew "the_silver_searcher"
+brew "tmux"
+brew "vim"
+brew "watchman"
+brew "zsh"
+
+# Image manipulation
+brew "imagemagick"
+
+# Programming language prerequisites and package managers
+brew "libyaml" # should come after openssl
+brew "coreutils"
+brew "libxslt"
+brew "unixodbc"
+brew "unzip"
+brew "curl"
+cask "gpg-suite"
+
 # CLI tool for quick access to files and directories
 brew "fasd"
 # Generic syntax highlighter
@@ -67,3 +95,4 @@ cask "calibre"
 cask "send-to-kindle"
 # cask "dash"
 cask "ngrok"
+cask "docker"
