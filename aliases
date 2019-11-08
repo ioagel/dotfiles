@@ -25,5 +25,14 @@ alias path='echo $PATH | tr -s ":" "\n"'
 # remote servers maybe will not support
 alias ssh='TERM=xterm-256color ssh'
 
+# Docker related
+alias lzd='lazydocker'
+
+# ssh related
+alias sshk="ssh-keygen -R "
+
+# Include custom secret aliases
+[[ -f ~/.aliases.secret ]] && source ~/.aliases.secret
+
 # Include custom aliases
 [[ -f ~/.aliases.local ]] && source ~/.aliases.local

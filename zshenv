@@ -28,8 +28,12 @@ fi
 
 unset _old_path
 
-if [[ -r ~/.terminfo/78/xterm-256color-italic ]]; then
-  export TERM=xterm-256color-italic
+if [ -r ~/.terminfo/78/xterm-256color-italic ] && [ -r ~/.terminfo/74/tmux-256color ]; then
+  if [[ -z "$TMUX" ]]; then
+    export TERM=xterm-256color-italic
+  else
+    export TERM=tmux-256color
+  fi
 else
   export TERM=xterm-256color
 fi
