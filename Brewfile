@@ -67,9 +67,11 @@ brew "go"
 # Command-line Spotify interface
 # https://github.com/hnarayanan/shpotify
 brew "shpotify"
+# encrypt sesnsitive data in git repo
+brew "git-crypt"
 
 ####### Casks #############
-tap "AdoptOpenJDK/openjdk"
+#tap "AdoptOpenJDK/openjdk"
 cask "adoptopenjdk8"
 
 tap "homebrew/cask-fonts"
