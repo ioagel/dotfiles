@@ -238,6 +238,13 @@ if [ ! -r ~/.terminfo/74/tmux-256color ]; then
   tic -x ~/dotfiles/iterm2/tmux-256color.terminfo
 fi
 
+fancy_echo "Setup sync for iTerm2 Prefs in a custom folder ..."
+killall cfprefsd     # This will get rid of cached settings
+# Specify the preferences directory
+defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "~/dotfiles/iterm2"
+# Tell iTerm2 to use the custom preferences in the directory
+defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
+
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
   rcup "$RC_WITH_SECRET"
