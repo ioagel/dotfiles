@@ -241,9 +241,6 @@ fi
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
   rcup "$RC_WITH_SECRET"
-else
-  fancy_echo "Installing dotfiles ..."
-  env RCRC=$HOME/dotfiles/rcrc rcup "$RC_WITH_SECRET"
 fi
 
 if [ -f "$HOME/.laptop.local" ]; then

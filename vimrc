@@ -91,11 +91,6 @@ augroup vimrcEx
   " Don't automatically continue comments after newline
   autocmd BufNewFile,BufRead * setlocal formatoptions-=cro
 augroup END
-
-autocmd FocusLost * call ToggleRelativeOn()
-autocmd FocusGained * call ToggleRelativeOn()
-autocmd InsertEnter * call ToggleRelativeOn()
-autocmd InsertLeave * call ToggleRelativeOn()
 " }}}
 
 " ============================================================================
@@ -336,7 +331,7 @@ set list listchars=tab:»·,trail:·,nbsp:·
 " Numbers
 " With relativenumber and number set, shows relative number but has current
 " number on current line.
-" set relativenumber
+set relativenumber
 set number
 set numberwidth=5
 
@@ -393,19 +388,6 @@ function! QuickfixFilenames()
     let buffer_numbers[quickfix_item['bufnr']] = bufname(quickfix_item['bufnr'])
   endfor
   return join(map(values(buffer_numbers), 'fnameescape(v:val)'))
-endfunction
-
-function! ToggleNumbersOn()
-  set nu!
-  set rnu
-endfunction
-function! ToggleRelativeOn()
-  set rnu!
-  set nu
-endfunction
-function! RelativeNumbersOn()
-  set rnu!
-  set nu!
 endfunction
 
 " Cycle through relativenumber + number, number (only), and no numbering.
