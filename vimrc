@@ -484,6 +484,17 @@ nnoremap <LEADER>uf zR<CR>
 " ============================================================================
 " PLUGIN OPTIONS {{{
 " ===========================================================================
+" vim-tmuxline
+" --------------
+let g:tmuxline_preset = {
+      \'a'    : '#S',
+      \'b'    : '#(whoami)',
+      \'win'  : ['#I', '#W'],
+      \'cwin' : '#I #W #F',
+      \'x'    : ['#{?pane_synchronized,--SYNCED--,}'],
+      \'y'    : ['#(~/.bin/spotify-compact-status)', '%R', '#(date "+%a - %b %d %Y")'],
+      \'z'    : '#h'}
+
 " vim-easymotion
 " ----------------
 let g:EasyMotion_do_mapping = 0 " Disable default mappings
