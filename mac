@@ -210,12 +210,6 @@ if [ ! -d "$OH_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
 fi
 
-# install ruby gems
-fancy_echo "Installing/Updating ruby gems ..."
-gem_install_or_update rubocop
-gem_install_or_update standard
-gem_install_or_update neovim
-
 # asdf python 2 and 3 setup
 fancy_echo "Installing latest Python 2 and 3..."
 add_or_update_asdf_plugin "python" "https://github.com/danhper/asdf-python.git"

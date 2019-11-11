@@ -27,7 +27,6 @@
   "json.format.enable": true,
   "codeLens.enable": true,
   "solargraph.diagnostics": true,
-  "solargraph.useBundler": true,
   "solargraph.formatting": true,
   "solargraph.autoformat": true,
   "solargraph.hover": true,

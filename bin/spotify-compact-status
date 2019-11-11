@@ -1,0 +1,48 @@
+#!/usr/bin/osascript -l JavaScript
+// vim: textwidth=0 filetype=javascript
+
+// `spotify status` (from https://github.com/hnarayanan/shpotify) returns the
+// following:
+//
+//  Spotify is currently playing.
+//  Artist: Lewis Capaldi
+//  Album: Bruises
+//  Track: Bruises
+//  Position: 2:07 / 3:38
+//
+// That's way too long for a tmux status line (and take 0.75-1 seconds), so this
+// script uses osascript directly to return the following string in about 0.3
+// seconds:
+//
+// Bruises by Lewis Capaldi
+//
+// If Spotify isn't running, it prints an empty string.
+
+var playing = "▶";
+var paused = "❙❙";
+var stopped = "◼";
+var statesToIcons = {
+  playing: playing,
+  paused: paused,
+  stopped: stopped
+}
+
+function namesOfRunningApplications(){
+  var systemEvents = Application('System Events');
+  return systemEvents.applicationProcesses().map(function(x) { return x.name() });
+}
+
+function spotifyIsRunning(){
+  return namesOfRunningApplications().indexOf('Spotify') > -1;
+}
+
+if (spotifyIsRunning()) {
+  var spotify = Application("Spotify");
+
+  // stopped / playing / paused
+  var state = spotify.playerState();
+  var track = spotify.currentTrack();
+  if (track) {
+    statesToIcons[state] + " " + track.name() + " by " + track.artist();
+  }
+}
