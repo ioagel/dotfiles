@@ -71,11 +71,12 @@ brew "shpotify"
 brew "git-crypt"
 
 ####### Casks #############
-#tap "AdoptOpenJDK/openjdk"
+# tap "AdoptOpenJDK/openjdk"
 cask "adoptopenjdk8"
 
 tap "homebrew/cask-fonts"
 cask "font-fira-code"
+cask "font-firacode-nerd-font"
 
 cask "chronosync"
 cask "intellij-idea"
