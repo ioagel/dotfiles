@@ -77,6 +77,8 @@ cask "adoptopenjdk8"
 tap "homebrew/cask-fonts"
 cask "font-fira-code"
 cask "font-firacode-nerd-font"
+cask "font-source-code-pro"
+cask "font-sourcecodepro-nerd-font"
 
 cask "chronosync"
 cask "intellij-idea"
