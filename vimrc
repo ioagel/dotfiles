@@ -6,15 +6,22 @@ set encoding=utf-8
 " Leader
 let mapleader = " "
 
-if $TERM =~ '^\(tmux\|iterm\|xterm\|vte\|gnome\)\(-.*\)\?$'
-  " Enforce italics
-  " let &t_ZH="\e[3m"
-  " let &t_ZR="\e[23m"
+" if $TERM =~ '^\(tmux\|iterm\|alacritty\|xterm\|vte\|gnome\)\(-.*\)\?$'
+"   " Enforce italics
+"   " let &t_ZH="\e[3m"
+"   " let &t_ZR="\e[23m"
+"   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+"   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
+"   set termguicolors
+" else
+"   set notermguicolors
+" endif
+
+" True colors and italics
+if exists('+termguicolors')
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   set termguicolors
-else
-  set notermguicolors
 endif
 
 " Placeholder for when we will need it
@@ -587,7 +594,8 @@ augroup ps_nerdtree
     au Filetype nerdtree nnoremap <buffer> L :vertical resize +10<cr>
     " au Filetype nerdtree nnoremap <buffer> K :q<cr>
 augroup END
-map <Leader>, :NERDTreeToggle<CR>
+nmap ,m :NERDTreeToggle<CR>
+nmap ,n :NERDTreeFind<CR>
 
 " gist.vim
 " -----------------

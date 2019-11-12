@@ -239,6 +239,14 @@ defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "~/dotfiles
 # Tell iTerm2 to use the custom preferences in the directory
 defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
 
+# Alacritty, vim, tmux support for italics
+fancy_echo "Installing italics-capable terminfo files for Alacritty, vim, tmux..."
+if [ ! -r ~/.terminfo/61/alacritty ]; then
+  alacritty_terminfo=$(mktemp)
+  curl -o "$alacritty_terminfo" https://raw.githubusercontent.com/jwilm/alacritty/master/extra/alacritty.info
+  tic -xe alacritty,alacritty-direct "$alacritty_terminfo"
+fi
+
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
   rcup "$RC_WITH_SECRET"
