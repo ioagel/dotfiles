@@ -5,4 +5,7 @@ tmuxinator
 neovim
 pry
 rubocop
+rubocop-performance
+rubocop-rails
+rubocop-rspec
 standard
