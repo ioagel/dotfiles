@@ -571,7 +571,10 @@ nnoremap <leader>gs :Magit<CR>
 
 " vim-airline
 " ------------
-let g:airline_theme = 'gruvbox'
+" let g:airline_theme = 'one'
+" let g:airline_theme = 'gruvbox'
+let g:airline_theme = 'solarized'
+" let g:airline_theme='papercolor'
 let g:airline_powerline_fonts = 1
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
@@ -584,6 +587,29 @@ let g:airline#extensions#branch#enabled = 1
 " let g:airline#extensions#eclim#enabled = 1
 let g:airline#extensions#tmuxline#enabled = 1
 
+" Color schemes
+" ---------------
+" Gruvbox
+let g:gruvbox_italic=1
+let g:gruvbox_contrast_light='hard'
+
+" vim-one
+let g:one_allow_italics = 1
+
+" PaperColor
+let g:PaperColor_Theme_Options = {
+  \   'theme': {
+  \     'default.light': {
+  \        'allow_italic': 1
+  \       }
+  \     }
+  \   }
+
+" IndentLine
+" let g:indentLine_setColors = 0
+let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+let g:indentLine_setConceal = 0
+
 " NERDTree
 " ---------
 augroup ps_nerdtree
@@ -594,8 +620,8 @@ augroup ps_nerdtree
     au Filetype nerdtree nnoremap <buffer> L :vertical resize +10<cr>
     " au Filetype nerdtree nnoremap <buffer> K :q<cr>
 augroup END
-nmap ,m :NERDTreeToggle<CR>
-nmap ,n :NERDTreeFind<CR>
+nmap ,. :NERDTreeToggle<CR>
+nmap ,m :NERDTreeFind<CR>
 
 " gist.vim
 " -----------------
@@ -692,9 +718,8 @@ endif
 filetype plugin indent on
 
 " colors
-let g:gruvbox_italic=1
-colorscheme gruvbox
-set background=dark
+colorscheme solarized8_high
+set background=light
 
 " Treat <li> and <p> tags like the block tags they are
 let g:html_indent_tags = 'li\|p'

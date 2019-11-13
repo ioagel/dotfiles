@@ -10,7 +10,8 @@
     "sh",
     "json",
     "html",
-    "java"
+    "java",
+    "yaml"
   ],
   "diagnostic.refreshOnInsertMode": true,
   "suggest.floatEnable": true,
@@ -48,5 +49,6 @@
   "java.format.settings.profile": "GoogleStyle",
   "snippets.extends": {
     "ruby": ["rails"]
-  }
+  },
+  "yaml.format.enable": true
 }

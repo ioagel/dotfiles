@@ -13,6 +13,7 @@ brew "tmux"
 brew "vim"
 brew "watchman"
 brew "zsh"
+brew "htop"
 
 # Image manipulation
 brew "imagemagick"

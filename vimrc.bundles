@@ -83,6 +83,7 @@ Plug 'shmup/vim-sql-syntax'
 Plug 'slim-template/vim-slim'
 Plug 'Glench/Vim-Jinja2-Syntax'
 Plug 'gisphm/vim-gitignore'
+Plug 'Yggdroot/indentLine'
 
 " Plumbing that makes everything nicer
 " ----------------------------------
@@ -135,6 +136,9 @@ Plug 'christoomey/vim-sort-motion'
 Plug 'christoomey/vim-run-interactive'
 " Plug 'flazz/vim-colorschemes'
 Plug 'morhetz/gruvbox'
+Plug 'NLKNguyen/papercolor-theme'
+Plug 'rakr/vim-one'
+Plug 'lifepillar/vim-solarized8'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'edkolev/tmuxline.vim'
@@ -160,6 +164,7 @@ Plug 'majutsushi/tagbar'
 " Search Dash.app from Vim
 Plug 'rizzatti/dash.vim'
 Plug 'tmux-plugins/vim-tmux-focus-events'
+Plug 'haya14busa/is.vim'
 
 " Text objects
 " -----------------
