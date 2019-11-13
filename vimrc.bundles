@@ -111,8 +111,6 @@ Plug 'tpope/vim-rhubarb'
 " You can also preview, stage, and undo individual hunks;
 " and stage partial hunks. The plugin also provides a hunk text object.
 Plug 'airblade/vim-gitgutter'
-" Ease your git workflow within vim.
-Plug 'jreybert/vimagit'
 " :Gist
 Plug 'mattn/webapi-vim' | Plug 'mattn/gist-vim'
 " Auto-add `end` in Ruby, `endfunction` in Vim, etc

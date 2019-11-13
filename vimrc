@@ -564,11 +564,6 @@ nmap <Leader>pr <Plug>(PrettierAsync)
 "---------------
 let g:gitgutter_max_signs=9999
 
-" magit
-" -------
-" Open vimagit pane
-nnoremap <leader>gs :Magit<CR>
-
 " vim-airline
 " ------------
 " let g:airline_theme = 'one'
@@ -642,6 +637,7 @@ autocmd FileType fugitiveblame nnoremap <buffer> <silent> gb :Gbrowse <C-r><C-w>
 " Prevent Fugitive from raising an error about .git/tags by telling it to
 " explicitly check .git/tags
 set tags^=.git/tags
+nnoremap <leader>gs :Gstatus<CR>
 
 " vim-test
 " ---------------
