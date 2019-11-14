@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# vim:ft=ruby
 
 Pry.config.commands.command 'pbcopy', 'Copy input to clipboard' do |input|
   input = input ? target.eval(input) : _pry_.last_result

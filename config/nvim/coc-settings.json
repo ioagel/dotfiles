@@ -1,8 +1,11 @@
 {
+  "html.format.enable": false,
+  "json.format.enable": false,
+  "yaml.format.enable": false,
   "coc.preferences.jumpCommand": "drop",
   "coc.preferences.hoverTarget": "float",
-  "coc.preferences.formatOnType": true,
   "coc.preferences.currentFunctionSymbolAutoUpdate": true,
+  "codeLens.enable": true,
   "coc.preferences.formatOnSaveFiletypes": [
     "css",
     "javascript",
@@ -13,6 +16,7 @@
     "java",
     "yaml"
   ],
+  "prettier.singleQuote": true,
   "diagnostic.refreshOnInsertMode": true,
   "suggest.floatEnable": true,
   "suggest.noselect": false,
@@ -24,9 +28,6 @@
   "signature.maxWindowHeight": 20,
   "diagnostic.checkCurrentLine": true,
   "eslint.autoFixOnSave": true,
-  "html.format.enable": true,
-  "json.format.enable": true,
-  "codeLens.enable": true,
   "solargraph.diagnostics": true,
   "solargraph.formatting": true,
   "solargraph.autoformat": true,
@@ -49,6 +50,5 @@
   "java.format.settings.profile": "GoogleStyle",
   "snippets.extends": {
     "ruby": ["rails"]
-  },
-  "yaml.format.enable": true
+  }
 }
