@@ -32,11 +32,11 @@ After the initial installation, you can run `rcup` without the one-time variable
 `RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
 runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/master/rcrc).
 
-Install the dotfiles and lots of usefull mac apps and utilities:
+Install the dotfiles and lots of useful mac apps and utilities:
 
     sh mac 2>&1 | tee ~/laptop.log
 
-Check [thoughtbot/laptop repo](https://github.com/thoughtbot/laptop) for more
+Check [Thoughtbot/laptop repo](https://github.com/thoughtbot/laptop) for more
 options!
 
 Update
@@ -46,11 +46,11 @@ From time to time you should pull down any updates to these dotfiles, and run
 
     rcup
 
-to link any new files and install new vim plugins. **Note** You _must_ run
+to link any new files and install new Vim plugins. **Note** You _must_ run
 `rcup` after pulling to ensure that all files in plugins are properly installed,
 but you can safely run `rcup` multiple times so update early and update often!
 
 Make your own customizations
 ----------------------------
 
-Check [thoughtbot/dotfiles repo](https://github.com/thoughtbot/dotfiles).
+Check [Thoughtbot/dotfiles repo](https://github.com/thoughtbot/dotfiles).
