@@ -6,7 +6,9 @@ fi
 alias soz='source ~/.zshrc'
 # Unix
 alias ll="ls -al"
+alias ltr="ls -lAFhtr"
 alias ln="ln -v"
+alias df="df -h"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias v="$VISUAL"
