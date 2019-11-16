@@ -1,0 +1,9 @@
+set clipboard+=unnamed
+set surround
+set multiple-cursor
+set commentary
+set rnu
+set nu
+set ic
+set is
+set scs
