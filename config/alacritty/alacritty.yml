@@ -129,7 +129,7 @@ font:
 
 # If `true`, bold text is drawn using the bright color variants.
 # NOTE: for light themes keep it false, i think
-draw_bold_text_with_bright_colors: true
+draw_bold_text_with_bright_colors: false
 
 # Colors
 
@@ -330,7 +330,7 @@ schemes:
       cyan:    '0x4fb8cc'
       white:   '0xf1f1f1'
 
-colors: *gruvbox_dark
+colors: *solarized_light
 
 # colors:
 #   # Default colors

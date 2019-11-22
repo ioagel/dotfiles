@@ -1,10 +1,152 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-# Download and execute the 'mac' script from Thoughtbot/laptop repo
-# at https://github.com/thoughtbot/laptop
-# install with: $ env RC_WITH_SECRET='-t secret' sh install
-# DO NOT USE "env RC_WITH_SECRET='-t secret'", they are personal
-# encrypted secrets.
-mac_script=$(mktemp)
-curl -o "$mac_script" https://raw.githubusercontent.com/thoughtbot/laptop/master/mac
-sh "$mac_script" 2>&1 | tee ~/laptop.log
+# shellcheck disable=SC2154
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+
+set -e
+
+OS="$(uname)"
+if [ "$OS" != 'Darwin' ] && [ "$OS" != 'Linux' ] \
+  && [ "$(lsb_release -s -i)" != 'Ubuntu' ]; then
+  echo "This script suports only Mac and Ubuntu!"
+  exit 1
+fi
+
+export cwd="$(pwd)"
+
+. ~/dotfiles/functions
+
+if [ ! -d "$HOME/.bin/" ]; then
+  mkdir "$HOME/.bin"
+fi
+
+if [ ! -f "$HOME/.zshrc" ]; then
+  touch "$HOME/.zshrc"
+fi
+
+# shellcheck disable=SC2016
+append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
+
+# Authentication
+sudo -v
+# Keep-alive: update existing `sudo` time stamp until bootstrap has finished
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+export GOPATH="$HOME/go"
+export PATH="$HOME/.bin:$PATH:$GOPATH/bin"
+
+if [ "$OS" = 'Darwin' ]; then
+  number_of_cores=$(sysctl -n hw.ncpu)
+  . ~/dotfiles/mac
+else
+  # we are definitely in Ubuntu from the check above
+  export PATH="$PATH:/usr/local/go/bin"
+  number_of_cores=$(nproc)
+  . ~/dotfiles/ubuntu
+fi
+
+case "$SHELL" in
+  */zsh)
+    if [ "$(command -v zsh)" != '/usr/local/bin/zsh' ] ; then
+      update_shell
+    fi
+    ;;
+  *)
+    update_shell
+    ;;
+esac
+
+fancy_echo "Configuring asdf version manager ..."
+if [ ! -d "$HOME/.asdf" ]; then
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0
+  append_to_zshrc "source $HOME/.asdf/asdf.sh" 1
+fi
+
+# shellcheck disable=SC1090
+source "$HOME/.asdf/asdf.sh"
+add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
+add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+
+fancy_echo "Installing latest Ruby ..."
+install_asdf_language "ruby"
+gem update --system
+bundle config --global jobs $((number_of_cores - 1))
+fancy_echo "Installing latest gems ..."
+gem_install_or_update neovim
+
+fancy_echo "Installing latest Node and yarn ..."
+bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+install_asdf_language "nodejs"
+npm install -g yarn
+
+# install oh-my-zsh and spaceship prompt
+OH_ZSH="$HOME/.oh-my-zsh"
+if [ ! -d "$OH_ZSH" ]; then
+  fancy_echo "Installing oh-my-zsh and spaceship prompt ..."
+  git clone https://github.com/robbyrussell/oh-my-zsh.git "$OH_ZSH"
+  git clone https://github.com/denysdovhan/spaceship-prompt.git \
+    "$OH_ZSH/custom/themes/spaceship-prompt"
+  ln -s "$OH_ZSH/custom/themes/spaceship-prompt/spaceship.zsh-theme" \
+    "$OH_ZSH/custom/themes/spaceship.zsh-theme"
+  # install zsh-syntax-highlighting
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+  # install zsh-history-substring-search
+  git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+  # install zsh-completions
+  git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
+fi
+
+# asdf python 2 and 3 setup
+fancy_echo "Installing latest Python 2 and 3..."
+add_or_update_asdf_plugin "python" "https://github.com/danhper/asdf-python.git"
+install_asdf_python
+# install python 2 and 3 packages
+fancy_echo "Installing latest pip modules ..."
+pip_install_or_update pynvim
+pip_install_or_update pynvim 2
+pip_install_or_update Pygments
+asdf reshim python
+
+# install node packages
+fancy_echo "Installing latest npm packages ..."
+yarn_install_or_update neovim
+if [ "$OS" = 'Linux' ]; then
+  yarn_install_or_update diff-so-fancy
+fi
+
+# Install Lemonade
+# Lemonade is a remote utility tool. (copy, paste and open browser) over TCP.
+if ! command -v lemonade > /dev/null; then
+  go get -d github.com/lemonade-command/lemonade
+  cd $GOPATH/src/github.com/lemonade-command/lemonade/
+  make install
+  cd "$cwd"
+fi
+
+# Alacritty, iTerm2, vim, tmux support for italics
+fancy_echo "Installing italics-capable terminfo files for terminals, vim, tmux..."
+if [ ! -r ~/.terminfo/61/alacritty ] || [ ! -r ~/.terminfo/a/alacritty ]; then
+  alacritty_terminfo=$(mktemp)
+  curl -o "$alacritty_terminfo" \
+    https://raw.githubusercontent.com/jwilm/alacritty/master/extra/alacritty.info
+  tic -xe alacritty,alacritty-direct "$alacritty_terminfo"
+fi
+if [ ! -r ~/.terminfo/78/xterm-256color-italic ] || \
+  [ ! -r ~/.terminfo/x/xterm-256color-italic ]; then
+  tic -x ~/dotfiles/iterm2/xterm-256color-italic.terminfo
+fi
+if [ ! -r ~/.terminfo/74/tmux-256color ] || \
+  [ ! -r ~/.terminfo/t/tmux-256color ]; then
+  tic -x ~/dotfiles/iterm2/tmux-256color.terminfo
+fi
+
+if [ -r "$HOME/.rcrc" ]; then
+  fancy_echo "Updating dotfiles ..."
+  rcup "$RC_WITH_SECRET"
+fi
+
+if [ -f "$HOME/.laptop.local" ]; then
+  fancy_echo "Running your customizations from ~/.laptop.local ..."
+  # shellcheck disable=SC1090
+  . "$HOME/.laptop.local"
+fi

@@ -713,8 +713,8 @@ endif
 filetype plugin indent on
 
 " colors
-colorscheme gruvbox
-set background=dark
+colorscheme solarized8_high
+set background=light
 
 " Treat <li> and <p> tags like the block tags they are
 let g:html_indent_tags = 'li\|p'

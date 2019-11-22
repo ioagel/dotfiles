@@ -8,5 +8,6 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   plugins=(fasd brew colored-man-pages colorize common-aliases docker-compose
   docker dotenv github gitignore jsontools npm rails ruby safe-paste sudo themes
   tmux yarn zsh-completions zsh-syntax-highlighting history-substring-search)
+  ZSH_DISABLE_COMPFIX="true"
   source $ZSH/oh-my-zsh.sh
 fi
