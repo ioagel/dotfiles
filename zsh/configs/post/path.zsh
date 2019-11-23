@@ -10,7 +10,7 @@ fi
 PATH="/usr/local/sbin:$PATH"
 
 # we install manually the latest version of go in linux
-export GOPATH="$HOME/go"
+export GOPATH="$HOME/code/go"
 if [ "$(uname)" = 'Linux' ]; then
   PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 else

@@ -1,3 +1,3 @@
 DOTFILES_DIRS="$HOME/dotfiles-local $HOME/dotfiles"
-EXCLUDES="README.md LICENSE remote-copy-paste iterm2 Brewfile Brewfile.mas install tag-secret"
+EXCLUDES="README.md LICENSE remote-copy-paste iterm2 Brewfile Brewfile.mas install mac ubuntu functions tag-secret"
 SYMLINK_DIRS="backups undodir"
