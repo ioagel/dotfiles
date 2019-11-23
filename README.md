@@ -32,12 +32,10 @@ After the initial installation, you can run `rcup` without the one-time variable
 `RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
 runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/master/rcrc).
 
-Install the dotfiles and lots of useful mac apps and utilities:
+Install the dotfiles and lots of useful mac/ubuntu apps and utilities:
 
-    sh mac 2>&1 | tee ~/laptop.log
+    bash install 2>&1 | tee ~/laptop.log
 
-Check [Thoughtbot/laptop repo](https://github.com/thoughtbot/laptop) for more
-options!
 
 Update
 ------
@@ -50,7 +48,9 @@ to link any new files and install new Vim plugins. **Note** You _must_ run
 `rcup` after pulling to ensure that all files in plugins are properly installed,
 but you can safely run `rcup` multiple times so update early and update often!
 
-Make your own customizations
-----------------------------
+Secure Data
+-----------
 
-Check [Thoughtbot/dotfiles repo](https://github.com/thoughtbot/dotfiles).
+You can have a private repo named: **dotfiles-secret** where you can store
+confidential data, and use encryption like [git-crypt](https://github.com/AGWA/git-crypt).
+I put my encrypted files in a directory named **tag-secrets**.
