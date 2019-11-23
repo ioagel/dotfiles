@@ -6,4 +6,5 @@ colors
 export CLICOLOR=1
 
 # fix bat colors for light theme
-export BAT_THEME="OneHalfDark"
+# export BAT_THEME="OneHalfDark" # for dark terminal themes
+export BAT_THEME="Solarized (light)" # for light terminal themes
