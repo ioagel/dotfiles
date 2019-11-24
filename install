@@ -14,7 +14,7 @@ fi
 
 export cwd="$(pwd)"
 
-. ~/dotfiles/functions
+. ~/dotfiles/sh_functions
 
 if [ ! -d "$HOME/.bin/" ]; then
   mkdir "$HOME/.bin"

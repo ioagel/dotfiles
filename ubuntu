@@ -2,6 +2,8 @@
 # NOTE: hitting the GitHub api without an auth token limits the requests
 # at 60/hour.
 
+snapd="$(snap version 2> /dev/null | sed -n 2p | awk '{print $2}')"
+
 # add required repositories
 sudo add-apt-repository -y universe
 sudo add-apt-repository -y ppa:martin-frost/thoughtbot-rcm
@@ -14,8 +16,10 @@ sudo apt -y install \
   libffi-dev libtool unixodbc-dev unzip curl gnupg git git-lfs git-crypt tmux \
   rcm zsh htop unixodbc fasd shellcheck jq tree wget silversearcher-ag cmake
 
-sudo snap install universal-ctags && sudo snap connect universal-ctags:dot-ctags
-sudo snap install ngrok && sudo snap connect ngrok:ngrok-config
+if [ "$snapd" != 'unavailable' ]; then
+  sudo snap install universal-ctags && sudo snap connect universal-ctags:dot-ctags
+  sudo snap install ngrok && sudo snap connect ngrok:ngrok-config
+fi
 
 rg_installed="$(rg -V 2> /dev/null | awk '{print $2}')"
 rg_latest="$(curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r .tag_name)"
@@ -115,10 +119,12 @@ if [ "$WITH_GUI" = 'yes' ]; then
   unzip /tmp/SourceCodePro.zip -d /tmp/SourceCodePro && mv -f /tmp/SourceCodePro/* ~/.local/share/fonts
   fc-cache -fr
 
-  sudo snap install intellij-idea-ultimate --classic
-  sudo snap install datagrip --classic
-  sudo snap install code --classic
-  sudo snap install spotify
+  if [ "$snapd" != 'unavailable' ]; then
+    sudo snap install intellij-idea-ultimate --classic
+    sudo snap install datagrip --classic
+    sudo snap install code --classic
+    sudo snap install spotify
+  fi
 
   wget -P /tmp https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
   sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb
