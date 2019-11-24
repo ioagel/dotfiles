@@ -586,6 +586,7 @@ let g:airline#extensions#tmuxline#enabled = 1
 " Gruvbox
 let g:gruvbox_italic=1
 let g:gruvbox_contrast_light='hard'
+let g:gruvbox_contrast_dark='hard'
 
 " vim-one
 let g:one_allow_italics = 1
@@ -713,8 +714,10 @@ endif
 filetype plugin indent on
 
 " colors
-colorscheme solarized8_high
-set background=light
+colorscheme gruvbox
+set background=dark
+" colorscheme solarized8_high
+" set background=light
 
 " Treat <li> and <p> tags like the block tags they are
 let g:html_indent_tags = 'li\|p'
