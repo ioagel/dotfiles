@@ -143,6 +143,10 @@ fi
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "Updating dotfiles ..."
   rcup
+else
+  fancy_echo "Installing dotfiles ..."
+  env RCRC=$HOME/dotfiles/rcrc rcup
+  bat cache --build
 fi
 
 if [ -f "$HOME/.laptop.local" ]; then
