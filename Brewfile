@@ -14,6 +14,7 @@ brew 'vim'
 brew 'watchman'
 brew 'zsh'
 brew 'htop'
+brew 'gnu-sed'
 
 # Image manipulation
 brew 'imagemagick'
