@@ -76,6 +76,7 @@ brew 'mysql-client@5.7'
 brew 'the_silver_searcher'
 
 ####### Casks #############
+tap 'homebrew/cask-versions'
 tap 'AdoptOpenJDK/openjdk'
 cask 'adoptopenjdk8'
 
@@ -99,6 +100,7 @@ cask 'spotify'
 cask 'timemachineeditor'
 cask 'vagrant'
 cask 'visual-studio-code'
+cask 'visual-studio-code-insiders'
 cask 'vlc'
 cask 'vmware-fusion'
 # cask 'insync'
