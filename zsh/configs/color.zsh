@@ -6,4 +6,5 @@ colors
 export CLICOLOR=1
 
 # fix bat colors for light theme
-export BAT_THEME="Gruvbox-Dark-Hard"
+# export BAT_THEME="Gruvbox-Dark-Hard"
+export BAT_THEME="GitHub"
