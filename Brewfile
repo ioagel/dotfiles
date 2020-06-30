@@ -74,6 +74,8 @@ brew 'git-crypt'
 brew 'mosh'
 brew 'mysql-client@5.7'
 brew 'the_silver_searcher'
+brew 'kubernetes-cli'
+brew 'kube-ps1'
 
 ####### Casks #############
 tap 'homebrew/cask-versions'
