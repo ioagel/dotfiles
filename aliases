@@ -33,6 +33,10 @@ alias lzd='lazydocker'
 # ssh related
 alias sshk="ssh-keygen -R "
 
+# sops encrypt - decrypt related
+alias sei="sops -e -i"
+alias sdi="sops -d -i"
+
 # Include custom secret aliases
 [[ -f ~/.aliases.secret ]] && source ~/.aliases.secret
 

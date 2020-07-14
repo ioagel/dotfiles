@@ -76,6 +76,7 @@ brew 'mysql-client@5.7'
 brew 'the_silver_searcher'
 brew 'kubernetes-cli'
 brew 'kube-ps1'
+brew 'sops'
 
 ####### Casks #############
 tap 'homebrew/cask-versions'
