@@ -50,7 +50,7 @@ eval "$(fasd --init auto)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-export PATH="$HOME/.bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.emacs.d/bin:$PATH"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="~/.sdkman"
