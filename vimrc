@@ -718,11 +718,12 @@ if filereadable(expand("~/.vimrc_background"))
   " let base16colorspace=256          " Remove this line if not necessary
   source ~/.vimrc_background
 else
-  colorscheme one
-  " colorscheme gruvbox
-  " set background=dark
-  " colorscheme solarized8_high
+  " For one and solarized8 themes remove the file ~/.vimrc_background
   set background=light
+  " set background=dark
+  " colorscheme one
+  " colorscheme gruvbox
+  colorscheme solarized8_high
 endif
 
 " Treat <li> and <p> tags like the block tags they are
