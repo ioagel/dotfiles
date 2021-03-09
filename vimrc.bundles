@@ -82,7 +82,7 @@ Plug 'pearofducks/ansible-vim'
 Plug 'shmup/vim-sql-syntax'
 Plug 'slim-template/vim-slim'
 Plug 'Glench/Vim-Jinja2-Syntax'
-Plug 'gisphm/vim-gitignore'
+" Plug 'gisphm/vim-gitignore'
 Plug 'Yggdroot/indentLine'
 
 " Plumbing that makes everything nicer
@@ -139,6 +139,7 @@ Plug 'rakr/vim-one'
 Plug 'lifepillar/vim-solarized8'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'chriskempson/base16-vim'
 Plug 'edkolev/tmuxline.vim'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -183,7 +184,7 @@ Plug 'nelstrom/vim-markdown-folding'
 " `gx` so that `gx` works on [Markdown](links).
 Plug 'christoomey/vim-quicklink', { 'for': 'markdown' }
 " Make `gx` work on 'gabebw/dotfiles' too
-Plug 'gabebw/vim-github-link-opener'
+" Plug 'gabebw/vim-github-link-opener'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 Plug 'itspriddle/vim-marked'
 

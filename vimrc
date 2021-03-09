@@ -714,11 +714,16 @@ endif
 filetype plugin indent on
 
 " colors
-colorscheme one
-" colorscheme gruvbox
-" set background=dark
-" colorscheme solarized8_high
-set background=light
+if filereadable(expand("~/.vimrc_background"))
+  " let base16colorspace=256          " Remove this line if not necessary
+  source ~/.vimrc_background
+else
+  colorscheme one
+  " colorscheme gruvbox
+  " set background=dark
+  " colorscheme solarized8_high
+  set background=light
+endif
 
 " Treat <li> and <p> tags like the block tags they are
 let g:html_indent_tags = 'li\|p'
