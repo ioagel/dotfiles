@@ -105,6 +105,8 @@ fancy_echo "Installing latest pip modules ..."
 pip_install_or_update pynvim
 pip_install_or_update pynvim 2
 pip_install_or_update Pygments
+# https://github.com/toggle-corp/alacritty-colorscheme
+pip_install_or_update alacritty-colorscheme
 asdf reshim python
 
 # install node packages
