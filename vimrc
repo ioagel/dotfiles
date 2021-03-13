@@ -6,6 +6,9 @@ set encoding=utf-8
 " Leader
 let mapleader = " "
 
+let g:python_host_prog = '~/.asdf/shims/python2'
+let g:python3_host_prog = '~/.asdf/shims/python3'
+
 " if $TERM =~ '^\(tmux\|iterm\|alacritty\|xterm\|vte\|gnome\)\(-.*\)\?$'
 "   " Enforce italics
 "   " let &t_ZH="\e[3m"
