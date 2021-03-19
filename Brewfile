@@ -1,6 +1,9 @@
 tap 'thoughtbot/formulae'
 tap 'homebrew/services'
 tap 'universal-ctags/universal-ctags'
+tap 'jesseduffield/lazydocker'
+tap 'homebrew/cask-versions'
+tap 'homebrew/cask-fonts'
 
 # Unix
 brew 'universal-ctags', args: ['HEAD']
@@ -10,11 +13,11 @@ brew 'rcm'
 brew 'reattach-to-user-namespace'
 brew 'the_silver_searcher'
 brew 'tmux'
-brew 'vim'
-brew 'watchman'
 brew 'zsh'
 brew 'htop'
 brew 'gnu-sed'
+# brew 'vim'
+# brew 'watchman'
 
 # Image manipulation
 brew 'imagemagick'
@@ -38,39 +41,31 @@ brew 'shellcheck'
 brew 'jq'
 # Display directories as trees (with optional color/HTML output)
 brew 'tree'
-# Good-lookin' diffs with diff-highlight and more
+# Good looking diffs with diff-highlight and more
 brew 'diff-so-fancy'
 # Search tool like grep and The Silver Searcher
 brew 'ripgrep'
 # Git extension for versioning large files
-brew 'git-lfs'
-# Control Google Chrome from the command-line
-brew 'chrome-cli'
+# brew 'git-lfs'
 # Clone of cat(1) with syntax highlighting and Git integration
 brew 'bat'
-# Java-based project management
-brew 'maven'
 # Ambitious Vim-fork focused on extensibility and agility
-brew 'neovim'
+brew 'neovim', args: ['HEAD']
 # Internet file retriever
 brew 'wget'
 # Mac App Store command-line interface
 brew 'mas'
 # A simple terminal UI for docker, written in Go
-tap 'jesseduffield/lazydocker'
 brew 'lazydocker'
 # Cross-platform make
 brew 'cmake'
 # Open source programming language to build simple/reliable/efficient software
-brew 'go'
-# https://unused.codes/ NOTE: it takes to long to compile in staging mac
-# tap "joshuaclayton/formulae"
-# brew "unused"
+# brew 'go'
 # Command-line Spotify interface
 # https://github.com/hnarayanan/shpotify
 # brew 'shpotify'
 # encrypt sesnsitive data in git repo
-brew 'git-crypt'
+# brew 'git-crypt'
 brew 'mosh'
 brew 'mysql-client@5.7'
 brew 'the_silver_searcher'
@@ -79,42 +74,30 @@ brew 'kube-ps1'
 brew 'sops'
 
 ####### Casks #############
-tap 'homebrew/cask-versions'
-tap 'AdoptOpenJDK/openjdk'
-cask 'adoptopenjdk8'
-
-tap 'homebrew/cask-fonts'
 cask 'font-fira-code'
-cask 'font-firacode-nerd-font'
+cask 'font-fira-code-nerd-font'
 cask 'font-source-code-pro'
-cask 'font-sourcecodepro-nerd-font'
-
-cask 'chronosync'
-# cask 'intellij-idea'
-# cask 'datagrip'
+cask 'font-sauce-code-pro-nerd-font'
 cask 'firefox'
-cask 'flux'
 cask 'google-chrome'
 cask 'iterm2'
 cask 'alacritty'
 cask 'skype'
-cask 'spectacle'
 cask 'spotify'
 cask 'timemachineeditor'
-cask 'vagrant'
 cask 'visual-studio-code'
 cask 'visual-studio-code-insiders'
-cask 'vlc'
+cask 'docker'
+cask 'vagrant'
 cask 'vmware-fusion'
-# cask 'insync'
 cask 'calibre'
 cask 'send-to-kindle'
-# cask "dash"
-cask 'ngrok'
-cask 'docker'
-cask 'bitwarden'
 cask 'alfred'
-cask 'android-studio'
-cask 'visual-studio'
-cask 'dotnet-sdk'
 cask 'mysqlworkbench'
+# cask 'chronosync'
+# cask 'flux'
+# cask 'vlc'
+# cask 'ngrok'
+# cask 'android-studio'
+# cask 'visual-studio'
+# cask 'dotnet-sdk'

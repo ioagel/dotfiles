@@ -722,11 +722,11 @@ if filereadable(expand("~/.vimrc_background"))
   source ~/.vimrc_background
 else
   " For one and solarized8 themes remove the file ~/.vimrc_background
-  set background=light
-  " set background=dark
+  " set background=light
+  set background=dark
   " colorscheme one
-  " colorscheme gruvbox
-  colorscheme solarized8_high
+  colorscheme gruvbox
+  " colorscheme solarized8_high
 endif
 
 " Treat <li> and <p> tags like the block tags they are

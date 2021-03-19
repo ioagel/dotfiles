@@ -1,17 +1,28 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 fancy_echo() {
-  local fmt="$1"; shift
+  local fmt="$1"
+  shift
 
   # shellcheck disable=SC2059
   printf "\\n$fmt\\n" "$@"
 }
 
-# NOTE: It is not used in favor of handling latest release through the GitHub rest api
-# https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8#gistcomment-3077928
+# doesn't always work
 latest_release_from_github() {
   local github_repo="$1"
-  echo "$(curl -s https://github.com/"$github_repo"/releases/latest/download 2>&1 | grep -Po [0-9]+\.[0-9]+\.[0-9]+)"
+  local with_v_in_front="${2:-yes}"
+  local version
+  version="$(curl --silent "https://api.github.com/repos/$github_repo/releases/latest" | jq -r .tag_name)"
+  if [[ -z "$version" || "$version" = 'null' ]]; then
+    version="$(curl --silent "https://api.github.com/repos/$github_repo/tags" | jq -r .[0].name)"
+  fi
+#  echo "${version:1}" # Removes the "v" from version
+  if [ "$with_v_in_front" = "yes" ]; then
+    echo "$version"
+  else
+   echo "${version:1}"
+  fi
 }
 
 append_to_zshrc() {
@@ -26,19 +37,19 @@ append_to_zshrc() {
 
   if ! grep -Fqs "$text" "$zshrc"; then
     if [ "$skip_new_line" -eq 1 ]; then
-      printf "%s\\n" "$text" >> "$zshrc"
+      printf "%s\\n" "$text" >>"$zshrc"
     else
-      printf "\\n%s\\n" "$text" >> "$zshrc"
+      printf "\\n%s\\n" "$text" >>"$zshrc"
     fi
   fi
 }
 
 update_shell() {
-  local shell_path;
+  local shell_path
   shell_path="$(command -v zsh)"
 
   fancy_echo "Changing your shell to zsh ..."
-  if ! grep "$shell_path" /etc/shells > /dev/null 2>&1 ; then
+  if ! grep "$shell_path" /etc/shells >/dev/null 2>&1; then
     fancy_echo "Adding '$shell_path' to /etc/shells"
     sudo sh -c "echo $shell_path >> /etc/shells"
   fi
@@ -46,7 +57,7 @@ update_shell() {
 }
 
 gem_install_or_update() {
-  if gem list "$1" --installed > /dev/null; then
+  if gem list "$1" --installed >/dev/null; then
     gem update "$@"
   else
     gem install "$@"
@@ -65,10 +76,9 @@ add_or_update_asdf_plugin() {
   fi
 }
 
-install_asdf_language() {
+install_latest_asdf_language() {
   local language="$1"
-  local version
-  version="$(asdf list-all "$language" | grep -v "[a-z]" | tail -1)"
+  local version="${2:-$(asdf list-all "$language" | grep -v "[a-z]" | tail -1)}"
 
   if ! asdf list "$language" | grep -Fq "$version"; then
     asdf install "$language" "$version"
@@ -77,27 +87,30 @@ install_asdf_language() {
 }
 
 install_asdf_python() {
-  python2_version="$(asdf list-all python| grep -v "[a-z3]" | tail -1)"
-  python3_version="$(asdf list-all python| grep -v "[a-z]" | tail -1)"
+  local python3_version="${1:-$(asdf list-all python | grep -v "[a-z]" | tail -1)}"
+  local python2_version="${2:-$(asdf list-all python | grep -v "[a-z3]" | tail -1)}"
 
   for version in $python2_version $python3_version; do
     if ! asdf list python | grep -Fq "$version"; then
       asdf install python "$version"
     fi
   done
-  # keep mac os x usage of python 2 as default
-  asdf global python "$python2_version" "$python3_version"
+  # python 3 as default
+  asdf global python "$python3_version" "$python2_version"
 }
 
 pip_install_or_update() {
   local package="$1"
   local python_version="${2:-3}"
+  local pip_version
+
   if [ "$python_version" -eq 2 ]; then
     pip_version=pip2
   else
     pip_version=pip3
   fi
-  if "$pip_version" list --user 2> /dev/null | grep -q "^$package"; then
+
+  if "$pip_version" list --user 2>/dev/null | grep -q "^$package"; then
     "$pip_version" install -U --user "$package" >/dev/null 2>&1
     echo "$pip_version: $package updated!"
   else

@@ -50,12 +50,11 @@ eval "$(fasd --init auto)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-export PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.emacs.d/bin:$PATH"
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="~/.sdkman"
-[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
-
-source "/usr/local/opt/kube-ps1/share/kube-ps1.sh"
+if [ "$(uname)" = 'Darwin' ]; then
+    # installed through Homebrew
+    source /usr/local/opt/kube-ps1/share/kube-ps1.sh
+else
+    source "$HOME"/.config/kube-ps1/kube-ps1.sh
+fi
 PS1='$(kube_ps1)'$PS1
 

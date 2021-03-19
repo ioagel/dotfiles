@@ -14,15 +14,15 @@ fi
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
-    curl -fsS \
-      'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
+  curl -fsS \
+    'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
 
-    append_to_zshrc '# recommended by brew doctor'
+  append_to_zshrc '# recommended by brew doctor'
 
-    # shellcheck disable=SC2016
-    append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
+  # shellcheck disable=SC2016
+  append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
 
-    export PATH="/usr/local/bin:$PATH"
+  export PATH="/usr/local/bin:$PATH"
 fi
 
 if brew list | grep -Fq brew-cask; then
@@ -34,11 +34,15 @@ fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
 brew bundle --file=~/dotfiles/Brewfile
 
-if command -v /Applications/iTerm.app/Contents/MacOS/iTerm2 > /dev/null; then
+if [ "$WITH_JAVA" = 'yes' ]; then
+  brew install maven
+fi
+
+if command -v /Applications/iTerm.app/Contents/MacOS/iTerm2 >/dev/null; then
   fancy_echo "Setup sync for iTerm2 Prefs in a custom folder ..."
-  killall cfprefsd     # This will get rid of cached settings
+  killall cfprefsd # This will get rid of cached settings
   # Specify the preferences directory
-  defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "~/dotfiles/iterm2"
+  defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "$HOME/dotfiles/iterm2"
   # Tell iTerm2 to use the custom preferences in the directory
   defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
 fi

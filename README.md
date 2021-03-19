@@ -34,6 +34,9 @@ runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/maste
 
 Install the dotfiles and lots of useful mac/ubuntu apps and utilities:
 
+    # ENV vars that can be used
+    # WITH_GO WITH_RUBY WITH_JAVA WITH_GUI(for linux)
+    # DEFAULTS: WITH_GO=yes WITH_RUBY=yes WITH_JAVA=yes WITH_GUI=no
     bash install 2>&1 | tee ~/laptop.log
 
 

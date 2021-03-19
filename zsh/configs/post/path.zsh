@@ -9,17 +9,18 @@ fi
 
 PATH="/usr/local/sbin:$PATH"
 
-# we install manually the latest version of go in linux
 export GOPATH="$HOME/code/go"
-if [ "$(uname)" = 'Linux' ]; then
-  PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
-else
-  PATH="$GOPATH/bin:$PATH"
-fi
-# mkdir .git/safe in the root of repositories you trust
-PATH=".git/safe/../../bin:$PATH"
+PATH="$GOPATH/bin:$PATH"
 
 # adds gnu-sed from brew path in front
-PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+if [ "$(uname)" = 'Darwin' ]; then
+    PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+fi
+
+# $HOME/emacs.d/bin needed by Doom Emacs
+PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.emacs.d/bin:$PATH"
+
+# mkdir .git/safe in the root of repositories you trust
+PATH=".git/safe/../../bin:$PATH"
 
 export -U PATH

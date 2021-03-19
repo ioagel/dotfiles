@@ -6,24 +6,23 @@ snapd="$(snap version 2> /dev/null | sed -n 2p | awk '{print $2}')"
 
 # add required repositories
 sudo add-apt-repository -y universe
-sudo add-apt-repository -y ppa:martin-frost/thoughtbot-rcm
 
-sudo apt update
+sudo apt -y update
 
 sudo apt -y install \
   autoconf automake build-essential python-dev libtool libssl-dev pkg-config \
   libreadline-dev libncurses-dev libssl-dev coreutils libyaml-dev libxslt-dev \
-  libffi-dev libtool unixodbc-dev unzip curl gnupg git git-lfs git-crypt tmux \
-  rcm zsh htop unixodbc fasd shellcheck jq tree wget silversearcher-ag cmake
+  libffi-dev libtool unixodbc-dev unzip curl gnupg git tmux \
+  rcm zsh htop unixodbc fasd shellcheck jq tree wget silversearcher-ag cmake \
+  apt-transport-https ca-certificates zlib1g-dev
 
 if [ "$snapd" != 'unavailable' ]; then
   sudo snap install universal-ctags && sudo snap connect universal-ctags:dot-ctags
-  sudo snap install ngrok && sudo snap connect ngrok:ngrok-config
+#  sudo snap install ngrok && sudo snap connect ngrok:ngrok-config
 fi
 
 rg_installed="$(rg -V 2> /dev/null | awk '{print $2}')"
-rg_latest="$(curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r .tag_name)"
-# rg_latest="$(latest_release_from_github 'BurntSushi/ripgrep')"
+rg_latest="$(latest_release_from_github 'BurntSushi/ripgrep')"
 if [ "$rg_installed" != "$rg_latest" ]; then
   echo "Installing/Upgrading ripgrep ..."
   if [ "$rg_installed" ]; then
@@ -35,9 +34,7 @@ if [ "$rg_installed" != "$rg_latest" ]; then
 fi
 
 bat_installed="$(bat -V 2> /dev/null | awk '{print $2}')"
-bat_latest_raw="$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r .tag_name)"
-bat_latest="${bat_latest_raw:1}"
-# bat_latest="$(latest_release_from_github 'sharkdp/bat')"
+bat_latest="$(latest_release_from_github 'sharkdp/bat' no)"
 if [ "$bat_installed" != "$bat_latest" ]; then
   echo "Installing/Upgrading bat ..."
   if [ "$bat_installed" ]; then
@@ -49,43 +46,24 @@ if [ "$bat_installed" != "$bat_latest" ]; then
 fi
 
 # install neovim latest from appimage
-nvim_installed="$(nvim -v 2> /dev/null | head -n 1 | awk '{print $2}')"
-nvim_latest_raw="$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r .tag_name)"
-nvim_latest="${nvim_latest_raw:1}"
-# nvim_latest="$(latest_release_from_github 'neovim/neovim')"
-if [ "$nvim_installed" != "$nvim_latest_raw" ]; then
-  echo "Installing/Upgrading neovim ..."
-  wget --quiet --continue --show-progress https://github.com/neovim/neovim/releases/download/v"$nvim_latest"/nvim.appimage \
-    -O ~/.bin/nvim
-  chmod u+x ~/.bin/nvim
-fi
-
-# Instaling/updating to latest go
-go_installed="$(go version 2> /dev/null | awk '{print $3}')"
-go_installed="${go_installed:2}"
-# https://gist.github.com/Zate/b3c8e18cbb2bbac2976d79525d95f893
-echo "Finding latest version of Go for AMD64..."
-url="$(wget -qO- https://golang.org/dl/ | grep -oP 'https:\/\/dl\.google\.com\/go\/go([0-9\.]+)\.linux-amd64\.tar\.gz' | head -n 1 )"
-latest="$(echo $url | grep -oP 'go[0-9\.]+' | grep -oP '[0-9\.]+' | head -c -2 )"
-# check if go currently installed is different from latest version
-if [ "$go_installed" != "$latest" ]; then
-  echo "Downloading latest Go for AMD64: ${latest}"
-  wget --quiet --continue --show-progress "${url}"
-  # Remove Old Go
-  sudo rm -rf /usr/local/go
-  # Install new Go
-  sudo tar -C /usr/local -xzf go"${latest}".linux-amd64.tar.gz
-  echo "Create the skeleton for your local users go directory"
-  mkdir -p ~/go/{bin,pkg,src}
-  # Remove Download
-  rm -f go"${latest}".linux-amd64.tar.gz
-fi
+# TODO: unocmment this when nvim 0.5 is released
+#nvim_installed="$(nvim -v 2> /dev/null | head -n 1 | awk '{print $2}')"
+#nvim_latest="$(latest_release_from_github 'neovim/neovim')"
+#if [ "$nvim_installed" != "$nvim_latest" ]; then
+#  echo "Installing/Upgrading neovim ..."
+#  wget --quiet --continue --show-progress \
+#    https://github.com/neovim/neovim/releases/download/"$nvim_latest"/nvim.appimage \
+#    -O ~/.bin/nvim
+#fi
+# TODO: remove this when nvim 0.5 is released
+wget --quiet --continue --show-progress \
+  https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage \
+  -O ~/.bin/nvim
+chmod u+x ~/.bin/nvim
 
 # install lazydocker: A simple terminal UI for both docker and docker-compose
 lzd_installed="$(lazydocker --version 2> /dev/null | head -n 1 | awk '{print $2}')"
-lzd_latest_raw="$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | jq -r .tag_name)"
-lzd_latest="${lzd_latest_raw:1}"
-# lzd_latest="$(latest_release_from_github 'jesseduffield/lazydocker')"
+lzd_latest="$(latest_release_from_github 'jesseduffield/lazydocker' no)"
 if [ "$lzd_installed" != "$lzd_latest" ]; then
   echo "Installing/Upgrading lazydocker ..."
   wget --quiet --continue --show-progress -P /tmp https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_"$lzd_latest"_Linux_x86_64.tar.gz
@@ -93,16 +71,25 @@ if [ "$lzd_installed" != "$lzd_latest" ]; then
   rm -f /tmp/lazydocker_"$lzd_latest"_Linux_x86_64.tar.gz
 fi
 
+# install Kubernetes tools
+# kubectl
+# Download the Google Cloud public signing key:
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get -y update
+sudo apt-get install -y kubectl
+#kube-ps1
+if [ ! -d "$HOME/.config/kube-ps1" ]; then
+  git clone https://github.com/jonmosco/kube-ps1.git ~/.config/kube-ps1
+fi
+
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ACCAF35C
-  sudo echo 'deb http://apt.insync.io/ubuntu bionic non-free contrib' > \
-    /etc/apt/sources.list.d/insync.list
-  sudo add-apt-repository -y ppa:mmstick76/alacritty
+  sudo add-apt-repository -y ppa:aslatter/ppa
   sudo apt -y update
   mkdir -p ~/.local/share/fonts
 
-  sudo apt -y install fontconfig fonts-firacode insync alacritty firefox vlc \
+  sudo apt -y install fontconfig fonts-firacode alacritty firefox vlc \
     calibre xclip
 
   # adobe source code pro
@@ -111,45 +98,43 @@ if [ "$WITH_GUI" = 'yes' ]; then
   wget -P /tmp https://github.com/adobe-fonts/source-code-pro/releases/download/"$scp_url_version"/source-code-pro-"$scp_version".zip
   unzip /tmp/source-code-pro-"$scp_version".zip -d /tmp
   mv -f /tmp/source-code-pro-"$scp_version"/OTF/* ~/.local/share/fonts
-
   # nerd fonts
   wget -P /tmp https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip
   wget -P /tmp https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SourceCodePro.zip
   unzip /tmp/FiraCode.zip -d /tmp/FiraCode && mv -f /tmp/FiraCode/* ~/.local/share/fonts
   unzip /tmp/SourceCodePro.zip -d /tmp/SourceCodePro && mv -f /tmp/SourceCodePro/* ~/.local/share/fonts
   fc-cache -fr
+  rm -rf /tmp/source-code-pro* /tmp/FiraCode* /tmp/SourceCodePro*
 
   if [ "$snapd" != 'unavailable' ]; then
-    sudo snap install intellij-idea-ultimate --classic
-    sudo snap install datagrip --classic
+#    sudo snap install intellij-idea-ultimate --classic
+#    sudo snap install datagrip --classic
     sudo snap install code --classic
     sudo snap install spotify
   fi
 
   wget -P /tmp https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
   sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb
-
-  WITH_JAVA='yes'
+  rm -rf /tmp/google-chrome*
 fi
 
 # check for env variable WITH_JAVA before installing java/maven support
 if [ "$WITH_JAVA" = 'yes' ]; then
-  sudo apt -y install openjdk-8-jdk-headless
   sudo apt -y install maven
 fi
 
-# Watchman exists to watch files and record when they change.
-# It can also trigger actions (such as rebuilding assets) when matching files change.
-watchman_installed="$(watchman -v 2> /dev/null; exit 0)"
-watchman_latest_raw="$(curl -s https://api.github.com/repos/facebook/watchman/tags | jq -r .[0].name)"
-watchman_latest="${watchman_latest_raw:1}"
-if [ "$watchman_installed" != "$watchman_latest" ]; then
-  git clone https://github.com/facebook/watchman.git /tmp/watchman -b "$watchman_latest_raw" --depth 1
-  cd /tmp/watchman
-  ./autogen.sh
-  ./configure --enable-lenient
-  make
-  sudo make install
-  cd "$cwd"
-  sudo rm -rf /tmp/watchman
-fi
+## Watchman exists to watch files and record when they change.
+## It can also trigger actions (such as rebuilding assets) when matching files change.
+#watchman_installed="$(watchman -v 2> /dev/null; exit 0)"
+#watchman_latest_raw="$(curl -s https://api.github.com/repos/facebook/watchman/tags | jq -r .[0].name)"
+#watchman_latest="${watchman_latest_raw:1}"
+#if [ "$watchman_installed" != "$watchman_latest" ]; then
+#  git clone https://github.com/facebook/watchman.git /tmp/watchman -b "$watchman_latest_raw" --depth 1
+#  cd /tmp/watchman
+#  ./autogen.sh
+#  ./configure --enable-lenient
+#  make
+#  sudo make install
+#  cd "$cwd"
+#  sudo rm -rf /tmp/watchman
+#fi
