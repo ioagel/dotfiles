@@ -729,6 +729,9 @@ else
   " colorscheme solarized8_high
 endif
 
+" make vim transparent
+hi Normal ctermbg=none guibg=none
+
 " Treat <li> and <p> tags like the block tags they are
 let g:html_indent_tags = 'li\|p'
 
