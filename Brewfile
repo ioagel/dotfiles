@@ -57,6 +57,7 @@ brew 'wget'
 brew 'mas'
 # A simple terminal UI for docker, written in Go
 brew 'lazydocker'
+brew 'lazygit'
 # Cross-platform make
 brew 'cmake'
 # Open source programming language to build simple/reliable/efficient software

@@ -71,6 +71,14 @@ if [ "$lzd_installed" != "$lzd_latest" ]; then
   rm -f /tmp/lazydocker_"$lzd_latest"_Linux_x86_64.tar.gz
 fi
 
+# Install lazygit
+command -v lazygit > /dev/null
+if [ "$?" -ne 0 ]; then
+  sudo add-apt-repository ppa:lazygit-team/release
+  sudo apt-get update
+  sudo apt-get install lazygit
+fi
+
 # install Kubernetes tools
 # kubectl
 # Download the Google Cloud public signing key:
