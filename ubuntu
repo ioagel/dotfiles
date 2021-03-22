@@ -85,7 +85,7 @@ fi
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get -y update
-sudo apt-get install -y kubectl
+sudo apt-get install -y kubectl kubectx
 #kube-ps1
 if [ ! -d "$HOME/.config/kube-ps1" ]; then
   git clone https://github.com/jonmosco/kube-ps1.git ~/.config/kube-ps1
