@@ -7,5 +7,6 @@ export CLICOLOR=1
 
 # export BAT_THEME="Gruvbox-Dark-Hard"
 # export BAT_THEME="GitHub"
-export BAT_THEME="Solarized (light)"
+# export BAT_THEME="Solarized (light)"
+export BAT_THEME="OneHalfLight"
 # export BAT_THEME="gruvbox-dark"

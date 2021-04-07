@@ -125,6 +125,8 @@ if [ ! -d "$OH_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-history-substring-search "$HOME"/.oh-my-zsh/custom/plugins/zsh-history-substring-search
   # install zsh-completions
   git clone https://github.com/zsh-users/zsh-completions "$HOME"/.oh-my-zsh/custom/plugins/zsh-completions
+  # install zsh autosuggestions
+  git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 fi
 
 # TODO: do we need this?

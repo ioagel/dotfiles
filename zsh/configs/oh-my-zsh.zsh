@@ -7,7 +7,8 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   COMPLETION_WAITING_DOTS="true"
   plugins=(fasd brew colored-man-pages colorize common-aliases docker-compose
   docker kubectl dotenv github gitignore jsontools npm safe-paste sudo themes
-  tmux yarn zsh-completions zsh-syntax-highlighting history-substring-search)
+  tmux yarn zsh-completions zsh-syntax-highlighting history-substring-search
+  zsh-autosuggestions)
   ZSH_DISABLE_COMPFIX="true"
   source $ZSH/oh-my-zsh.sh
 fi
