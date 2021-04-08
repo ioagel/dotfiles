@@ -27,14 +27,9 @@ let g:coc_global_extensions = [
       \ 'coc-yank',
       \ 'coc-sh',
       \ 'coc-solargraph',
-      \ 'coc-java',
       \ 'coc-snippets'
       \ ]
-" for coc-java needs openjdk and for maven project: maven
-" and in root path run the following commands:
-" mvn eclipse:eclipse && mvn dependency:sources && mvn dependency:resolve -Dclassifier=javadoc
-" maybe you need to change the fir of the project to match the name of it
-" in the pom.xml file
+
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " JavaScript
