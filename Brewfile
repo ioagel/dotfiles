@@ -60,8 +60,6 @@ brew 'lazydocker'
 brew 'lazygit'
 # Cross-platform make
 brew 'cmake'
-# Open source programming language to build simple/reliable/efficient software
-# brew 'go'
 # Command-line Spotify interface
 # https://github.com/hnarayanan/shpotify
 # brew 'shpotify'

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-WITH_GO="${WITH_GO:-yes}"
-WITH_RUBY="${WITH_RUBY:-yes}"
-WITH_JAVA="${WITH_JAVA:-yes}"
+WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
+WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
+WITH_ASDF_RUBY="${WITH_ASDF_RUBY:-no}"
+WITH_ASDF_GO="${WITH_ASDF_GO:-no}"
+WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-no}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
 
 # shellcheck disable=SC2154
@@ -57,42 +59,64 @@ fi
 . "$HOME"/.asdf/asdf.sh
 
 fancy_echo "########## Installing latest Node, yarn and various node packages ##########"
-add_or_update_asdf_plugin nodejs https://github.com/asdf-vm/asdf-nodejs.git
-bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
-install_latest_asdf_language nodejs lts
-npm install -g yarn
-asdf reshim nodejs
-# install node packages
-yarn_install_or_update neovim
-if [ "$OS" = 'Linux' ]; then
-  yarn_install_or_update diff-so-fancy
+if [ "$WITH_ASDF_NODE" = 'yes' ]; then
+  add_or_update_asdf_plugin nodejs https://github.com/asdf-vm/asdf-nodejs.git
+  bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+  install_latest_asdf_language nodejs lts
+  npm install -g yarn
+  asdf reshim nodejs
+  # install node packages
+  yarn_install_or_update neovim
+  if [ "$OS" = 'Linux' ]; then
+    yarn_install_or_update diff-so-fancy
+  fi
+  asdf reshim nodejs
+else
+  if [ "$OS" = 'Linux' ]; then
+    sudo npm install -g yarn
+    sudo yarn global add neovim
+    sudo yarn global add diff-so-fancy
+  else
+    npm install -g yarn
+    yarn_install_or_update neovim
+  fi
 fi
-asdf reshim nodejs
 
 # asdf python 3 setup
 fancy_echo "########## Installing latest Python 3 and pip modules ##########"
-add_or_update_asdf_plugin python https://github.com/danhper/asdf-python.git
-# shellcheck disable=SC2119
-install_latest_asdf_language python
-# install python 3 packages
-pip_install_or_update pynvim
-pip_install_or_update pygments
-# https://github.com/toggle-corp/alacritty-colorscheme
-pip_install_or_update alacritty-colorscheme
-asdf reshim python
+if [ "$WITH_ASDF_PYTHON" = 'yes' ]; then
+  add_or_update_asdf_plugin python https://github.com/danhper/asdf-python.git
+  # shellcheck disable=SC2119
+  install_latest_asdf_language python
+  # install python 3 packages
+  pip_install_or_update pynvim
+  # https://github.com/toggle-corp/alacritty-colorscheme
+  pip_install_or_update alacritty-colorscheme
+  asdf reshim python
+else
+  if [ "$OS" = 'Linux' ]; then
+    sudo pip3 install -U pynvim
+    sudo pip3 install -U alacritty-colorscheme
+  else
+    pip3 install -U pynvim
+    pip3 install -U alacritty-colorscheme
+  fi
+fi
 
-if [ "$WITH_RUBY" = 'yes' ]; then
-  fancy_echo "########## Installing latest Ruby and gems ##########"
+fancy_echo "########## Installing latest Ruby and gems ##########"
+if [ "$WITH_ASDF_RUBY" = 'yes' ]; then
   add_or_update_asdf_plugin ruby https://github.com/asdf-vm/asdf-ruby.git
   install_latest_asdf_language ruby
   gem update --system
   bundle config --global jobs $((number_of_cores - 1))
   gem_install_or_update neovim
+  gem_install_or_update solargraph
+  gem_install_or_update tmuxinator
   asdf reshim ruby
 fi
 
 # Java 8 (zulu) setup
-if [ "$WITH_JAVA" = 'yes' ]; then
+if [ "$WITH_ASDF_JAVA" = 'yes' ]; then
   fancy_echo "########## Installing Zulu Java 8 ##########"
   add_or_update_asdf_plugin java https://github.com/halcyon/asdf-java.git
   # shellcheck disable=SC2119
@@ -101,7 +125,7 @@ if [ "$WITH_JAVA" = 'yes' ]; then
 fi
 
 # Golang Setup
-if [ "$WITH_GO" = 'yes' ]; then
+if [ "$WITH_ASDF_GO" = 'yes' ]; then
   fancy_echo "########## Installing latest GoLang ##########"
   add_or_update_asdf_plugin golang https://github.com/kennyp/asdf-golang.git
   mkdir -p "$HOME"/code/go/{bin,pkg,src}

@@ -7,7 +7,7 @@ elif which brew >/dev/null &&
   . "$BREW_DIR/opt/asdf/asdf.sh"
 fi
 
-PATH="/usr/local/sbin:$PATH"
+PATH="/usr/local/sbin:$HOME/.local/share/gem/ruby/3.0.0/bin:/usr/local/opt/ruby/bin:$PATH"
 
 export GOPATH="$HOME/code/go"
 PATH="$GOPATH/bin:$PATH"

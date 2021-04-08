@@ -36,7 +36,8 @@ _load_settings "$HOME/.zsh/configs"
 
 # pygments default style
 # ZSH_COLORIZE_STYLE="monokai"
-ZSH_COLORIZE_STYLE="solarized-light"
+# ZSH_COLORIZE_STYLE="solarized-light"
+ZSH_COLORIZE_STYLE="xcode"
 
 # setup fasd
 eval "$(fasd --init auto)"
