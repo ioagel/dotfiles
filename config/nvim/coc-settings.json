@@ -30,8 +30,5 @@
   "solargraph.diagnostics": true,
   "solargraph.formatting": true,
   "solargraph.autoformat": true,
-  "solargraph.hover": true,
-  "snippets.extends": {
-    "ruby": ["rails"]
-  }
+  "solargraph.hover": true
 }

@@ -1,2 +1,0 @@
-" Quickfix
-setlocal norelativenumber

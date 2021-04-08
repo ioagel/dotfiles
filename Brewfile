@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 tap 'thoughtbot/formulae'
 tap 'homebrew/services'
 tap 'universal-ctags/universal-ctags'
@@ -62,7 +64,7 @@ brew 'lazygit'
 brew 'cmake'
 # Command-line Spotify interface
 # https://github.com/hnarayanan/shpotify
-# brew 'shpotify'
+brew 'shpotify'
 # encrypt sesnsitive data in git repo
 # brew 'git-crypt'
 brew 'mosh'
@@ -72,6 +74,7 @@ brew 'kubernetes-cli'
 brew 'kube-ps1'
 brew 'kubectx'
 brew 'sops'
+brew 'chrome-cli'
 
 ####### Casks #############
 cask 'font-fira-code'

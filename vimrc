@@ -642,39 +642,6 @@ autocmd FileType fugitiveblame nnoremap <buffer> <silent> gb :Gbrowse <C-r><C-w>
 set tags^=.git/tags
 nnoremap <leader>gs :Gstatus<CR>
 
-" vim-test
-" ---------------
-nnoremap <silent> <Leader>t :TestFile<CR>
-nnoremap <silent> <Leader>s :TestNearest<CR>
-nnoremap <silent> <Leader>l :TestLast<CR>
-nnoremap <silent> <Leader>a :TestSuite<CR>
-nnoremap <silent> <Leader>gt :TestVisit<CR>
-let test#strategy = 'vtr'
-let test#ruby#rspec#options = {
-      \ 'nearest': '--format documentation',
-      \ 'file':    '--format documentation',
-      \ }
-
-" vim-ruby, vim-rails, vim projectionist
-" ----------------------------------------
-" vim-ruby
-let ruby_no_expensive = 1
-" vim-rails
-augroup rails_shortcuts
-  autocmd!
-  autocmd User Rails nnoremap <Leader>rm :Emodel<Space>
-  autocmd User Rails nnoremap <Leader>rc :Econtroller<Space>
-  autocmd User Rails nnoremap <Leader>rv :Eview<Space>
-  autocmd User Rails nnoremap <Leader>ru :Eunittest<Space>
-augroup END
-" vim-projectionist
-let g:projectionist_heuristics = {
-      \ "app/|spec/": {
-      \     "app/*.rb": { "alternate": "spec/{}_spec.rb" },
-      \     "spec/*_spec.rb": { "alternate": "app/{}.rb" },
-      \   }
-      \ }
-
 " vim-run-interactive
 " -------------------
 " Run commands that require an interactive shell

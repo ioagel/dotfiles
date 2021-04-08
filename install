@@ -180,7 +180,7 @@ if [ ! -r ~/.terminfo/74/tmux-256color ] ||
   tic -x ~/dotfiles/iterm2/tmux-256color.terminfo
 fi
 
-# Setup alacritty-colorscheme
+# Setup alacritty-colorscheme with base16 alacritty colors
 REPO="https://github.com/aaron-williamson/base16-alacritty.git"
 DEST="$HOME/.local/share/alacritty/base16-alacritty"
 if [ ! -e "$HOME/.config/alacritty/colors" ]; then

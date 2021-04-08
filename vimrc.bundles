@@ -50,16 +50,11 @@ Plug 'hail2u/vim-css3-syntax'
 " Emmet - Generate HTML markup from css-like selector strings
 Plug 'mattn/emmet-vim'
 
-" Ruby/Rails
+" Ruby
 " ---------
-Plug 'tpope/vim-bundler'
-Plug 'tpope/vim-rails'
-Plug 'tpope/vim-rake', { 'for': ['ruby'] }
 Plug 'vim-ruby/vim-ruby'
-" Allow `cir` to change inside ruby block, etc
-Plug 'nelstrom/vim-textobj-rubyblock'
-Plug 'tpope/vim-projectionist'
-Plug 'janko-m/vim-test'
+" Auto-add `end` in Ruby, `endfunction` in Vim, etc
+Plug 'tpope/vim-endwise'
 
 " GoLang
 " ------------
@@ -108,8 +103,6 @@ Plug 'tpope/vim-rhubarb'
 Plug 'airblade/vim-gitgutter'
 " :Gist
 Plug 'mattn/webapi-vim' | Plug 'mattn/gist-vim'
-" Auto-add `end` in Ruby, `endfunction` in Vim, etc
-Plug 'tpope/vim-endwise'
 " When editing deeply/nested/file, auto-create deeply/nested/ dirs
 Plug 'pbrisbin/vim-mkdir'
 " Make working with shell scripts nicer ("vim-unix")

@@ -1,5 +1,0 @@
-" if !exists('g:colors_name') || g:colors_name != 'base16-gruvbox-dark-hard'
-if !exists('g:colors_name') || g:colors_name != 'gruvbox'
-  " colorscheme base16-gruvbox-dark-hard
-  colorscheme gruvbox "use this manually for gruvbox to support italics
-endif
