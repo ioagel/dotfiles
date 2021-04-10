@@ -31,7 +31,6 @@ brew 'libxslt'
 brew 'unixodbc'
 brew 'unzip'
 brew 'curl'
-cask 'gpg-suite'
 
 # CLI tool for quick access to files and directories
 brew 'fasd'
@@ -55,8 +54,6 @@ brew 'bat'
 brew 'neovim', args: ['HEAD']
 # Internet file retriever
 brew 'wget'
-# Mac App Store command-line interface
-brew 'mas'
 # A simple terminal UI for docker, written in Go
 brew 'lazydocker'
 brew 'lazygit'
@@ -77,6 +74,7 @@ brew 'sops'
 brew 'chrome-cli'
 
 ####### Casks #############
+cask 'gpg-suite'
 cask 'font-fira-code'
 cask 'font-fira-code-nerd-font'
 cask 'font-source-code-pro'
@@ -97,6 +95,9 @@ cask 'calibre'
 cask 'send-to-kindle'
 cask 'alfred'
 cask 'mysqlworkbench'
+cask 'microsoft-remote-desktop'
+cask 'rectangle'
+
 # cask 'chronosync'
 # cask 'flux'
 # cask 'vlc'
@@ -104,3 +105,4 @@ cask 'mysqlworkbench'
 # cask 'android-studio'
 # cask 'visual-studio'
 # cask 'dotnet-sdk'
+# cask 'wwdc'

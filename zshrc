@@ -48,7 +48,12 @@ eval "$(fasd --init auto)"
 # aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# Compatibility between fzf and zsh-vi-mode
+# The plugin will auto execute this zvm_after_init function
+function zvm_after_init() {
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+}
 
 if [ "$(uname)" = 'Darwin' ]; then
     # installed through Homebrew
