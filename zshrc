@@ -43,11 +43,6 @@ eval "$(fasd --init auto)"
 # asdf completions
 . $HOME/.asdf/completions/asdf.bash
 
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
-
-# aliases
-[[ -f ~/.aliases ]] && source ~/.aliases
-
 #[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # Compatibility between fzf and zsh-vi-mode
 # The plugin will auto execute this zvm_after_init function
@@ -62,4 +57,9 @@ else
     source "$HOME"/.config/kube-ps1/kube-ps1.sh
 fi
 PS1='$(kube_ps1)'$PS1
+
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# aliases
+[[ -f ~/.aliases ]] && source ~/.aliases
 
