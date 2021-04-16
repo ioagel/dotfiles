@@ -34,21 +34,13 @@ _load_settings() {
 }
 _load_settings "$HOME/.zsh/configs"
 
-# pygments default style
-ZSH_COLORIZE_STYLE="solarized-light"
-
 # setup fasd
 eval "$(fasd --init auto)"
 
 # asdf completions
 . $HOME/.asdf/completions/asdf.bash
 
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-# Compatibility between fzf and zsh-vi-mode
-# The plugin will auto execute this zvm_after_init function
-function zvm_after_init() {
-  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-}
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 if [ "$(uname)" = 'Darwin' ]; then
     # installed through Homebrew

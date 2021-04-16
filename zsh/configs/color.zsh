@@ -10,3 +10,9 @@ export CLICOLOR=1
 # export BAT_THEME="Solarized (light)"
 export BAT_THEME="OneHalfLight"
 # export BAT_THEME="gruvbox-dark"
+
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=3"
+
+# pygments default style
+export ZSH_COLORIZE_STYLE="solarized-light"
+
