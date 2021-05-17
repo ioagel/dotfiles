@@ -175,6 +175,8 @@ Plug 'christoomey/vim-quicklink', { 'for': 'markdown' }
 " Plug 'gabebw/vim-github-link-opener'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 Plug 'itspriddle/vim-marked'
+" Terraform
+Plug 'hashivim/vim-terraform'
 
 " if g:has_async
 "   Plug 'dense-analysis/ale'

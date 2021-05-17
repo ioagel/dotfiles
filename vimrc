@@ -664,6 +664,11 @@ nnoremap <Leader>vd :VtrSendCtrlD<CR>
 nnoremap <Leader>vq :VtrKillRunner<CR>
 " tagbar
 nmap <F8> :TagbarToggle<CR>
+
+" vim-terraform
+let g:terraform_align=1
+let g:terraform_fmt_on_save=1
+
 " }}}
 
 " Switch syntax highlighting on, when the terminal has colors
