@@ -1,0 +1,9 @@
+# show kubectx in PS1
+kubectx_on() {
+  export SPACESHIP_KUBECONTEXT_SHOW=true
+}
+
+# hide kubectx in PS1
+kubectx_off() {
+  export SPACESHIP_KUBECONTEXT_SHOW=false
+}

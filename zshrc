@@ -42,13 +42,15 @@ eval "$(fasd --init auto)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-if [ "$(uname)" = 'Darwin' ]; then
-    # installed through Homebrew
-    source /usr/local/opt/kube-ps1/share/kube-ps1.sh
-else
-    source "$HOME"/.config/kube-ps1/kube-ps1.sh
-fi
-PS1='$(kube_ps1)'$PS1
+# I disabled it because i use the one provided by 'spaceship' prompt in
+# oh-my-zsh
+# if [ "$(uname)" = 'Darwin' ]; then
+#     # installed through Homebrew
+#     source /usr/local/opt/kube-ps1/share/kube-ps1.sh
+# else
+#     source "$HOME"/.config/kube-ps1/kube-ps1.sh
+# fi
+# PS1='$(kube_ps1)'$PS1
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
