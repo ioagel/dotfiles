@@ -33,6 +33,14 @@ alias sshk="ssh-keygen -R "
 alias sei="sops -e -i"
 alias sdi="sops -d -i"
 
+# vagrant
+# alias vg="vagrant"
+# alias vggs="vagrant global-status"
+# alias vgs="vagrant status"
+
+# kubernetes
+alias kns="kubens"
+
 # Include custom secret aliases
 [[ -f ~/.aliases.secret ]] && source ~/.aliases.secret
 

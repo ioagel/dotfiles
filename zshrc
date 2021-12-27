@@ -40,6 +40,9 @@ eval "$(fasd --init auto)"
 # asdf completions
 . $HOME/.asdf/completions/asdf.bash
 
+# JAVA_HOME through asdf java plugin
+#. ~/.asdf/plugins/java/set-java-home.zsh
+
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # I disabled it because i use the one provided by 'spaceship' prompt in
