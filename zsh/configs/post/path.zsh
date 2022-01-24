@@ -18,7 +18,7 @@ if [ "$(uname)" = 'Darwin' ]; then
 fi
 
 # $HOME/emacs.d/bin needed by Doom Emacs
-PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.emacs.d/bin:$PATH"
+PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.emacs.d/bin:$HOME/.local/sqlpackage:$PATH"
 
 # mkdir .git/safe in the root of repositories you trust
 PATH=".git/safe/../../bin:$PATH"

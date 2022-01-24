@@ -11,8 +11,8 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
           history-substring-search zsh-autosuggestions ssh-agent terraform)
   ZSH_DISABLE_COMPFIX="true"
 
-  # Disable showing the kube context by default in spaceship promt
-  export SPACESHIP_KUBECONTEXT_SHOW=false
+  # Disable/Enable showing the kube context by default in spaceship promt
+  export SPACESHIP_KUBECONTEXT_SHOW=true
 
   source $ZSH/oh-my-zsh.sh
 fi

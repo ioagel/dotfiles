@@ -40,6 +40,7 @@ alias sdi="sops -d -i"
 
 # kubernetes
 alias kns="kubens"
+alias kctx="kubectx"
 
 # Include custom secret aliases
 [[ -f ~/.aliases.secret ]] && source ~/.aliases.secret
