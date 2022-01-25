@@ -48,8 +48,9 @@ sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://pack
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get -y update
 sudo apt-get install -y kubectl
-git clone https://github.com/ahmetb/kubectx
-cp -f ./kubectx/kube* ~/.local/bin/
+git clone https://github.com/ahmetb/kubectx /tmp/kubectx
+cp -f /tmp/kubectx/kube* ~/.local/bin/
+rm -rf /tmp/kubectx
 
 # Install k9s
 echo "Installing/Upgrading k9s ..."
