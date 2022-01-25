@@ -1,5 +1,5 @@
 export GOPATH="$HOME/code/go"
-export PATH="$HOME/.local/bin:$PATH:$GOPATH/bin"
+export PATH="$HOME/.local/bin:$PATH:$GOPATH/bin:/opt/mssql-tools/bin:/opt/mssql-tools/bin/sqlpackage"
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -96,6 +96,9 @@ plugins=(git
     ssh-agent
     fasd
     fzf
+    kubectl
+    docker
+    docker-compose
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -107,6 +110,7 @@ export EDITOR=$VISUAL
 
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=3"
 export BAT_THEME="OneHalfLight"
+export SPACESHIP_KUBECTL_SHOW=true
 
 # export MANPATH="/usr/local/man:$MANPATH"
 

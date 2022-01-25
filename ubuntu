@@ -4,7 +4,7 @@
 
 sudo apt -y update
 
-sudo apt -y install software-properties-common ubuntu-restricted-extras fonts-firacode \
+sudo apt -y install software-properties-common ubuntu-restricted-extras \
   python3-pip tmux rcm zsh htop shellcheck jq tree wget curl git silversearcher-ag \
   unzip fzf fasd ripgrep bat apt-transport-https ca-certificates gnupg lsb-release
 
@@ -58,7 +58,7 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https:/
 sudo apt-get -y update
 sudo apt-get install -y kubectl
 git clone https://github.com/ahmetb/kubectx /tmp/kubectx
-cp -f /tmp/kubectx/kube* ~/.local/bin/
+mv -f /tmp/kubectx/kube* ~/.local/bin/
 rm -rf /tmp/kubectx
 
 # Install k9s
@@ -71,19 +71,40 @@ mv -f /tmp/k9s ~/.local/bin/
 # Install Kind
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
 chmod +x ./kind
-mv ./kind ~/.local/bin/
+mv -f ./kind ~/.local/bin/
+
+# Install Kustomize
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+mv -f kustomize ~/.local/bin/
+
+# Install Helm
+curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get -y install helm
+
+# Install Istio
+ISTIO_VERSION=1.12.2
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION="$ISTIO_VERSION" sh -
+mv -f istio-"$ISTIO_VERSION"/bin/istioctl ~/.local/bin/
+mv -f istio-"$ISTIO_VERSION" ~/code
 
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
-  mkdir -p ~/.local/share/fonts
-
   sudo apt -y install fonts-firacode alacritty xclip
 
-  # nerd fonts
-  wget -P /tmp https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SourceCodePro.zip
-  unzip /tmp/SourceCodePro.zip -d /tmp/SourceCodePro && mv -f /tmp/SourceCodePro/* ~/.local/share/fonts
+  mkdir -p ~/.local/share/fonts
+
+  ## Nerd Fonts
+  # Install Hasklig font
+  hasklig_latest="$(latest_release_from_github 'i-tu/Hasklig' no)"
+  echo "Installing Hasklig font (Source Code Pro with Ligatures) ..."
+  wget -P /tmp https://github.com/i-tu/Hasklig/releases/download/v"$hasklig_latest"/Hasklig-"$hasklig_latest".zip
+  unzip /tmp/Hasklig-"$hasklig_latest".zip -d /tmp/Hasklig
+  mv /tmp/Hasklig/OTF/* ~/.local/share/fonts/
+  mv /tmp/Hasklig/TTF/* ~/.local/share/fonts/
   fc-cache -fr
-  rm -rf /tmp/SourceCodePro*
+  rm -rf /tmp/Hasklig*
 fi
 
 # check for env variable WITH_JAVA before installing java/maven support
