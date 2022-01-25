@@ -1,3 +1,0 @@
-# FileSearch
-function fs() { find . -iname "*$1*" ${@:2} }
-function cs() { grep "$1" ${@:2} -R . }

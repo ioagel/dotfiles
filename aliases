@@ -5,7 +5,6 @@ fi
 
 alias soz='source ~/.zshrc'
 # Unix
-alias ll="ls -al"
 alias ltr="ls -lAFhtr"
 alias ln="ln -v"
 alias df="df -h"
@@ -13,15 +12,12 @@ alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias v="$VISUAL"
 
-# Bundler
-alias b="bundle"
-
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
 
 # fixes remote term because of italics in iTerm through: xterm-256color-italic
 # remote servers maybe will not support
-alias ssh='TERM=xterm-256color ssh'
+# alias ssh='TERM=xterm-256color ssh'
 
 # Docker related
 alias lzd='lazydocker'

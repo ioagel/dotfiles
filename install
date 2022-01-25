@@ -5,7 +5,7 @@ export PATH="/usr/local/bin:$PATH"
 WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
 WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
 WITH_ASDF_RUBY="${WITH_ASDF_RUBY:-no}"
-WITH_ASDF_GO="${WITH_ASDF_GO:-no}"
+WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
 WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-no}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
 
@@ -15,7 +15,7 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 OS="$(uname)"
-if [[ "$OS" != 'Darwin' && ("$OS" != 'Linux' || "$(lsb_release -s -i)" != 'Ubuntu') ]]; then
+if [[ "$OS" != 'Darwin' && ("$OS" != 'Linux' || "$(lsb_release -s -i)" != 'Ubuntu' || "$(lsb_release -s -i)" != 'Pop') ]]; then
   echo "This script supports only Mac and Ubuntu!"
   exit 1
 fi
@@ -23,16 +23,13 @@ fi
 cwd="$(pwd)"
 export cwd
 
+# shellcheck source=/dev/null
 . ./sh_functions
 
-if [ ! -d "$HOME/.bin/" ]; then
-  mkdir "$HOME/.bin"
-fi
-if [ ! -d "$HOME/code/go" ]; then
-  mkdir -p "$HOME/code/go"
-fi
+mkdir -p "$HOME/local/.bin"
+mkdir -p "$HOME/code/go"
 export GOPATH="$HOME/code/go"
-export PATH="$HOME/.bin:$GOPATH/bin:$PATH"
+export PATH="$HOME/local/.bin:$PATH:$GOPATH/bin"
 
 # Authentication
 sudo -v
@@ -44,11 +41,10 @@ while true; do
 done 2>/dev/null &
 
 if [ "$OS" = 'Darwin' ]; then
-  number_of_cores=$(sysctl -n hw.ncpu)
+  # shellcheck source=/dev/null
   . ./mac
 else
-  # we are definitely in Ubuntu from the check above
-  number_of_cores=$(nproc)
+  # shellcheck source=/dev/null
   . ./ubuntu
 fi
 
@@ -58,30 +54,18 @@ if [ ! -d "$HOME/.asdf" ]; then
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$asdf_latest_version"
 fi
 
+# shellcheck source=/dev/null
 . "$HOME"/.asdf/asdf.sh
 
 fancy_echo "########## Installing latest Node, yarn and various node packages ##########"
 if [ "$WITH_ASDF_NODE" = 'yes' ]; then
   add_or_update_asdf_plugin nodejs https://github.com/asdf-vm/asdf-nodejs.git
-  bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
   install_latest_asdf_language nodejs lts
+  asdf reshim nodejs
   npm install -g yarn
-  asdf reshim nodejs
-  # install node packages
   yarn_install_or_update neovim
-  if [ "$OS" = 'Linux' ]; then
-    yarn_install_or_update diff-so-fancy
-  fi
+  yarn_install_or_update diff-so-fancy
   asdf reshim nodejs
-else
-  if [ "$OS" = 'Linux' ]; then
-    sudo npm install -g yarn
-    sudo yarn global add neovim
-    sudo yarn global add diff-so-fancy
-  else
-    npm install -g yarn
-    yarn_install_or_update neovim
-  fi
 fi
 
 # asdf python 3 setup
@@ -103,18 +87,6 @@ else
     pip3 install -U pynvim
     pip3 install -U alacritty-colorscheme
   fi
-fi
-
-fancy_echo "########## Installing latest Ruby and gems ##########"
-if [ "$WITH_ASDF_RUBY" = 'yes' ]; then
-  add_or_update_asdf_plugin ruby https://github.com/asdf-vm/asdf-ruby.git
-  install_latest_asdf_language ruby
-  gem update --system
-  bundle config --global jobs $((number_of_cores - 1))
-  gem_install_or_update neovim
-  gem_install_or_update solargraph
-  gem_install_or_update tmuxinator
-  asdf reshim ruby
 fi
 
 # Java 8 (zulu) setup
@@ -151,23 +123,9 @@ if [ ! -d "$OH_MY_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$OH_MY_ZSH_PLUGINS"/zsh-syntax-highlighting
   # install zsh-history-substring-search
   git clone https://github.com/zsh-users/zsh-history-substring-search "$OH_MY_ZSH_PLUGINS"/zsh-history-substring-search
-  # install zsh-completions
-  git clone https://github.com/zsh-users/zsh-completions "$OH_MY_ZSH_PLUGINS"/zsh-completions
   # install zsh autosuggestions
   git clone https://github.com/zsh-users/zsh-autosuggestions "$OH_MY_ZSH_PLUGINS"/zsh-autosuggestions
-  # Zsh Vi Mode: https://github.com/jeffreytse/zsh-vi-mode
-  git clone https://github.com/jeffreytse/zsh-vi-mode "$OH_MY_ZSH_PLUGINS"/zsh-vi-mode
 fi
-
-# TODO: do we need this?
-#  Install Lemonade
-# Lemonade is a remote utility tool. (copy, paste and open browser) over TCP.
-#if ! command -v lemonade > /dev/null; then
-#  go get -d github.com/lemonade-command/lemonade
-#  cd "$GOPATH"/src/github.com/lemonade-command/lemonade/
-#  make install
-#  cd "$cwd"
-#fi
 
 # Alacritty, iTerm2, vim, tmux support for italics
 fancy_echo "########## Installing italics-capable terminfo files for terminals, vim, tmux ##########"
@@ -236,5 +194,6 @@ fi
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "########## Running your customizations from ~/.laptop.local ##########"
+  # shellcheck source=/dev/null
   . "$HOME/.laptop.local"
 fi

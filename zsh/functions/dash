@@ -1,8 +1,0 @@
-# Open argument in Dash
-function dash() {
-  open "dash://$*"
-}
-
-function dman() {
-  open "dash://manpages:$*"
-}
