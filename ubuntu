@@ -4,7 +4,7 @@
 
 sudo apt -y update
 
-sudo apt -y install software-properties-common \
+sudo apt -y install software-properties-common ubuntu-restricted-extras \
   python3-pip tmux rcm zsh htop shellcheck jq tree wget curl git silversearcher-ag \
   unzip fzf fasd ripgrep bat apt-transport-https ca-certificates gnupg lsb-release
 
