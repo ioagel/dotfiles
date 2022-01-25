@@ -68,6 +68,11 @@ wget --quiet --continue --show-progress -P /tmp \
 tar -C /tmp -xzf /tmp/k9s_Linux_x86_64.tar.gz
 mv -f /tmp/k9s ~/.local/bin/
 
+# Install Kind
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+chmod +x ./kind
+mv ./kind ~/.local/bin/
+
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
   mkdir -p ~/.local/share/fonts
