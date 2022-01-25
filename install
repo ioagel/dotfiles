@@ -15,8 +15,9 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 OS="$(uname)"
-if [[ "$OS" != 'Darwin' && ("$OS" != 'Linux' || "$(lsb_release -s -i)" != 'Ubuntu' || "$(lsb_release -s -i)" != 'Pop') ]]; then
-  echo "This script supports only Mac and Ubuntu!"
+if [[ "$OS" != 'Darwin' && ("$OS" != 'Linux' && ("$(lsb_release -s -i)" != 'Ubuntu' || "$(lsb_release -s -i)" != 'Pop')) ]]; then
+  echo "This script supports only Mac, Ubuntu and POP OS!"
+  echo "If in POP install lsb-core: sudo apt install lsb-core"
   exit 1
 fi
 
