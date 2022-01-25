@@ -11,6 +11,15 @@ sudo apt -y install software-properties-common \
 # fix bat installation in Ubuntu/PopOS
 ln -sf /usr/bin/batcat ~/.local/bin/bat
 
+# install sops - Secrets OPerationS
+sops_latest="$(latest_release_from_github 'mozilla/sops' no)"
+echo "Installing sops encruption package..."
+wget --quiet --continue --show-progress \
+  https://github.com/mozilla/sops/releases/download/v"$sops_latest"/sops_"$sops_latest"_amd64.deb \
+  -O /tmp/sops.deb
+sudo dpkg -i /tmp/sops.deb
+
+
 # install neovim latest from appimage
 nvim_latest="$(latest_release_from_github 'neovim/neovim')"
 echo "Installing/Upgrading neovim ..."
@@ -25,7 +34,7 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update
-sudo apt-get -y install docker-ce docker-ce-cli containerd.io
+sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose
 sudo usermod -aG docker "$USER"
 
 # install lazydocker: A simple terminal UI for both docker and docker-compose
