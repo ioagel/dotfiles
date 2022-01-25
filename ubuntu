@@ -4,7 +4,7 @@
 
 sudo apt -y update
 
-sudo apt -y install software-properties-common ubuntu-restricted-extras \
+sudo apt -y install software-properties-common ubuntu-restricted-extras fonts-firacode \
   python3-pip tmux rcm zsh htop shellcheck jq tree wget curl git silversearcher-ag \
   unzip fzf fasd ripgrep bat apt-transport-https ca-certificates gnupg lsb-release
 
@@ -80,12 +80,10 @@ if [ "$WITH_GUI" = 'yes' ]; then
   sudo apt -y install fonts-firacode alacritty xclip
 
   # nerd fonts
-  wget -P /tmp https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip
   wget -P /tmp https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SourceCodePro.zip
-  unzip /tmp/FiraCode.zip -d /tmp/FiraCode && mv -f /tmp/FiraCode/* ~/.local/share/fonts
   unzip /tmp/SourceCodePro.zip -d /tmp/SourceCodePro && mv -f /tmp/SourceCodePro/* ~/.local/share/fonts
   fc-cache -fr
-  rm -rf /tmp/FiraCode* /tmp/SourceCodePro*
+  rm -rf /tmp/SourceCodePro*
 fi
 
 # check for env variable WITH_JAVA before installing java/maven support
