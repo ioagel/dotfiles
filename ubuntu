@@ -91,7 +91,7 @@ mv -f istio-"$ISTIO_VERSION" ~/code
 
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
-  sudo apt -y install fonts-firacode alacritty xclip
+  sudo apt -y install fonts-firacode alacritty xclip xcape
 
   mkdir -p ~/.local/share/fonts
 

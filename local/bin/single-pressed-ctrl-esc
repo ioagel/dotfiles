@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# make CapsLock behave like Ctrl:
+# This is set by gnome-tweeks
+#setxkbmap -option ctrl:nocaps
+
+# make short-pressed Ctrl behave like Escape:
+xcape -e 'Control_L=Escape'
+
