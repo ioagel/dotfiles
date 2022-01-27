@@ -65,7 +65,8 @@ if [ "$WITH_ASDF_NODE" = 'yes' ]; then
   asdf reshim nodejs
   npm install -g yarn
   yarn_install_or_update neovim
-  yarn_install_or_update diff-so-fancy
+  # using 'delta' now
+  #yarn_install_or_update diff-so-fancy
   asdf reshim nodejs
 fi
 

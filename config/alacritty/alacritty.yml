@@ -884,34 +884,35 @@ key_bindings:
 #print_events: false
 
 colors:
-  # COLORSCHEME: base16-one-light.yml
+  # COLORSCHEME: base16-tomorrow-night.yml
+  # Default colors
   primary:
-    background: '0xfafafa'
-    foreground: '0x383a42'
+    background: '0x1d1f21'
+    foreground: '0xc5c8c6'
 
   # Colors the cursor will use if `custom_cursor_colors` is true
   cursor:
-    text: '0xfafafa'
-    cursor: '0x383a42'
+    text: '0x1d1f21'
+    cursor: '0xc5c8c6'
 
   # Normal colors
   normal:
-    black: '0xfafafa'
-    red: '0xca1243'
-    green: '0x50a14f'
-    yellow: '0xc18401'
-    blue: '0x4078f2'
-    magenta: '0xa626a4'
-    cyan: '0x0184bc'
-    white: '0x383a42'
+    black: '0x1d1f21'
+    red: '0xcc6666'
+    green: '0xb5bd68'
+    yellow: '0xf0c674'
+    blue: '0x81a2be'
+    magenta: '0xb294bb'
+    cyan: '0x8abeb7'
+    white: '0xc5c8c6'
 
   # Bright colors
   bright:
-    black: '0xa0a1a7'
-    red: '0xd75f00'
-    green: '0xf0f0f1'
-    yellow: '0xe5e5e6'
-    blue: '0x696c77'
-    magenta: '0x202227'
-    cyan: '0x986801'
-    white: '0x090a0b'
+    black: '0x969896'
+    red: '0xde935f'
+    green: '0x282a2e'
+    yellow: '0x373b41'
+    blue: '0xb4b7b4'
+    magenta: '0xe0e0e0'
+    cyan: '0xa3685a'
+    white: '0xffffff'

@@ -19,6 +19,14 @@ wget --quiet --continue --show-progress \
   -O /tmp/sops.deb
 sudo dpkg -i /tmp/sops.deb
 
+# install delta: git colorizer
+# https://github.com/dandavison/delta
+delta_latest="$(latest_release_from_github 'dandavison/delta')"
+echo "Installing delta git colorizer..."
+wget --quiet --continue --show-progress \
+  https://github.com/dandavison/delta/releases/download/"$delta_latest"/git-delta_"$delta_latest"_amd64.deb \
+  -O /tmp/delta-latest.deb
+sudo dpkg -i /tmp/delta-latest.deb
 
 # install neovim latest from appimage
 nvim_latest="$(latest_release_from_github 'neovim/neovim')"

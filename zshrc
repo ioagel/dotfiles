@@ -109,7 +109,8 @@ export VISUAL=vim
 export EDITOR=$VISUAL
 
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=3"
-export BAT_THEME="OneHalfLight"
+# export BAT_THEME="OneHalfLight"
+export BAT_THEME="base16"
 export SPACESHIP_KUBECTL_SHOW=true
 
 # export MANPATH="/usr/local/man:$MANPATH"
