@@ -4,8 +4,8 @@ export PATH="/usr/local/bin:$PATH"
 
 WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
 WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
-WITH_ASDF_RUBY="${WITH_ASDF_RUBY:-no}"
 WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
+WITH_ASDF_RUBY="${WITH_ASDF_RUBY:-no}"
 WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-no}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
 
@@ -175,12 +175,9 @@ else
   cd "$cwd"
 fi
 
-# Set ZSH as default shell
-fancy_echo "########## Setting ZSH as default shell ##########"
-if [ "$OS" = 'Darwin' ]; then
-  shell=$(dscl . -read ~/ UserShell | sed 's/UserShell: //')
-  echo "$shell" | grep -qv '/usr/local/bin/zsh' && update_shell && echo "Mac set Homebrew ZSH default shell"
-elif grep "$USER" </etc/passwd | grep -qv 'zsh'; then
+# fancy_echo "########## Setting ZSH as default shell ##########"
+if [ "$OS" = 'Linux' ]; then
+  grep "$USER" </etc/passwd | grep -qv 'zsh'; then
   update_shell && echo "Ubuntu set ZSH default shell"
 fi
 
@@ -190,7 +187,7 @@ if [ -r "$HOME/.rcrc" ]; then
 else
   fancy_echo "########## Installing dotfiles ##########"
   rm -f "$HOME"/.zshrc
-  env RCRC="$HOME"/dotfiles/rcrc rcup
+  env RCRC="$HOME"/.dotfiles/rcrc rcup
   bat cache --build
 fi
 
