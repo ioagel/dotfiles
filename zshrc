@@ -38,10 +38,7 @@ _load_settings "$HOME/.zsh/configs"
 eval "$(fasd --init auto)"
 
 # asdf completions
-. $HOME/.asdf/completions/asdf.bash
-
-# JAVA_HOME through asdf java plugin
-#. ~/.asdf/plugins/java/set-java-home.zsh
+#. $HOME/.asdf/completions/asdf.bash
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 

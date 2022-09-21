@@ -12,7 +12,7 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   ZSH_DISABLE_COMPFIX="true"
 
   # Disable/Enable showing the kube context by default in spaceship promt
-  export SPACESHIP_KUBECONTEXT_SHOW=true
+  export SPACESHIP_KUBECTL_CONTEXT_SHOW=true
 
   source $ZSH/oh-my-zsh.sh
 fi
