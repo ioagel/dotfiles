@@ -1,8 +1,4 @@
 # Use neovim instead of vim , if it is installed
-if type nvim > /dev/null 2>&1; then
-  alias vim='nvim'
-fi
-
 alias soz='source ~/.zshrc'
 # Unix
 alias ll="ls -al"
@@ -10,6 +6,7 @@ alias ltr="ls -lAFhtr"
 alias ln="ln -v"
 alias df="df -h"
 alias mkdir="mkdir -p"
+alias vim="$EDITOR"
 alias e="$EDITOR"
 alias v="$VISUAL"
 
