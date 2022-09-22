@@ -42,6 +42,8 @@ command -v fasd &> /dev/null && eval "$(fasd --init auto)"
 if [ -f "$HOME"/.kube-ps1/kube-ps1.sh ]; then
   source "$HOME"/.kube-ps1/kube-ps1.sh
   PS1='$(kube_ps1) '$PS1
+  # start with being off
+  kubeoff -g
 fi
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

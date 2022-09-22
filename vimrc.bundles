@@ -14,24 +14,6 @@ let g:has_async = v:version >= 800 || has('nvim')
 
 call plug#begin('~/.vim/bundle')
 
-" Coc - Intellisense engine for vim8 & neovim, full language server protocol support as VSCode
-" --------------
-let g:coc_global_extensions = [
-      \ 'coc-prettier',
-      \ 'coc-eslint',
-      \ 'coc-css',
-      \ 'coc-highlight',
-      \ 'coc-json',
-      \ 'coc-html',
-      \ 'coc-yaml',
-      \ 'coc-yank',
-      \ 'coc-sh',
-      \ 'coc-solargraph',
-      \ 'coc-snippets'
-      \ ]
-
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-
 " JavaScript
 " ----------
 " Prettier - JavaScript auto-formatting tool
@@ -39,7 +21,6 @@ Plug 'prettier/vim-prettier', {
       \ 'do': 'yarn install',
       \ 'for': ['javascript', 'typescript', 'css', 'scss', 'json', 'graphql']
       \ }
-Plug 'kchmck/vim-coffee-script'
 Plug 'leafgarland/typescript-vim'
 Plug 'pangloss/vim-javascript'
 " JSON - Syntax highlighting for JSON
