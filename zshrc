@@ -35,22 +35,14 @@ _load_settings() {
 _load_settings "$HOME/.zsh/configs"
 
 # setup fasd
-eval "$(fasd --init auto)"
-
-# asdf completions
-#. $HOME/.asdf/completions/asdf.bash
+command -v fasd &> /dev/null && eval "$(fasd --init auto)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# I disabled it because i use the one provided by 'spaceship' prompt in
-# oh-my-zsh
-# if [ "$(uname)" = 'Darwin' ]; then
-#     # installed through Homebrew
-#     source /usr/local/opt/kube-ps1/share/kube-ps1.sh
-# else
-#     source "$HOME"/.config/kube-ps1/kube-ps1.sh
-# fi
-# PS1='$(kube_ps1)'$PS1
+if [ -f "$HOME"/.kube-ps1/kube-ps1.sh ]; then
+  source "$HOME"/.kube-ps1/kube-ps1.sh
+  PS1='$(kube_ps1) '$PS1
+fi
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
