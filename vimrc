@@ -694,10 +694,10 @@ if filereadable(expand("~/.vimrc_background"))
   source ~/.vimrc_background
 else
   " For one and solarized8 themes remove the file ~/.vimrc_background
-  set background=light
-  " set background=dark
-  colorscheme one
-  " colorscheme gruvbox
+  " set background=light
+  set background=dark
+  " colorscheme one
+  colorscheme gruvbox
   " colorscheme papercolor
   " colorscheme solarized8_high
 endif

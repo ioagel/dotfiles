@@ -42,6 +42,8 @@ PS1='$(kube_ps1) '$PS1
 #   kubeoff -g
 # fi
 
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 # aliases
