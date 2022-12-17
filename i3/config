@@ -448,3 +448,4 @@ mode "$mode_gaps_outer" {
 exec --no-startup-id 1password
 exec --no-startup-id synology-drive
 
+exec --no-startup-id "setxkbmap -model pc104 -layout us,gr -option grp:alt_shift_toggle"
