@@ -4,8 +4,7 @@ export PATH="/usr/local/bin:$PATH"
 
 WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
 WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
-WITH_ASDF_RUBY="${WITH_ASDF_RUBY:-no}"
-WITH_ASDF_GO="${WITH_ASDF_GO:-no}"
+WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
 WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-no}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
 
@@ -44,11 +43,9 @@ while true; do
 done 2>/dev/null &
 
 if [ "$OS" = 'Darwin' ]; then
-  number_of_cores=$(sysctl -n hw.ncpu)
   . ./mac
 else
   # we are definitely in Ubuntu from the check above
-  number_of_cores=$(nproc)
   . ./ubuntu
 fi
 
@@ -58,95 +55,48 @@ if [ ! -d "$HOME/.asdf" ]; then
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$asdf_latest_version"
 fi
 
-. "$HOME"/.asdf/asdf.sh
+. ../.asdf/asdf.sh
 
-fancy_echo "########## Installing latest Node, yarn and various node packages ##########"
 if [ "$WITH_ASDF_NODE" = 'yes' ]; then
-  add_or_update_asdf_plugin nodejs https://github.com/asdf-vm/asdf-nodejs.git
-  bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+  fancy_echo "########## Installing latest Node lts ##########"
+  add_or_update_asdf_plugin nodejs
   install_latest_asdf_language nodejs lts
-  npm install -g yarn
   asdf reshim nodejs
-  # install node packages
-  yarn_install_or_update neovim
-  if [ "$OS" = 'Linux' ]; then
-    yarn_install_or_update diff-so-fancy
-  fi
-  asdf reshim nodejs
-else
-  if [ "$OS" = 'Linux' ]; then
-    sudo npm install -g yarn
-    sudo yarn global add neovim
-    sudo yarn global add diff-so-fancy
-  else
-    npm install -g yarn
-    yarn_install_or_update neovim
-  fi
+  npm install -g neovim prettier
 fi
 
 # asdf python 3 setup
-fancy_echo "########## Installing latest Python 3 and pip modules ##########"
 if [ "$WITH_ASDF_PYTHON" = 'yes' ]; then
-  add_or_update_asdf_plugin python https://github.com/danhper/asdf-python.git
-  # shellcheck disable=SC2119
+  fancy_echo "########## Installing latest Python 3 ##########"
+  add_or_update_asdf_plugin python
   install_latest_asdf_language python
-  # install python 3 packages
-  pip_install_or_update pynvim
-  # https://github.com/toggle-corp/alacritty-colorscheme
-  pip_install_or_update alacritty-colorscheme
   asdf reshim python
-else
-  if [ "$OS" = 'Linux' ]; then
-    sudo pip3 install -U pynvim
-    sudo pip3 install -U alacritty-colorscheme
-  else
-    pip3 install -U pynvim
-    pip3 install -U alacritty-colorscheme
-  fi
 fi
 
-fancy_echo "########## Installing latest Ruby and gems ##########"
-if [ "$WITH_ASDF_RUBY" = 'yes' ]; then
-  add_or_update_asdf_plugin ruby https://github.com/asdf-vm/asdf-ruby.git
-  install_latest_asdf_language ruby
-  gem update --system
-  bundle config --global jobs $((number_of_cores - 1))
-  gem_install_or_update neovim
-  gem_install_or_update solargraph
-  gem_install_or_update tmuxinator
-  asdf reshim ruby
-fi
-
-# Java 8 (zulu) setup
+# Java setup
 if [ "$WITH_ASDF_JAVA" = 'yes' ]; then
-  fancy_echo "########## Installing Zulu Java 8 ##########"
-  add_or_update_asdf_plugin java https://github.com/halcyon/asdf-java.git
-  # shellcheck disable=SC2119
-  install_latest_asdf_language java "$(asdf list-all "java" | grep "zulu-8" | tail -1)"
+  fancy_echo "########## Installing latest Java 8 and 17 lts ##########"
+  add_or_update_asdf_plugin java
+  install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-8" | tail -1)"
+  install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-17" | tail -1)"
   asdf reshim java
 fi
 
 # Golang Setup
 if [ "$WITH_ASDF_GO" = 'yes' ]; then
   fancy_echo "########## Installing latest GoLang ##########"
-  add_or_update_asdf_plugin golang https://github.com/kennyp/asdf-golang.git
+  add_or_update_asdf_plugin golang
   mkdir -p "$HOME"/code/go/{bin,pkg,src}
-  # shellcheck disable=SC2119
   install_latest_asdf_language golang
   asdf reshim golang
 fi
 
-# install oh-my-zsh and spaceship prompt
+# install oh-my-zsh and plugins
 OH_MY_ZSH="$HOME/.oh-my-zsh"
-OH_MY_ZSH_THEMES="$OH_MY_ZSH/custom/themes"
 OH_MY_ZSH_PLUGINS="$OH_MY_ZSH/custom/plugins"
 if [ ! -d "$OH_MY_ZSH" ]; then
-  fancy_echo "########## Installing oh-my-zsh and spaceship prompt ##########"
+  fancy_echo "########## Installing oh-my-zsh ##########"
   git clone https://github.com/robbyrussell/oh-my-zsh.git "$OH_MY_ZSH"
-  git clone https://github.com/denysdovhan/spaceship-prompt.git \
-    "$OH_MY_ZSH_THEMES/spaceship-prompt"
-  ln -s "$OH_MY_ZSH_THEMES/spaceship-prompt/spaceship.zsh-theme" \
-    "$OH_MY_ZSH_THEMES/spaceship.zsh-theme"
   # install zsh-syntax-highlighting
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$OH_MY_ZSH_PLUGINS"/zsh-syntax-highlighting
   # install zsh-history-substring-search
@@ -155,19 +105,8 @@ if [ ! -d "$OH_MY_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-completions "$OH_MY_ZSH_PLUGINS"/zsh-completions
   # install zsh autosuggestions
   git clone https://github.com/zsh-users/zsh-autosuggestions "$OH_MY_ZSH_PLUGINS"/zsh-autosuggestions
-  # Zsh Vi Mode: https://github.com/jeffreytse/zsh-vi-mode
-  git clone https://github.com/jeffreytse/zsh-vi-mode "$OH_MY_ZSH_PLUGINS"/zsh-vi-mode
 fi
 
-# TODO: do we need this?
-#  Install Lemonade
-# Lemonade is a remote utility tool. (copy, paste and open browser) over TCP.
-#if ! command -v lemonade > /dev/null; then
-#  go get -d github.com/lemonade-command/lemonade
-#  cd "$GOPATH"/src/github.com/lemonade-command/lemonade/
-#  make install
-#  cd "$cwd"
-#fi
 
 # Alacritty, iTerm2, vim, tmux support for italics
 fancy_echo "########## Installing italics-capable terminfo files for terminals, vim, tmux ##########"
@@ -179,20 +118,19 @@ if [ ! -r ~/.terminfo/61/alacritty ] || [ ! -r ~/.terminfo/a/alacritty ]; then
 fi
 if [ ! -r ~/.terminfo/78/xterm-256color-italic ] ||
   [ ! -r ~/.terminfo/x/xterm-256color-italic ]; then
-  tic -x ~/dotfiles/iterm2/xterm-256color-italic.terminfo
+  tic -x ~/.dotfiles/iterm2/xterm-256color-italic.terminfo
 fi
 if [ ! -r ~/.terminfo/74/tmux-256color ] ||
   [ ! -r ~/.terminfo/t/tmux-256color ]; then
-  tic -x ~/dotfiles/iterm2/tmux-256color.terminfo
+  tic -x ~/.dotfiles/iterm2/tmux-256color.terminfo
 fi
 
 # Setup alacritty-colorscheme with base16 alacritty colors
 REPO="https://github.com/aaron-williamson/base16-alacritty.git"
-DEST="$HOME/.local/share/alacritty/base16-alacritty"
+DEST="$HOME/.config/alacritty/base16-alacritty"
 if [ ! -e "$HOME/.config/alacritty/colors" ]; then
   fancy_echo "########## Install base16 alacritty ##########"
   mkdir -p "$HOME/.config/alacritty"
-  mkdir -p "$HOME/.local/share/alacritty"
   # Get colorschemes
   git clone $REPO "$DEST"
   # Create symlink at default colors location (optional)
@@ -217,11 +155,10 @@ fi
 
 # Set ZSH as default shell
 fancy_echo "########## Setting ZSH as default shell ##########"
-if [ "$OS" = 'Darwin' ]; then
-  shell=$(dscl . -read ~/ UserShell | sed 's/UserShell: //')
-  echo "$shell" | grep -qv '/usr/local/bin/zsh' && update_shell && echo "Mac set Homebrew ZSH default shell"
-elif grep "$USER" </etc/passwd | grep -qv 'zsh'; then
-  update_shell && echo "Ubuntu set ZSH default shell"
+if [ "$OS" = 'Linux' ]; then
+  if grep "$USER" </etc/passwd | grep -qv 'zsh'; then
+    update_shell && echo "set ZSH default shell"
+  fi
 fi
 
 if [ -r "$HOME/.rcrc" ]; then
@@ -230,11 +167,11 @@ if [ -r "$HOME/.rcrc" ]; then
 else
   fancy_echo "########## Installing dotfiles ##########"
   rm -f "$HOME"/.zshrc
-  env RCRC="$HOME"/dotfiles/rcrc rcup
+  env RCRC="$HOME"/.dotfiles/rcrc rcup
   bat cache --build
 fi
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "########## Running your customizations from ~/.laptop.local ##########"
-  . "$HOME/.laptop.local"
+  . ../.laptop.local
 fi

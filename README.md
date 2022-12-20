@@ -17,7 +17,7 @@ Install
 
 Clone onto your laptop:
 
-    git clone https://github.com/ioagel/dotfiles.git ~/dotfiles
+    git clone https://github.com/ioagel/dotfiles.git ~/.dotfiles
 
 Install [rcm](https://github.com/thoughtbot/rcm):
 
@@ -26,7 +26,7 @@ Install [rcm](https://github.com/thoughtbot/rcm):
 
 Install the dotfiles:
 
-    env RCRC=$HOME/dotfiles/rcrc rcup
+    env RCRC=$HOME/.dotfiles/rcrc rcup
 
 After the initial installation, you can run `rcup` without the one-time variable
 `RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future

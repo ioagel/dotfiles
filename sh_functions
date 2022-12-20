@@ -82,21 +82,7 @@ install_latest_asdf_language() {
 
   if ! asdf list "$language" | grep -Fq "$version"; then
     asdf install "$language" "$version"
-    asdf global "$language" "$version"
   fi
-}
-
-install_asdf_python() {
-  local python3_version="${1:-$(asdf list-all python | grep -v "[a-z]" | tail -1)}"
-  local python2_version="${2:-$(asdf list-all python | grep -v "[a-z3]" | tail -1)}"
-
-  for version in $python2_version $python3_version; do
-    if ! asdf list python | grep -Fq "$version"; then
-      asdf install python "$version"
-    fi
-  done
-  # python 3 as default
-  asdf global python "$python3_version" "$python2_version"
 }
 
 pip_install_or_update() {

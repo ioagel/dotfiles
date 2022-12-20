@@ -39,13 +39,13 @@ if [ "$WITH_ASDF_ruby" = 'no' ]; then
   gem install --user-install tmuxinator
 fi
 
-brew bundle --file=~/dotfiles/Brewfile
+brew bundle --file=~/.dotfiles/Brewfile
 
 if command -v /Applications/iTerm.app/Contents/MacOS/iTerm2 >/dev/null; then
   fancy_echo "Setup sync for iTerm2 Prefs in a custom folder ..."
   killall cfprefsd # This will get rid of cached settings
   # Specify the preferences directory
-  defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "$HOME/dotfiles/iterm2"
+  defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "$HOME/.dotfiles/iterm2"
   # Tell iTerm2 to use the custom preferences in the directory
   defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
 fi

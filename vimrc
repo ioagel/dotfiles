@@ -6,8 +6,7 @@ set encoding=utf-8
 " Leader
 let mapleader = " "
 
-" let g:python_host_prog = '~/.asdf/shims/python2'
-let g:python3_host_prog = '/usr/local/bin/python3'
+" let g:python3_host_prog = '/usr/local/bin/python3'
 
 " if $TERM =~ '^\(tmux\|iterm\|alacritty\|xterm\|vte\|gnome\)\(-.*\)\?$'
 "   " Enforce italics
@@ -204,7 +203,7 @@ nnoremap <leader>soc :source %<cr>
 nnoremap <leader>tez :call MaybeTabedit('$HOME/.zshrc')<CR>
 
 " open dotfiles dir from anywhere
-nnoremap <leader>df :FZF ~/dotfiles<cr>
+nnoremap <leader>df :FZF ~/.dotfiles<cr>
 " fast install of new plugins
 nmap <leader>bi :source ~/.vimrc<cr>:PlugInstall<cr>
 
