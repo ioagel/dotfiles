@@ -474,12 +474,12 @@ mode "$mode_gaps_outer" {
 exec --no-startup-id 1password
 exec --no-startup-id synology-drive
 
-exec --no-startup-id setxkbmap -model pc104 -layout us,gr
-exec --no-startup-id setxkbmap -option grp:alt_shift_toggle
-
 # Media player controls
 bindsym XF86AudioPlay exec playerctl play-pause
-# bindsym XF86AudioPause exec playerctl pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
+
+exec --no-startup-id "setxkbmap us ; echo us > ~/.i3/scripts/keyboard_language"
+bindsym $mod+F1 exec ~/.i3/scripts/keyboard_changer.sh
+
 
