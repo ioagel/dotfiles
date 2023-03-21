@@ -37,3 +37,4 @@ vagrant
 vault
 percona-server-clients
 k9s
+power-profiles-daemon # for i3 blocks - systemctl enable it

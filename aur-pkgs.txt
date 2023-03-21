@@ -17,3 +17,5 @@ visual-studio-code-bin
 timeshift-autosnap
 btrfs-assistant
 update-grub
+xkblayout-state-git
+i3-scrot
