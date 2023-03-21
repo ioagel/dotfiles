@@ -28,3 +28,4 @@ Templates/
 .vscode-insiders/
 .vscode-server/
 .w3m/
+.kube/cache/

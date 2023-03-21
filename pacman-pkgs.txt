@@ -36,3 +36,4 @@ ttf-sourcecodepro-nerd
 vagrant
 vault
 percona-server-clients
+k9s
