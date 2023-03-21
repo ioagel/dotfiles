@@ -8,7 +8,6 @@ Templates/
 .cache/
 .m2/
 .ansible/
-.gnupg/
 .pki/
 .gradle/
 .gem/
@@ -25,7 +24,14 @@ Templates/
 .gimp-*
 .k8slens/
 .lemminx/
-.vscode-insiders/
-.vscode-server/
+.vscode*
 .w3m/
 .kube/cache/
+.config/google-chrome/
+.lesshst
+.xsession-errors
+.zhistory
+.config/1Password/
+.dotfiles/vim/backups/
+.dotfiles/vim/undodir/
+.local/state/nvim/shada/
