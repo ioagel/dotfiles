@@ -1,3 +1,4 @@
+linux-headers
 alacritty
 avahi
 bat
@@ -37,4 +38,5 @@ vagrant
 vault
 percona-server-clients
 k9s
-power-profiles-daemon # for i3 blocks - systemctl enable it
+# for i3 blocks - systemctl enable it
+power-profiles-daemon

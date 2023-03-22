@@ -19,3 +19,4 @@ btrfs-assistant
 update-grub
 xkblayout-state-git
 i3-scrot
+rofi-greenclip
