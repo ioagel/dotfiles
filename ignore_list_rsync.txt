@@ -27,6 +27,7 @@ Templates/
 .vscode*
 .w3m/
 .kube/cache/
+.kube/http-cache/
 .config/google-chrome/
 .lesshst
 .xsession-errors
