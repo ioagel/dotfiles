@@ -84,13 +84,19 @@ set $ws9 "9"
 set $ws10 "10"
 
 # use workspaces on different displays:
-# where you have to replace VGA-0/HDMI-0 with the names for your displays
-# you can get from xrandr command
-#workspace $ws1 output VGA-0
-#workspace $ws2 output VGA-0
-#workspace $ws3 output HDMI-0
-#workspace $ws4 output HDMI-0
-#workspace $ws5 output HDMI-0
+set $left   HDMI-A-0
+set $right  DisplayPort-0
+
+workspace $ws1  output $left
+workspace $ws2  output $left
+workspace $ws3  output $left
+workspace $ws4  output $left
+workspace $ws5  output $left
+workspace $ws6  output $right
+workspace $ws7  output $right
+workspace $ws8  output $right
+workspace $ws9  output $right
+workspace $ws10 output $right
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
@@ -133,16 +139,16 @@ bindsym $mod+Shift+9 move container to workspace $ws9; workspace $ws9
 bindsym $mod+Shift+0 move container to workspace $ws10; workspace $ws10
 
 # bind program to workspace and focus to them on startup:
-assign [class="Xfce4-terminal"] $ws1
-assign [class="(?i)firefox"] $ws2
-assign [class="Thunar"] $ws3
+#assign [class="Xfce4-terminal"] $ws1
+#assign [class="(?i)firefox"] $ws2
+#assign [class="Thunar"] $ws3
 assign [class="thunderbird"] $ws4
 assign [class="TelegramDesktop"] $ws5
 
 # automatic set focus new window if it opens on another workspace than the current:
-for_window [class=Xfce4-terminal] focus
-for_window [class=(?i)firefox] focus
-for_window [class=Thunar] focus
+#for_window [class=Xfce4-terminal] focus
+#for_window [class=(?i)firefox] focus
+#for_window [class=Thunar] focus
 for_window [class=Thunderbird] focus
 for_window [class=TelegramDesktop] focus
 ####################
@@ -357,11 +363,11 @@ bindsym $mod+F2 exec sh ~/.config/i3/scripts/keyboard_changer.sh
 
 # start a script to setup displays
 # uncomment the next line, use arandr to setup displays and save the file as monitor:
-exec --no-startup-id ~/.screenlayout/monitor.sh
+exec --no-startup-id ~/.screenlayout/monitors.sh
 
 # set wallpaper
-# exec --no-startup-id sleep 2 && nitrogen --restore
-exec --no-startup-id sleep 1 && feh --bg-fill /usr/share/endeavouros/backgrounds/endeavouros-wallpaper.png
+exec --no-startup-id sleep 2 && nitrogen --restore
+# exec --no-startup-id sleep 1 && feh --bg-fill /usr/share/endeavouros/backgrounds/endeavouros-wallpaper.png
 
 # set powersavings for display:
 exec --no-startup-id xset s 480 dpms 600 600 600
@@ -491,7 +497,7 @@ bar {
   # i3bar_command i3bar --transparency
   # it could be that you have no primary display set: set one (xrandr --output <output> --primary)
   # reference: https://i3wm.org/docs/userguide.html#_tray_output
-  # tray_output primary
+  tray_output primary
   tray_padding 0
 
   # When strip_workspace_numbers is set to yes,

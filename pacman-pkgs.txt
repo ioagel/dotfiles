@@ -1,4 +1,4 @@
-linux-headers
+zsh
 alacritty
 avahi
 bat
@@ -38,5 +38,7 @@ vagrant
 vault
 percona-server-clients
 k9s
-# for i3 blocks - systemctl enable it
 power-profiles-daemon
+xclip
+nitrogen
+picom
