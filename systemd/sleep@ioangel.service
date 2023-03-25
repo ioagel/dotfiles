@@ -1,0 +1,14 @@
+# used for locking the screen when sleeping in endeavouros i3
+# add in /etc/systemd/system , systemctl daemon-reload and systemctl enable sleep@ioangel.service
+[Unit]
+Description=Lock the screen
+Before=sleep.target
+
+[Service]
+User=%I
+Type=forking
+Environment=DISPLAY=:0
+ExecStart=/home/%I/.config/i3/scripts/blur-lock
+
+[Install]
+WantedBy=sleep.target
