@@ -327,10 +327,10 @@ bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles
 # For modifications, it can be copied to ~/.config/picom/picom.conf or ~/.config/picom.conf
 # install picom package (yay -S picom)
 # start using default config
-exec_always --no-startup-id picom -b
+# exec_always --no-startup-id picom -b
 #
 # for custom config:
-#exec_always --no-startup-id picom --config  ~/.config/picom.conf
+exec_always --no-startup-id picom --config  ~/.config/picom.conf
 
 #############################################
 # autostart applications/services on login: #
@@ -584,5 +584,8 @@ exec --no-startup-id greenclip daemon>/dev/null
 bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard \
   -config ~/.config/rofi/rofidmenu.rasi
 
-#exec --no-startup-id ~/.screenlayout/monitor.sh
+# monitor light temperature
+exec --no-startup-id redshift-gtk
+
+exec --no-startup-id 1password
 

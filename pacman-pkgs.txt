@@ -42,3 +42,5 @@ power-profiles-daemon
 xclip
 nitrogen
 picom
+geoclue
+redshift
