@@ -10,7 +10,6 @@ kube-ps1
 postman-bin
 rcm
 shellcheck-bin
-skypeforlinux-preview-bin
 synology-drive
 velero-bin
 visual-studio-code-bin

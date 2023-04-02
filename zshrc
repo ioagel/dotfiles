@@ -34,14 +34,6 @@ _load_settings() {
 }
 _load_settings "$HOME/.zsh/configs"
 
-# PROMPT=$PROMPT'$(kube_ps1) '
-# if [ -f "$HOME"/.kube-ps1/kube-ps1.sh ]; then
-#   source "$HOME"/.kube-ps1/kube-ps1.sh
-PS1='$(kube_ps1) '$PS1
-#   # start with being off
-#   kubeoff -g
-# fi
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

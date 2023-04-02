@@ -44,3 +44,6 @@ nitrogen
 picom
 geoclue
 redshift
+noto-fonts-emoji
+lf
+starship
