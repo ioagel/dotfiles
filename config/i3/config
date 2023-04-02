@@ -23,7 +23,7 @@
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
 #font pango: Noto Sans Regular 10
-font xft:Operator SSm Light Regular 12
+font xft:FiraCode Nerd Font SemiBold 11
 
 # set the mod key to the winkey:
 set $mod Mod4
