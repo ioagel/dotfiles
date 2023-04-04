@@ -140,17 +140,17 @@ bindsym $mod+Shift+0 move container to workspace $ws10; workspace $ws10
 
 # bind program to workspace and focus to them on startup:
 #assign [class="Xfce4-terminal"] $ws1
-#assign [class="(?i)firefox"] $ws2
 #assign [class="Thunar"] $ws3
-assign [class="thunderbird"] $ws4
-assign [class="TelegramDesktop"] $ws5
+assign [class="(?i)firefox"] $ws6
+assign [class="Google-chrome"] $ws6
+assign [class="obsidian"] $ws9
+assign [class="jetbrains-*"] $ws2
+assign [class="Virt-manager"] $ws5
 
 # automatic set focus new window if it opens on another workspace than the current:
 #for_window [class=Xfce4-terminal] focus
 #for_window [class=(?i)firefox] focus
 #for_window [class=Thunar] focus
-for_window [class=Thunderbird] focus
-for_window [class=TelegramDesktop] focus
 ####################
 
 # resize window (you can also use the mouse for that):
@@ -214,10 +214,10 @@ bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(x
 bindsym XF86MonBrightnessDown exec xbacklight -10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
 
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+b focus up
-bindsym $mod+o focus right
+#bindsym $mod+j focus left
+#bindsym $mod+k focus down
+#bindsym $mod+b focus up
+#bindsym $mod+o focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -226,10 +226,10 @@ bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
 # move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+b move up
-bindsym $mod+Shift+o move right
+#bindsym $mod+Shift+j move left
+#bindsym $mod+Shift+k move down
+#bindsym $mod+Shift+b move up
+#bindsym $mod+Shift+o move right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left
@@ -289,11 +289,14 @@ bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
 
 # Redirect sound to headphones
-bindsym $mod+p exec /usr/local/bin/switch-audio-port
+# bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
 bindsym $mod+w exec /usr/bin/google-chrome-stable
 bindsym $mod+n exec /usr/bin/thunar
+bindsym $mod+o exec /usr/bin/obsidian
+bindsym $mod+i exec idea
+bindsym $mod+p exec pycharm
 bindsym Print exec --no-startup-id i3-scrot
 bindsym $mod+Print --release exec --no-startup-id i3-scrot -w
 bindsym $mod+Shift+Print --release exec --no-startup-id i3-scrot -s
