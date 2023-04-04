@@ -47,3 +47,4 @@ redshift
 noto-fonts-emoji
 lf
 starship
+xcape
