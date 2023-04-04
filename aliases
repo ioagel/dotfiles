@@ -10,6 +10,11 @@ alias vim="$EDITOR"
 alias e="$EDITOR"
 alias v="$VISUAL"
 
+# terminal colors
+alias day="alacritty-colorscheme -V apply $LIGHT_COLOR"
+alias night="alacritty-colorscheme -V apply $DARK_COLOR"
+alias toggle="alacritty-colorscheme -V toggle $LIGHT_COLOR $DARK_COLOR"
+
 # Bundler
 alias b="bundle"
 
@@ -38,6 +43,9 @@ alias sdi="sops -d -i"
 # kubernetes
 alias kns="kubens"
 alias kctx="kubectx"
+
+# i3 related
+alias i3e="$EDITOR ~/.config/i3/config"
 
 # Include custom secret aliases
 [[ -f ~/.aliases.secret ]] && source ~/.aliases.secret

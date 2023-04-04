@@ -1,0 +1,12 @@
+#!/bin/sh
+
+export PATH=/usr/bin:/usr/local/bin:/bin
+
+if command -v alacritty-colorscheme > /dev/null; then
+  if alacritty-colorscheme status | grep -q light; then
+    bat --theme OneHalfLight $@
+    exit 0
+  fi
+fi
+
+bat $@
