@@ -2,6 +2,7 @@
 Downloads/
 snap/
 SynologyDrive/
+iso/
 .SynologyDrive/
 Videos/
 Templates/
@@ -36,3 +37,4 @@ Templates/
 .dotfiles/vim/backups/
 .dotfiles/vim/undodir/
 .local/state/nvim/shada/
+.local/share/JetBrains/
