@@ -27,6 +27,7 @@ font xft:FiraCode Nerd Font SemiBold 11
 
 # set the mod key to the winkey:
 set $mod Mod4
+#set $mod Mod1
 
 #####################
 # workspace layout: #
@@ -72,18 +73,22 @@ floating_modifier $mod
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws1 "1"
-set $ws2 "2"
-set $ws3 "3"
-set $ws4 "4"
-set $ws5 "5"
-set $ws6 "6"
-set $ws7 "7"
-set $ws8 "8"
-set $ws9 "9"
+set $ws1  "1"
+set $ws2  "2"
+set $ws3  "3"
+set $ws4  "4"
+set $ws5  "5"
+set $ws6  "6"
+set $ws7  "7"
+set $ws8  "8"
+set $ws9  "9"
 set $ws10 "10"
 
 # use workspaces on different displays:
+# igpu when rx580 is installed
+#set $left   HDMI-A-2
+#set $right  DisplayPort-2
+# igpu when rx580 is set for vfio or igpu only
 set $left   HDMI-A-0
 set $right  DisplayPort-0
 
@@ -143,9 +148,10 @@ bindsym $mod+Shift+0 move container to workspace $ws10; workspace $ws10
 #assign [class="Thunar"] $ws3
 assign [class="(?i)firefox"] $ws6
 assign [class="Google-chrome"] $ws6
-assign [class="obsidian"] $ws9
-assign [class="jetbrains-*"] $ws2
-assign [class="Virt-manager"] $ws5
+assign [class="obsidian"] $ws5
+assign [class="jetbrains-idea"] $ws2
+assign [class="jetbrains-pycharm"] $ws3
+#assign [class="Virt-manager"] $ws10
 
 # automatic set focus new window if it opens on another workspace than the current:
 #for_window [class=Xfce4-terminal] focus
@@ -358,12 +364,6 @@ exec --no-startup-id dex --autostart --environment i3
 # num lock activated
 #exec --no-startup-id numlockx on
 
-# make CapsLock behave like Ctrl:
-exec --no-startup-id "setxkbmap us -option ctrl:nocaps"
-# make short-pressed Ctrl behave like Escape:
-exec --no-startup-id "xcape -e 'Control_L=Escape'"
-bindsym $mod+F2 exec sh ~/.config/i3/scripts/keyboard_changer.sh
-
 # start conky:
 #exec_always --no-startup-id conky
 
@@ -473,21 +473,21 @@ for_window [class="urxvt"] border pixel 1
 # client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
 
 # set primary gruvbox colorscheme colors
-set $bg #282828
-set $red #cc241d
-set $green #98971a
-set $yellow #d79921
-set $blue #458588
-set $purple #b16286
-set $aqua #689d68
-set $gray #a89984
+set $bg       #282828
+set $red      #cc241d
+set $green    #98971a
+set $yellow   #d79921
+set $blue     #458588
+set $purple   #b16286
+set $aqua     #689d68
+set $gray     #a89984
 set $darkgray #1d2021
 
-client.focused          $blue $blue $darkgrey $purple $aqua
-client.focused_inactive $darkgray $darkgray $yellow $purple $darkgray
-client.unfocused        $darkgray $darkgray $yellow $purple $darkgray
-client.urgent           $red $red $white $red $red
-client.placeholder      #000000 #0c0c0c #ffffff #000000
+client.focused          $blue     $blue     $darkgrey $purple $aqua
+client.focused_inactive $darkgray $darkgray $yellow   $purple $darkgray
+client.unfocused        $darkgray $darkgray $yellow   $purple $darkgray
+client.urgent           $red      $red      $white    $red    $red
+client.placeholder      #000000   #0c0c0c   #ffffff   #000000
 client.background       #2B2C2B
 
 ############################################
@@ -528,12 +528,12 @@ bar {
     statusline $yellow
     separator  #454947
 
-#                      border  backgr. text
-    focused_workspace  $aqua $aqua $darkgray
-    active_workspace   $darkgray $darkgray $yellow
-    inactive_workspace $darkgray $darkgray $yellow
-    binding_mode       #16a085 #2C2C2C #F9FAF9
-    urgent_workspace   $red $red $bg
+    #                  border     backgr.     text
+    focused_workspace  $aqua      $aqua       $darkgray
+    active_workspace   $darkgray  $darkgray   $yellow
+    inactive_workspace $darkgray  $darkgray   $yellow
+    binding_mode       #16a085    #2C2C2C     #F9FAF9
+    urgent_workspace   $red       $red        $bg
   }
 }
 
@@ -587,11 +587,20 @@ bindsym $mod+t exec rofi -show window -config ~/.config/rofi/rofidmenu.rasi
 ## rofi bindings to manage clipboard (install rofi-greenclip from the AUR)
 
 exec --no-startup-id greenclip daemon>/dev/null
-bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard \
-  -config ~/.config/rofi/rofidmenu.rasi
+bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" \
+  -show clipboard -config ~/.config/rofi/rofidmenu.rasi
 
 # monitor light temperature
 exec --no-startup-id redshift-gtk
 
 exec --no-startup-id 1password
+
+exec --no-startup-id solaar -w hide
+
+# make CapsLock behave like Ctrl:
+exec --no-startup-id setxkbmap -option 'ctrl:nocaps'
+# make short-pressed Ctrl behave like Escape:
+exec --no-startup-id xcape -e 'Control_L=Escape'
+
+bindsym $mod+F2 exec sh ~/.config/i3/scripts/keyboard_changer.sh
 
