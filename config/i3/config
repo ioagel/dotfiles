@@ -298,7 +298,7 @@ bindsym XF86AudioPrev exec playerctl previous
 # bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
-bindsym $mod+w exec /usr/bin/firefox
+bindsym $mod+w exec /usr/bin/google-chrome-stable
 bindsym $mod+n exec /usr/bin/thunar
 bindsym $mod+o exec /usr/bin/obsidian
 bindsym $mod+i exec idea
@@ -490,6 +490,16 @@ client.urgent           $red      $red      $white    $red    $red
 client.placeholder      #000000   #0c0c0c   #ffffff   #000000
 client.background       #2B2C2B
 
+# Theme colors - Solarized
+# class                   border  backgr. text    indic.  child_border
+# client.focused          #2aa198 #2aa198 #073642 #FDF6E3 #2aa198
+# client.focused_inactive #073642 #073642 #2aa198 #454948 #073642
+# client.unfocused        #073642 #073642 #1ABC9C #454948 #073642
+# client.urgent           #CB4B16 #FDF6E3 #1ABC9C #268BD2
+# client.placeholder      #000000 #0c0c0c #ffffff #000000
+
+# client.background       #2B2C2B
+
 ############################################
 # bar settings (input comes from i3blocks) #
 ############################################
@@ -523,6 +533,22 @@ bar {
 # 		urgent_workspace	$urgentred	    	$urgentred	$white		$purple
 # 	}
 
+
+  # Solarized Theme
+#   colors {
+
+#    separator  #93a1a1
+# 	 background #002b36
+# 	 statusline #a3a3a3
+
+# #                              border  backgr. text
+#           focused_workspace  #2aa198 #2aa198 #073642
+#           active_workspace   #657b83 #616161 #073642
+#           inactive_workspace #073642 #073642 #2aa198
+#           urgent_workspace   #cb4b16 #cb4b16 #073642
+#   }
+
+# Gruvbox Theme
   colors {
     background $bg
     statusline $yellow
@@ -530,7 +556,7 @@ bar {
 
     #                  border     backgr.     text
     focused_workspace  $aqua      $aqua       $darkgray
-    active_workspace   $darkgray  $darkgray   $yellow
+    active_workspace   $darkgray  $gray       $bg
     inactive_workspace $darkgray  $darkgray   $yellow
     binding_mode       #16a085    #2C2C2C     #F9FAF9
     urgent_workspace   $red       $red        $bg
@@ -603,4 +629,3 @@ exec --no-startup-id setxkbmap -option 'ctrl:nocaps'
 exec --no-startup-id xcape -e 'Control_L=Escape'
 
 bindsym $mod+F2 exec sh ~/.config/i3/scripts/keyboard_changer.sh
-
