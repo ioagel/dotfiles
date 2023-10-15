@@ -624,8 +624,9 @@ exec --no-startup-id 1password
 exec --no-startup-id solaar -w hide
 
 # make CapsLock behave like Ctrl:
-exec --no-startup-id setxkbmap -option 'ctrl:nocaps'
+exec --no-startup-id "setxkbmap -option ctrl:nocaps"
 # make short-pressed Ctrl behave like Escape:
-exec --no-startup-id xcape -e 'Control_L=Escape'
+exec --no-startup-id "xcape -e Control_L=Escape"
 
 bindsym $mod+F2 exec sh ~/.config/i3/scripts/keyboard_changer.sh
+
