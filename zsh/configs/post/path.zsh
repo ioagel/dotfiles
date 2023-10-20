@@ -1,4 +1,4 @@
-export GOPATH="$HOME/code/go"
+export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
 
 # adds gnu-sed from brew path in front

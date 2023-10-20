@@ -1,5 +1,4 @@
 1password
-alacritty-colorscheme
 google-chrome
 gruvbox-dark-gtk
 gruvbox-dark-icons-gtk
