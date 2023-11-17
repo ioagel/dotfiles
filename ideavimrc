@@ -7,3 +7,5 @@ set nu
 set ic
 set is
 set scs
+
+source ~/.vimrc
