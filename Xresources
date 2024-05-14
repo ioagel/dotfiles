@@ -1,9 +1,11 @@
 Xcursor.theme: Qogir
-Xcursor.size:  16
-Xft.dpi:       144
+Xcursor.size: 18
+Xft.dpi: 144
+! For laptop
+!Xft.dpi:       120
 Xft.antialias: true
-Xft.hinting:   true
-Xft.rgba:      rgb
-Xft.autohint:  false
+Xft.hinting: true
+Xft.rgba: rgb
+Xft.autohint: false
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault
