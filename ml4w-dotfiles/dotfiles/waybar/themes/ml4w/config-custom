@@ -26,6 +26,9 @@
       "memory"
     ]
   },
+  "custom/updates": {
+    "restart-interval": 3600
+  },
   // End of Overrides
 
   // Modules Left
