@@ -29,6 +29,10 @@
   "custom/updates": {
     "restart-interval": 3600
   },
+  "tray": {
+    "icon-size": 24,
+    "spacing": 10
+  },
   // End of Overrides
 
   // Modules Left
@@ -54,10 +58,10 @@
     "group/hardware",
     "custom/cliphist",
     "idle_inhibitor",
-    "tray",
-    "custom/exit",
-    "custom/ml4w-welcome",
     "hyprland/language",
+    "tray",
+    "custom/ml4w-welcome",
+    "custom/exit",
     "clock"
   ]
 }
