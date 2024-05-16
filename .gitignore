@@ -13,3 +13,5 @@ vim/.vim/vim-spell-en.utf-8.add.spl
 .idea
 /Brewfile.current
 keyboard_language
+/i3/.config/i3/config
+/i3/.config/i3/i3blocks.conf
