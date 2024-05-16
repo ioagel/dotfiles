@@ -19,6 +19,8 @@ if [ "$color" == "light" ]; then
   sed -i "s/^gtk-theme=.*/gtk-theme=$LIGHT_THEME/" ~/.local/share/nwg-look/gsettings
   sed -i "s/^icon-theme=.*/icon-theme=$LIGHT_ICON_THEME/" ~/.local/share/nwg-look/gsettings
   sed -i "s/^color-scheme=.*/color-scheme=$LIGHT_COLOR_SCHEME/" ~/.local/share/nwg-look/gsettings
+  sed -i "s/^gtk-theme-name=.*/gtk-theme-name=$LIGHT_THEME/" ~/.gtkrc-2.0
+  sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$LIGHT_ICON_THEME/" ~/.gtkrc-2.0
   sed -i "s/^gtk-theme-name=.*/gtk-theme-name=$LIGHT_THEME/" ~/.config/gtk-3.0/settings.ini
   sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$LIGHT_ICON_THEME/" ~/.config/gtk-3.0/settings.ini
   sed -i "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=0/" ~/.config/gtk-3.0/settings.ini
@@ -29,6 +31,8 @@ if [ "$color" == "dark" ]; then
   sed -i "s/^gtk-theme=.*/gtk-theme=$DARK_THEME/" ~/.local/share/nwg-look/gsettings
   sed -i "s/^icon-theme=.*/icon-theme=$DARK_ICON_THEME/" ~/.local/share/nwg-look/gsettings
   sed -i "s/^color-scheme=.*/color-scheme=$DARK_COLOR_SCHEME/" ~/.local/share/nwg-look/gsettings
+  sed -i "s/^gtk-theme-name=.*/gtk-theme-name=$DARK_THEME/" ~/.gtkrc-2.0
+  sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$DARK_ICON_THEME/" ~/.gtkrc-2.0
   sed -i "s/^gtk-theme-name=.*/gtk-theme-name=$DARK_THEME/" ~/.config/gtk-3.0/settings.ini
   sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$DARK_ICON_THEME/" ~/.config/gtk-3.0/settings.ini
   sed -i "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=1/" ~/.config/gtk-3.0/settings.ini
