@@ -1,8 +1,6 @@
 Xcursor.theme: Qogir
 Xcursor.size: 18
 Xft.dpi: 144
-! For laptop
-!Xft.dpi:       120
 Xft.antialias: true
 Xft.hinting: true
 Xft.rgba: rgb

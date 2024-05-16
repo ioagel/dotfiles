@@ -1,0 +1,36 @@
+# Comments and blank lines are allowed.
+
+RCS
+.+,v
+
+CVS
+\.\#.+       # CVS conflict files / emacs lock files
+\.cvsignore
+
+\.svn
+_darcs
+\.hg
+
+\.git
+\.gitignore
+\.gitmodules
+
+.+~          # emacs backup files
+\#.*\#       # emacs autosave files
+
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+# End of stow defaults
+
+# Local additions
+^/*.txt
+^/Brewfile
+^/iterm2/
+^/manjaro/
+^/scripts/
+^/systemd/
+vimrc_background
+\.idea
+/[^.]*
