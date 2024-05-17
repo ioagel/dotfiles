@@ -143,6 +143,6 @@ fi
 #  ./configure --enable-lenient
 #  make
 #  sudo make install
-#  cd "$cwd"
+#  cd "$GIT_ROOT"
 #  sudo rm -rf /tmp/watchman
 #fi

@@ -1,17 +1,3 @@
-Dotfiles
-========
-
-Forked by [Thoughtbot](https://github.com/thoughtbot/dotfiles) and heavily
-customized using the dotfiles from [Gabe Berke-Williams](https://github.com/gabebw/dotfiles)
-and [Chris Toomey](https://github.com/christoomey/dotfiles).
-
-Requirements
-------------
-
-Set zsh as your login shell:
-
-    chsh -s $(which zsh)
-
 Install
 -------
 
@@ -19,41 +5,22 @@ Clone onto your laptop:
 
     git clone https://github.com/ioagel/dotfiles.git ~/.dotfiles
 
-Install [rcm](https://github.com/thoughtbot/rcm):
-
-    brew tap thoughtbot/formulae
-    brew install rcm
-
 Install the dotfiles:
-
-    env RCRC=$HOME/.dotfiles/rcrc rcup
-
-After the initial installation, you can run `rcup` without the one-time variable
-`RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
-runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/master/rcrc).
-
-Install the dotfiles and lots of useful mac/ubuntu apps and utilities:
-
-    # ENV vars that can be used
-    # WITH_GO WITH_RUBY WITH_JAVA WITH_GUI(for linux)
-    # DEFAULTS: WITH_GO=yes WITH_RUBY=yes WITH_JAVA=yes WITH_GUI=no
-    bash install 2>&1 | tee ~/laptop.log
-
+```bash
+cd ~/.dotfiles/.scripts
+# Variables with default values that can be overridden
+# WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
+# WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
+# WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
+# WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-yes}"
+# WITH_GUI="${WITH_GUI:-no}" # for Linux
+# WITH_ALACRITTY_COLORSCHEME="${WITH_ALACRITTY_COLORSCHEME:-no}"
+./install
+```
 
 Update
 ------
 
 From time to time you should pull down any updates to these dotfiles, and run
 
-    rcup
-
-to link any new files and install new Vim plugins. **Note** You _must_ run
-`rcup` after pulling to ensure that all files in plugins are properly installed,
-but you can safely run `rcup` multiple times so update early and update often!
-
-Secure Data
------------
-
-You can have a private repo named: **dotfiles-secret** where you can store
-confidential data, and use encryption like [git-crypt](https://github.com/AGWA/git-crypt).
-I put my encrypted files in a directory named **tag-secrets**.
+    cd ~/.dotfiles && stow */

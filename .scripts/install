@@ -2,11 +2,30 @@
 
 export PATH="/usr/local/bin:$PATH"
 
+command -v git >/dev/null || {
+  echo "git is required but not installed. Aborting."
+  exit 1
+}
+
+command -v stow >/dev/null || {
+  echo "stow is required but not installed. Aborting."
+  exit 1
+}
+
+command -v curl >/dev/null || {
+  echo "curl is required but not installed. Aborting."
+  exit 1
+}
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+export GIT_ROOT
+
 WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
-WITH_ASDF_NODE="${WITH_ASDF_NODE:-no}"
-WITH_ASDF_GO="${WITH_ASDF_GO:-no}"
+WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
+WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
 WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-yes}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
+WITH_ALACRITTY_COLORSCHEME="${WITH_ALACRITTY_COLORSCHEME:-no}"
 
 # shellcheck disable=SC2154
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
@@ -22,11 +41,8 @@ fi
 cwd="$(pwd)"
 export cwd
 
-. ./sh_functions
+. sh_functions
 
-if [ ! -d "$HOME/.bin/" ]; then
-  mkdir "$HOME/.bin"
-fi
 if [ ! -d "$HOME/.golang" ]; then
   mkdir -p "$HOME/.golang"
 fi
@@ -43,10 +59,10 @@ while true; do
 done 2>/dev/null &
 
 if [ "$OS" = 'Darwin' ]; then
-  . ./mac
+  . mac
 elif [ "$(lsb_release -s -i)" = 'Ubuntu' ]; then
   # we are definitely in Ubuntu from the check above
-  . ./ubuntu
+  . ubuntu
 fi
 
 if [ ! -d "$HOME/.asdf" ]; then
@@ -55,15 +71,13 @@ if [ ! -d "$HOME/.asdf" ]; then
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$asdf_latest_version"
 fi
 
-. ../.asdf/asdf.sh
+. ../../.asdf/asdf.sh
 
 if [ "$WITH_ASDF_NODE" = 'yes' ]; then
   fancy_echo "########## Installing latest Node lts ##########"
   add_or_update_asdf_plugin nodejs
-  install_latest_asdf_language nodejs lts
-  asdf reshim nodejs
-  asdf global nodejs system
-  #npm install -g neovim prettier
+  # latest lts is v20
+  install_latest_asdf_language nodejs "$(asdf list-all nodejs | grep '20.' | tail -1)"
 fi
 
 # asdf python 3 setup
@@ -71,28 +85,24 @@ if [ "$WITH_ASDF_PYTHON" = 'yes' ]; then
   fancy_echo "########## Installing latest Python 3 ##########"
   add_or_update_asdf_plugin python
   install_latest_asdf_language python
-  asdf reshim python
-  asdf global python system
 fi
 
 # Java setup
 if [ "$WITH_ASDF_JAVA" = 'yes' ]; then
-  fancy_echo "########## Installing latest Java 8 and 17 lts ##########"
+  fancy_echo "########## Installing latest Java 8, 17 and 21 lts ##########"
   add_or_update_asdf_plugin java
-  install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-8" | tail -1)"
-  install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-17" | tail -1)"
-  asdf reshim java
-  asdf global java system
+  install_latest_asdf_language java "$(asdf list-all java | grep 'temurin-8' | tail -1)"
+  install_latest_asdf_language java "$(asdf list-all java | grep 'temurin-17' | tail -1)"
+  # Install latest LTS
+  install_latest_asdf_language java "$(asdf list-all java | grep 'temurin-21' | tail -1)"
 fi
 
 # Golang Setup
 if [ "$WITH_ASDF_GO" = 'yes' ]; then
   fancy_echo "########## Installing latest GoLang ##########"
   add_or_update_asdf_plugin golang
-  mkdir -p "$HOME"/code/go/{bin,pkg,src}
+  mkdir -p "$GOPATH"/{bin,pkg,src}
   install_latest_asdf_language golang
-  asdf reshim golang
-  asdf global golang system
 fi
 
 # install oh-my-zsh and plugins
@@ -111,7 +121,6 @@ if [ ! -d "$OH_MY_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-autosuggestions "$OH_MY_ZSH_PLUGINS"/zsh-autosuggestions
 fi
 
-
 # Alacritty, iTerm2, vim, tmux support for italics
 fancy_echo "########## Installing italics-capable terminfo files for terminals, vim, tmux ##########"
 if [ ! -r ~/.terminfo/61/alacritty ] || [ ! -r ~/.terminfo/a/alacritty ]; then
@@ -122,42 +131,43 @@ if [ ! -r ~/.terminfo/61/alacritty ] || [ ! -r ~/.terminfo/a/alacritty ]; then
 fi
 if [ ! -r ~/.terminfo/78/xterm-256color-italic ] ||
   [ ! -r ~/.terminfo/x/xterm-256color-italic ]; then
-  tic -x ~/.dotfiles/iterm2/xterm-256color-italic.terminfo
+  tic -x terminfo/xterm-256color-italic.terminfo
 fi
 if [ ! -r ~/.terminfo/74/tmux-256color ] ||
   [ ! -r ~/.terminfo/t/tmux-256color ]; then
-  tic -x ~/.dotfiles/iterm2/tmux-256color.terminfo
+  tic -x terminfo/tmux-256color.terminfo
 fi
 
-# Install alacritty-colorsheme
-command -v pipx && pipx install alacritty-colorscheme
-
-# Setup alacritty-colorscheme with base16 alacritty colors
-REPO="https://github.com/aaron-williamson/base16-alacritty.git"
-DEST="$HOME/.config/alacritty/base16-alacritty"
-if [ ! -e "$HOME/.config/alacritty/colors" ]; then
-  fancy_echo "########## Install base16 alacritty ##########"
-  mkdir -p "$HOME/.config/alacritty"
-  # Get colorschemes
-  git clone $REPO "$DEST"
-  # Create symlink at default colors location (optional)
-  ln -s "$DEST/colors" "$HOME/.config/alacritty/colors"
-  # EXAMPLE USAGE
-  # bash/zsh aliases
-  # Add this in your .zshrc or .bashrc file:
-  #
-  # LIGHT_COLOR='base16-gruvbox-light-soft.yml'
-  # DARK_COLOR='base16-gruvbox-dark-soft.yml'
-  #
-  # alias day="alacritty-colorscheme -V apply $LIGHT_COLOR"
-  # alias night="alacritty-colorscheme -V apply $DARK_COLOR"
-  # alias toggle="alacritty-colorscheme -V toggle $LIGHT_COLOR $DARK_COLOR"
-  #########
-  fancy_echo "Setup base16 alacritty... DONE"
-else
-  fancy_echo "########## Updating base16 alacritty ##########"
-  cd "$DEST" && git pull origin master
-  cd "$cwd"
+if [ "$WITH_ALACRITTY_COLORSCHEME" = 'yes' ]; then
+  # Install alacritty-colorsheme
+  command -v pipx && pipx install alacritty-colorscheme
+  # Setup alacritty-colorscheme with base16 alacritty colors
+  REPO="https://github.com/aaron-williamson/base16-alacritty.git"
+  DEST="$HOME/.config/alacritty/base16-alacritty"
+  if [ ! -e "$HOME/.config/alacritty/colors" ]; then
+    fancy_echo "########## Install base16 alacritty ##########"
+    mkdir -p "$HOME/.config/alacritty"
+    # Get colorschemes
+    git clone $REPO "$DEST"
+    # Create symlink at default colors location (optional)
+    ln -s "$DEST/colors" "$HOME/.config/alacritty/colors"
+    # EXAMPLE USAGE
+    # bash/zsh aliases
+    # Add this in your .zshrc or .bashrc file:
+    #
+    # LIGHT_COLOR='base16-gruvbox-light-soft.yml'
+    # DARK_COLOR='base16-gruvbox-dark-soft.yml'
+    #
+    # alias day="alacritty-colorscheme -V apply $LIGHT_COLOR"
+    # alias night="alacritty-colorscheme -V apply $DARK_COLOR"
+    # alias toggle="alacritty-colorscheme -V toggle $LIGHT_COLOR $DARK_COLOR"
+    #########
+    fancy_echo "Setup base16 alacritty... DONE"
+  else
+    fancy_echo "########## Updating base16 alacritty ##########"
+    cd "$DEST" && git pull origin master
+    cd "$cwd"
+  fi
 fi
 
 # Set ZSH as default shell
@@ -168,17 +178,28 @@ if [ "$OS" = 'Linux' ]; then
   fi
 fi
 
-if [ -r "$HOME/.rcrc" ]; then
-  fancy_echo "########## Updating dotfiles ##########"
-  rcup
-else
-  fancy_echo "########## Installing dotfiles ##########"
-  rm -f "$HOME"/.zshrc
-  env RCRC="$HOME"/.dotfiles/rcrc rcup
-  bat cache --build
-fi
+fancy_echo "########## Installing dotfiles ##########"
+# First clean and backup
+test -d ~/.config/alacritty && mv ~/.config/alacritty ~/.config/alacritty.bak
+test -d ~/.config/i3 && mv ~/.config/i3 ~/.config/i3.bak
+test -f ~/.config/picom.conf && mv ~/.config/picom.conf ~/.config/picom.conf.bak
+test -d ~/.config/nvim && mv ~/.config/nvim ~/.config/nvim.bak
+test -f ~/.Xresources && mv ~/.Xresources ~/.Xresources.bak
+test -f ~/.zshrc && mv ~/.zshrc ~/.zshrc.bak
 
-if [ -f "$HOME/.laptop.local" ]; then
-  fancy_echo "########## Running your customizations from ~/.laptop.local ##########"
-  . ../.laptop.local
+cd "$GIT_ROOT"
+# shellcheck disable=SC2035
+stow */
+
+# Install dotfiles-secret
+fancy_echo "########## Installing dotfiles-secret ##########"
+if [ ! -d "$HOME/.dotfiles-secret" ]; then
+  git clone git@github.com:ioagel/dotfiles-secret.git "$HOME/.dotfiles-secret"
 fi
+cd "$HOME/.dotfiles-secret"
+./install
+
+fancy_echo "########## Completing post-install jobs ##########"
+cd "$cwd"
+./post-up
+bat cache --build
