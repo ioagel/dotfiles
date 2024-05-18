@@ -60,9 +60,9 @@ echo "$color" >$ROOT_DIR/theme-color
 ### Setup for Waybar custom themetoggler module
 ## Material Design Icons
 if [ "$color" == "light" ]; then
-  # moon-waning-crescent icon
-  echo '{"text": "󰽥", "tooltip": "Switch to dark theme"}' >$ROOT_DIR/toggler-state
-else
   # white-balance-sunny icon
-  echo '{"text": "󰖨", "tooltip": "Switch to light theme"}' >$ROOT_DIR/toggler-state
+  echo '{"text": "󰖨", "tooltip": "Switch between light and dark mode (currently light mode)"}' >$ROOT_DIR/toggler-state
+else
+  # moon-waning-crescent icon
+  echo '{"text": "󰽥", "tooltip": "Switch between light and dark mode (currently dark mode)"}' >$ROOT_DIR/toggler-state
 fi

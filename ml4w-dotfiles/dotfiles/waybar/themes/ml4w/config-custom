@@ -36,10 +36,16 @@
   // End of Overrides
 
   // Custom Modules
+  // Does not support multi-monitor properly
+  // Need to right-click on the 2nd monitor to refresh the icon and tooltip
+  // or do the hack below
   "custom/themetoggler": {
     "format": "{}",
     "exec": "sleep 1 && cat ~/.local/state/waybar/modules/themetoggler/toggler-state",
-    "interval": "once",
+    // This is the proper way of implementing it, but unfortunately the other monitors do not update,
+    // that's why I'm using the hack below with the fixed interval
+    // "interval": "once",
+    "interval": 10,
     "exec-on-event": true,
     "return-type": "json",
     "on-click": "~/.bin/change_theme",
