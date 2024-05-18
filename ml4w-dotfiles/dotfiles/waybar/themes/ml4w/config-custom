@@ -35,9 +35,20 @@
   },
   // End of Overrides
 
+  // Custom Modules
+  "custom/themetoggler": {
+    "format": "{}",
+    "exec": "sleep 1 && cat ~/.local/state/waybar/modules/themetoggler/toggler-state",
+    "interval": "once",
+    "exec-on-event": true,
+    "return-type": "json",
+    "on-click": "~/.bin/change_theme",
+    "tooltip": true
+  },
   // Modules Left
   "modules-left": [
     "custom/appmenu",
+    "custom/themetoggler",
     "group/links",
     "group/settings",
     "group/quicklinks",

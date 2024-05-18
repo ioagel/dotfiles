@@ -1,10 +1,24 @@
 #!/bin/bash
 # Change theme colors
 
-color=$1
+# Create needed directories
+ROOT_DIR=~/.local/state/waybar/modules/themetoggler
+mkdir -p $ROOT_DIR
+touch $ROOT_DIR/theme-color
+touch $ROOT_DIR/toggler-state
+
+color=${1:-$(cat $ROOT_DIR/theme-color)}
 if [ -z "$color" ]; then
   echo "Usage: $0 <light|dark>"
   exit 1
+fi
+
+if [ -z "$1" ]; then
+  if [ "$color" == "light" ]; then
+    color="dark"
+  else
+    color="light"
+  fi
 fi
 
 LIGHT_THEME=Breeze
@@ -39,4 +53,16 @@ if [ "$color" == "dark" ]; then
   sed -i "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=true/" ~/.config/gtk-4.0/settings.ini
 fi
 
-nwg-look -a 2> /dev/null
+nwg-look -a 2>/dev/null
+
+echo "$color" >$ROOT_DIR/theme-color
+
+### Setup for Waybar custom themetoggler module
+## Material Design Icons
+if [ "$color" == "light" ]; then
+  # moon-waning-crescent icon
+  echo '{"text": "󰽥", "tooltip": "Switch to dark theme"}' >$ROOT_DIR/toggler-state
+else
+  # white-balance-sunny icon
+  echo '{"text": "󰖨", "tooltip": "Switch to light theme"}' >$ROOT_DIR/toggler-state
+fi
