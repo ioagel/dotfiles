@@ -57,7 +57,7 @@
     "custom/themetoggler",
     "group/links",
     "group/settings",
-    "group/quicklinks",
+//    "group/quicklinks",
     "hyprland/window",
     "custom/empty"
   ],
