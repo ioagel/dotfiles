@@ -1,3 +1,3 @@
 DOTFILES_DIRS="$HOME/.dotfiles-secret $HOME/.dotfiles-local $HOME/.dotfiles"
-EXCLUDES="README.md LICENSE iterm2 Brewfile Brewfile.mas install mac ubuntu sh_functions fonts manjaro aur-pkgs.txt pacman-pkgs.txt systemd"
+EXCLUDES="README.md LICENSE iterm2 Brewfile Brewfile.mas install mac ubuntu sh_functions fonts manjaro aur-pkgs.txt pacman-pkgs.txt systemd stignore"
 SYMLINK_DIRS="backups undodir"

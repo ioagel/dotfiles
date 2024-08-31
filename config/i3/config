@@ -277,6 +277,7 @@ bindsym $mod+minus scratchpad show
 # Per app scratchpad
 bindsym $mod+F3 [instance="Alacritty"] scratchpad show
 bindsym $mod+F4 [instance="thunar"] scratchpad show
+bindsym $mod+F5 [instance="gnome-pomodoro"] scratchpad show
 
 
 # Multimedia Keys
@@ -635,3 +636,8 @@ exec --no-startup-id "xcape -e Control_L=Escape"
 
 bindsym $mod+F2 exec --no-startup-id sh ~/.config/i3/scripts/keyboard_changer.sh
 
+# i3-gnome-pomodor settings
+bindsym $mod+F9 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro start"
+bindsym $mod+F10 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro toggle"
+bindsym $mod+F11 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro skip"
+bindsym $mod+F12 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro stop"
