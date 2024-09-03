@@ -1,0 +1,9 @@
+### Used by i3
+export MONITOR_CONFIG="$HOME/.config/i3/includes/desktop-igpu.conf"
+
+### Used by i3blocks
+# [CPU-temperature] block
+export T_WARN=75
+export T_CRIT=95
+# uses sensors output for chip
+export SENSOR_CHIP="k10temp-pci-00c3"

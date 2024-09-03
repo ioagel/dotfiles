@@ -9,7 +9,7 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
           common-aliases docker-compose docker kubectl dotenv github gitignore
           jsontools npm safe-paste sudo themes tmux yarn vagrant
           history-substring-search asdf fzf zsh-syntax-highlighting
-          zsh-autosuggestions terraform)
+          zsh-autosuggestions terraform z)
   ZSH_DISABLE_COMPFIX="true"
 
   source $ZSH/oh-my-zsh.sh

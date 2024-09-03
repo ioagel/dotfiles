@@ -12,6 +12,12 @@ Set zsh as your login shell:
 
     chsh -s $(which zsh)
 
+#### Ubuntu (24.04)
+
+- Need to compile `i3blocks` from git: https://github.com/vivien/i3blocks
+  - To support variable passing to custom scripts
+
+
 Install
 -------
 

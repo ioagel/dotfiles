@@ -84,24 +84,7 @@ set $ws8  "8"
 set $ws9  "9"
 set $ws10 "10"
 
-# use workspaces on different displays:
-# igpu when rx580 is installed
-#set $left   HDMI-A-2
-#set $right  DisplayPort-2
-# igpu when rx580 is set for vfio or igpu only
-set $left   HDMI-A-0
-set $right  DisplayPort-0
-
-workspace $ws1  output $left
-workspace $ws2  output $left
-workspace $ws3  output $left
-workspace $ws4  output $left
-workspace $ws5  output $left
-workspace $ws6  output $right
-workspace $ws7  output $right
-workspace $ws8  output $right
-workspace $ws9  output $right
-workspace $ws10 output $right
+include $MONITOR_CONFIG
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
@@ -189,7 +172,7 @@ bindsym $mod+r mode "resize"
 ######################################
 
 # start a terminal
-bindsym $mod+Return exec alacritty
+bindsym $mod+Return exec ~/.bin/alacritty
 
 # kill focused window
 bindsym $mod+q kill
@@ -213,7 +196,7 @@ bindsym $mod+Shift+r restart
 bindsym F1 exec ~/.config/i3/scripts/keyhint-2
 # alternative
 # keybinding list in editor:
-bindsym $mod+F1 exec xed ~/.config/i3/keybindings
+bindsym $mod+F1 exec gedit ~/.config/i3/keybindings
 
 # Backlight control
 bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
@@ -303,14 +286,20 @@ bindsym XF86AudioPrev exec playerctl previous
 # bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
-bindsym $mod+w exec --no-startup-id /usr/bin/google-chrome-stable
-bindsym $mod+n exec --no-startup-id /usr/bin/thunar
-bindsym $mod+o exec --no-startup-id /usr/bin/obsidian
+bindsym $mod+w exec --no-startup-id google-chrome-stable
+bindsym $mod+n exec --no-startup-id thunar
+bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
-bindsym Print exec --no-startup-id i3-scrot
-bindsym $mod+Print --release exec --no-startup-id i3-scrot -w
-bindsym $mod+Shift+Print --release exec --no-startup-id i3-scrot -s
+# Screenshots : Ubuntu
+bindsym Print exec --no-startup-id maim "/home/$USER/Pictures/$(date)"
+bindsym $mod+Print exec --no-startup-id maim --window $(xdotool getactivewindow) "/home/$USER/Pictures/$(date)"
+bindsym Shift+Print exec --no-startup-id maim --select "/home/$USER/Pictures/$(date)"
+
+# Endeavour OS
+#bindsym Print exec --no-startup-id i3-scrot
+#bindsym $mod+Print --release exec --no-startup-id i3-scrot -w
+#bindsym $mod+Shift+Print --release exec --no-startup-id i3-scrot -s
 #bindsym Print exec scrot ~/%Y-%m-%d-%T-screenshot.png && notify-send "Screenshot saved to ~/$(date +"%Y-%m-%d-%T")-screenshot.png"
 bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 
@@ -352,8 +341,10 @@ exec_always --no-startup-id picom -b --config  ~/.config/picom.conf
 # autostart applications/services on login: #
 #############################################
 
-#get auth work with polkit-gnome
-exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+#get auth work with polkit-gnome in EndeavourOS
+#exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+# In Ubuntu use the following
+exec --no-startup-id lxpolkit
 
 # dex execute .desktop files + apps using /etc/xdg/autostart.
 # when second to i3 a DE is installed or mixed usage of i3 + xfce4 or GNOME
@@ -371,10 +362,6 @@ exec --no-startup-id dex --autostart --environment i3
 
 # start conky:
 #exec_always --no-startup-id conky
-
-# start a script to setup displays
-# uncomment the next line, use arandr to setup displays and save the file as monitor:
-exec --no-startup-id ~/.screenlayout/monitors.sh
 
 # set wallpaper
 exec --no-startup-id sleep 2 && nitrogen --restore
@@ -627,7 +614,10 @@ exec --no-startup-id redshift-gtk
 
 exec --no-startup-id 1password
 
-exec --no-startup-id solaar -w hide
+# Advanced Screenshots
+exec --no-startup-id flameshot
+
+exec --no-startup-id solaar -w hide --restart-on-wake-up
 
 # make CapsLock behave like Ctrl:
 exec --no-startup-id "setxkbmap -option ctrl:nocaps"

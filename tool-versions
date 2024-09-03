@@ -4,3 +4,7 @@ ruby system
 python system
 java system
 golang system
+lazydocker 0.23.3
+lazygit 0.43.1
+sops 3.9.0
+k3d 5.7.3

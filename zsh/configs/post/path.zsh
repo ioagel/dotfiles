@@ -9,7 +9,7 @@ if [ "$(uname)" = 'Darwin' ]; then
 fi
 
 # home dir bin dirs
-PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.linkerd2/bin:$PATH"
+PATH="$HOME/.bin:$HOME/.local/bin:$HOME/.linkerd2/bin:$HOME/code/istio/bin:$PATH"
 
 # mkdir .git/safe in the root of repositories you trust
 PATH=".git/safe/../../bin:$PATH"

@@ -11,9 +11,10 @@ alias e="$EDITOR"
 alias v="$VISUAL"
 
 # terminal colors
-alias day="alacritty-colorscheme -V apply $LIGHT_COLOR"
-alias night="alacritty-colorscheme -V apply $DARK_COLOR"
-alias toggle="alacritty-colorscheme -V toggle $LIGHT_COLOR $DARK_COLOR"
+#alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
+#alias night="sed -i '2s/^/# /' ~/.dotfiles/config/alacritty/alacritty.toml && rm -f ~/.vimrc_background"
+alias day="echo 'day' > ~/.terminal-theme"
+alias night="echo 'night' > ~/.terminal-theme"
 
 # Bundler
 alias b="bundle"

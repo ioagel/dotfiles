@@ -1,0 +1,9 @@
+#!/bin/sh
+
+export PATH=/usr/local/bin:/usr/bin
+
+if grep 'day' <~/.terminal-theme; then
+  alacritty --config-file ~/.config/alacritty/alacritty-day.toml
+else
+  alacritty --config-file ~/.config/alacritty/alacritty-night.toml
+fi

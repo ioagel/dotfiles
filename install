@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
+if [[ "$1" != 'desktop' && "$1" != 'laptop' ]]; then
+  echo "This script requires one argument: 'desktop' or 'laptop'"
+  exit 1
+fi
+
 export PATH="/usr/local/bin:$PATH"
 
 WITH_ASDF_JAVA="${WITH_ASDF_JAVA:-yes}"
-WITH_ASDF_NODE="${WITH_ASDF_NODE:-no}"
-WITH_ASDF_GO="${WITH_ASDF_GO:-no}"
+WITH_ASDF_NODE="${WITH_ASDF_NODE:-yes}"
+WITH_ASDF_GO="${WITH_ASDF_GO:-yes}"
 WITH_ASDF_PYTHON="${WITH_ASDF_PYTHON:-yes}"
 WITH_GUI="${WITH_GUI:-no}" # for Linux
 
@@ -24,15 +29,6 @@ export cwd
 
 . ./sh_functions
 
-if [ ! -d "$HOME/.bin/" ]; then
-  mkdir "$HOME/.bin"
-fi
-if [ ! -d "$HOME/.golang" ]; then
-  mkdir -p "$HOME/.golang"
-fi
-export GOPATH="$HOME/.golang"
-export PATH="$HOME/.bin:$GOPATH/bin:$PATH"
-
 # Authentication
 sudo -v
 # Keep-alive: update existing `sudo` time stamp until bootstrap has finished
@@ -44,7 +40,7 @@ done 2>/dev/null &
 
 if [ "$OS" = 'Darwin' ]; then
   . ./mac
-elif [ "$(lsb_release -s -i)" = 'Ubuntu' ]; then
+elif [ "$(lsb_release -is 2>/dev/null)" = 'Ubuntu' ]; then
   # we are definitely in Ubuntu from the check above
   . ./ubuntu
 fi
@@ -59,11 +55,11 @@ fi
 
 if [ "$WITH_ASDF_NODE" = 'yes' ]; then
   fancy_echo "########## Installing latest Node lts ##########"
+  command -v node-versions || sudo npm i -g @darkobits/node-versions
+  LATEST_LTS=$(node-versions -o json | jq -r .lts.version.full)
   add_or_update_asdf_plugin nodejs
-  install_latest_asdf_language nodejs lts
+  install_latest_asdf_language nodejs "$LATEST_LTS"
   asdf reshim nodejs
-  asdf global nodejs system
-  #npm install -g neovim prettier
 fi
 
 # asdf python 3 setup
@@ -72,27 +68,27 @@ if [ "$WITH_ASDF_PYTHON" = 'yes' ]; then
   add_or_update_asdf_plugin python
   install_latest_asdf_language python
   asdf reshim python
-  asdf global python system
 fi
 
 # Java setup
 if [ "$WITH_ASDF_JAVA" = 'yes' ]; then
-  fancy_echo "########## Installing latest Java 8 and 17 lts ##########"
+  fancy_echo "########## Installing latest Java 8, 17 and 21 lts ##########"
   add_or_update_asdf_plugin java
   install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-8" | tail -1)"
   install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-17" | tail -1)"
+  install_latest_asdf_language java "$(asdf list-all "java" | grep "temurin-21" | tail -1)"
   asdf reshim java
-  asdf global java system
 fi
 
 # Golang Setup
 if [ "$WITH_ASDF_GO" = 'yes' ]; then
   fancy_echo "########## Installing latest GoLang ##########"
+  mkdir -p "$HOME"/.golang/{bin,pkg,src}
+  export GOPATH="$HOME/.golang"
+
   add_or_update_asdf_plugin golang
-  mkdir -p "$HOME"/code/go/{bin,pkg,src}
   install_latest_asdf_language golang
   asdf reshim golang
-  asdf global golang system
 fi
 
 # install oh-my-zsh and plugins
@@ -111,51 +107,15 @@ if [ ! -d "$OH_MY_ZSH" ]; then
   git clone https://github.com/zsh-users/zsh-autosuggestions "$OH_MY_ZSH_PLUGINS"/zsh-autosuggestions
 fi
 
-
-# Alacritty, iTerm2, vim, tmux support for italics
-fancy_echo "########## Installing italics-capable terminfo files for terminals, vim, tmux ##########"
-if [ ! -r ~/.terminfo/61/alacritty ] || [ ! -r ~/.terminfo/a/alacritty ]; then
-  alacritty_terminfo=$(mktemp)
-  curl -o "$alacritty_terminfo" \
-    https://raw.githubusercontent.com/jwilm/alacritty/master/extra/alacritty.info
-  tic -xe alacritty,alacritty-direct "$alacritty_terminfo"
-fi
-if [ ! -r ~/.terminfo/78/xterm-256color-italic ] ||
-  [ ! -r ~/.terminfo/x/xterm-256color-italic ]; then
-  tic -x ~/.dotfiles/iterm2/xterm-256color-italic.terminfo
-fi
-if [ ! -r ~/.terminfo/74/tmux-256color ] ||
-  [ ! -r ~/.terminfo/t/tmux-256color ]; then
-  tic -x ~/.dotfiles/iterm2/tmux-256color.terminfo
-fi
-
-# Install alacritty-colorsheme
-command -v pipx && pipx install alacritty-colorscheme
-
-# Setup alacritty-colorscheme with base16 alacritty colors
-REPO="https://github.com/aaron-williamson/base16-alacritty.git"
-DEST="$HOME/.config/alacritty/base16-alacritty"
-if [ ! -e "$HOME/.config/alacritty/colors" ]; then
-  fancy_echo "########## Install base16 alacritty ##########"
-  mkdir -p "$HOME/.config/alacritty"
-  # Get colorschemes
+# Setup alacritty-theme
+REPO="https://github.com/alacritty/alacritty-theme"
+DEST="$HOME/.config/alacritty/themes"
+if [ ! -e "$DEST" ]; then
+  fancy_echo "########## Install alacritty theme ##########"
+  mkdir -p "$DEST"
   git clone $REPO "$DEST"
-  # Create symlink at default colors location (optional)
-  ln -s "$DEST/colors" "$HOME/.config/alacritty/colors"
-  # EXAMPLE USAGE
-  # bash/zsh aliases
-  # Add this in your .zshrc or .bashrc file:
-  #
-  # LIGHT_COLOR='base16-gruvbox-light-soft.yml'
-  # DARK_COLOR='base16-gruvbox-dark-soft.yml'
-  #
-  # alias day="alacritty-colorscheme -V apply $LIGHT_COLOR"
-  # alias night="alacritty-colorscheme -V apply $DARK_COLOR"
-  # alias toggle="alacritty-colorscheme -V toggle $LIGHT_COLOR $DARK_COLOR"
-  #########
-  fancy_echo "Setup base16 alacritty... DONE"
 else
-  fancy_echo "########## Updating base16 alacritty ##########"
+  fancy_echo "########## Updating alacritty-theme ##########"
   cd "$DEST" && git pull origin master
   cd "$cwd"
 fi
@@ -170,15 +130,17 @@ fi
 
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "########## Updating dotfiles ##########"
-  rcup
+  rcup -t "$1"
 else
   fancy_echo "########## Installing dotfiles ##########"
   rm -f "$HOME"/.zshrc
-  env RCRC="$HOME"/.dotfiles/rcrc rcup
-  bat cache --build
+  env RCRC="$HOME"/.dotfiles/rcrc rcup -t "$1"
 fi
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "########## Running your customizations from ~/.laptop.local ##########"
   . ../.laptop.local
 fi
+
+# Set default terminal theme
+echo "night" > "$HOME"/.terminal-theme

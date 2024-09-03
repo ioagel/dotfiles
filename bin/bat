@@ -1,12 +1,16 @@
 #!/bin/sh
 
-export PATH=/usr/bin:/usr/local/bin:/bin
+BAT_CMD=bat
 
-if command -v alacritty-colorscheme > /dev/null; then
-  if alacritty-colorscheme status | grep -q light; then
-    bat --theme OneHalfLight $@
-    exit 0
-  fi
+if command -V batcat >/dev/null; then
+  # We are in Ubuntu
+  BAT_CMD=batcat
 fi
 
-bat $@
+if grep 'day' <~/.terminal-theme; then
+  # We are in 'day' mode
+  $BAT_CMD --theme OneHalfLight "$@"
+  exit 0
+fi
+
+$BAT_CMD "$@"

@@ -1,14 +1,14 @@
 # Set the preview options
 set preview true
-set prelow 33%
-set preratio 33:10
-set cmdheight 1
+#set prelow 33%
+#set preratio 33:10
+#set cmdheight 1
 set scrolloff 1
 
 # Sort by date so latest is on top including hidden ones
 set hidden
-set sortby mtime
-set sortdir desc
+set sortby name
+# set sortdir desc
 set ignorecase true
 set icons true
 
@@ -21,10 +21,10 @@ cmd open !{{
         # text/*) $EDITOR "$f" ;;
         text/*) bat "$f" ;;
         image/*) sxiv "$f" ;;
-        # video/*) mpv "$f" ;;
-        video/*) iina "$f" ;;
-        # *) xdg-open "$f" ;;
-        *) open "$f" ;;
+        video/*) mpv "$f" ;;
+        #video/*) vlc "$f" ;;
+        *) xdg-open "$f" ;;
+        # *) open "$f" ;;
     esac
 }}
 
@@ -33,13 +33,12 @@ map o !{ xdg-open "$fx" }
 map e !{ $EDITOR "$fx" }
 # map <c-e> !{ fd }
 map i !{ sxiv "$fx" }
-# map m !{ mpv "$fx" }
-map m !{ iina "$fx" }
+map m !{ mpv "$fx" }
 map x !{ xdg-open "$fx" }
 map <up> up 1
 map <down> down 1
-map <left> back
-map <right> !{ xdg-open "$fx" }
+#map <left> back
+#map <right> !{ xdg-open "$fx" }
 map <c-l> redraw
 map <c-u> half-up
 map <c-d> half-down
