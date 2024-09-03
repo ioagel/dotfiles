@@ -14,7 +14,7 @@ Set zsh as your login shell:
 
 #### Ubuntu (24.04)
 
-- Need to compile `i3blocks` from git: https://github.com/vivien/i3blocks
+- Need to compile `i3blocks` from git: https://github.com/vivien/i3blocks, because it has older version
   - To support variable passing to custom scripts
 
 
@@ -27,12 +27,16 @@ Clone onto your laptop:
 
 Install [rcm](https://github.com/thoughtbot/rcm):
 
+    # Mac OS (Not supported anymore)
     brew tap thoughtbot/formulae
     brew install rcm
 
+    # Ubuntu
+    sudo apt install rcm
+
 Install the dotfiles:
 
-    env RCRC=$HOME/.dotfiles/rcrc rcup
+    env RCRC=$HOME/.dotfiles/rcrc rcup -t desktop
 
 After the initial installation, you can run `rcup` without the one-time variable
 `RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
@@ -40,10 +44,7 @@ runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/maste
 
 Install the dotfiles and lots of useful mac/ubuntu apps and utilities:
 
-    # ENV vars that can be used
-    # WITH_GO WITH_RUBY WITH_JAVA WITH_GUI(for linux)
-    # DEFAULTS: WITH_GO=yes WITH_RUBY=yes WITH_JAVA=yes WITH_GUI=no
-    bash install 2>&1 | tee ~/laptop.log
+    bash install desktop 2>&1 | tee ~/laptop.log
 
 
 Update
@@ -51,7 +52,7 @@ Update
 
 From time to time you should pull down any updates to these dotfiles, and run
 
-    rcup
+    rcup -t desktop
 
 to link any new files and install new Vim plugins. **Note** You _must_ run
 `rcup` after pulling to ensure that all files in plugins are properly installed,
