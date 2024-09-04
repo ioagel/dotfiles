@@ -1,5 +1,4 @@
 nodejs system
-ruby system
 python system
 java system
 golang system
@@ -9,3 +8,6 @@ sops 3.9.0
 k3d 5.7.3
 starship 1.20.1
 k9s 0.32.5
+kubectl 1.30.4
+istioctl 1.23.0
+step 0.27.2
