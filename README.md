@@ -44,7 +44,7 @@ runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/maste
 
 Install the dotfiles and lots of useful mac/ubuntu apps and utilities:
 
-    bash install desktop 2>&1 | tee ~/laptop.log
+    bash install.sh desktop 2>&1 | tee ~/laptop.log
 
 
 Update

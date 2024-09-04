@@ -52,7 +52,7 @@ if [ "$OS" = 'Darwin' ]; then
   . ./mac
 elif [ "$(lsb_release -is 2>/dev/null)" = 'Ubuntu' ]; then
   # we are definitely in Ubuntu from the check above
-  . ./ubuntu
+  . ./ubuntu.sh
 fi
 
 if [ ! -d "$HOME/.asdf" ]; then
