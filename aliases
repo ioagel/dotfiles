@@ -8,6 +8,11 @@ alias vim="$EDITOR"
 alias e="$EDITOR"
 alias v="$VISUAL"
 
+# In ubuntu at least, 'fd' is already aliased, and I overwrite it here
+# Using the 'fdfind' utility as it is called in Ubuntu
+# https://github.com/sharkdp/fd
+command -v fdfind >/dev/null && alias fd="fdfind"
+
 # terminal colors
 #alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
 #alias night="sed -i '2s/^/# /' ~/.dotfiles/config/alacritty/alacritty.toml && rm -f ~/.vimrc_background"
