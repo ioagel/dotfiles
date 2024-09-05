@@ -14,7 +14,7 @@ sudo apt -y install \
   libreadline-dev libncurses-dev coreutils libyaml-dev libxslt-dev \
   libffi-dev unixodbc-dev unzip curl gnupg git tmux \
   rcm zsh htop unixodbc fasd shellcheck jq tree wget silversearcher-ag cmake \
-  apt-transport-https ca-certificates zlib1g-dev ripgrep bat nala fdfind
+  apt-transport-https ca-certificates zlib1g-dev ripgrep bat nala fdfind zoxide
 
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
