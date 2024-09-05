@@ -1,5 +1,3 @@
-# Use neovim instead of vim , if it is installed
-alias soz='source ~/.zshrc'
 # Unix
 alias ll="ls -al"
 alias ltr="ls -lAFhtr"
@@ -16,15 +14,8 @@ alias v="$VISUAL"
 alias day="echo 'day' > ~/.terminal-theme"
 alias night="echo 'night' > ~/.terminal-theme"
 
-# Bundler
-alias b="bundle"
-
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
-
-# fixes remote term because of italics in iTerm through: xterm-256color-italic
-# remote servers maybe will not support
-alias ssh='TERM=xterm-256color ssh'
 
 # Docker related
 alias lzd='lazydocker'
@@ -38,17 +29,15 @@ alias sshk="ssh-keygen -R "
 alias sei="sops -e -i"
 alias sdi="sops -d -i"
 
-# vagrant
-# alias vg="vagrant"
-# alias vggs="vagrant global-status"
-# alias vgs="vagrant status"
-
 # kubernetes
 alias kns="kubens"
 alias kctx="kubectx"
 
-# i3 related
+# i3 config
 alias i3e="$EDITOR ~/.config/i3/config"
+
+# zsh config
+alias soz='source ~/.zshrc'
 
 # Include custom secret aliases
 [[ -f ~/.aliases.secret ]] && source ~/.aliases.secret

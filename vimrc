@@ -292,7 +292,7 @@ set shiftround
 set expandtab
 set shiftround    " When at 3 spaces and I hit >>, go to 4, not 5.
 set hidden
-set clipboard=unnamed
+set clipboard=unnamedplus
 set conceallevel=2
 
 " Use one space, not two, after punctuation.
@@ -360,6 +360,7 @@ set splitright
 set fileencodings=utf-8,iso-8859-1
 set fileformats=unix,mac,dos
 set textwidth=80
+set nowrap
 
 " Meta characters
 " Prepended to wrapped lines

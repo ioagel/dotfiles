@@ -226,3 +226,9 @@ fi
 
 # Set default terminal theme
 echo "night" > "$HOME"/.terminal-theme
+
+# Setup tmux plugin manager
+test ! -d ~/.tmux/plugins/tpm && \
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm && \
+  ~/.tmux/plugins/tpm/bin/install_plugins
+
