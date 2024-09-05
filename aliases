@@ -6,8 +6,7 @@ alias df="df -h"
 alias mkdir="mkdir -p"
 alias vim="$EDITOR"
 alias e="$EDITOR"
-alias v="$VISUAL"
-
+alias cd="z" # using zoxide utility
 # In ubuntu at least, 'fd' is already aliased, and I overwrite it here
 # Using the 'fdfind' utility as it is called in Ubuntu
 # https://github.com/sharkdp/fd

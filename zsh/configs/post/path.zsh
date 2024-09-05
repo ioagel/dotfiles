@@ -15,3 +15,6 @@ PATH="$HOME/.bin:$HOME/.local/bin:$PATH"
 PATH=".git/safe/../../bin:$PATH"
 
 export -U PATH
+
+# Setup zoxide for smarter paths
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
