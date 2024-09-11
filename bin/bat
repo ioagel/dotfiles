@@ -1,8 +1,8 @@
 #!/bin/sh
 
-BAT_CMD=bat
+BAT_CMD=/usr/bin/bat
 
-if command -V batcat >/dev/null; then
+if command -v batcat; then
   # We are in Ubuntu
   BAT_CMD=batcat
 fi

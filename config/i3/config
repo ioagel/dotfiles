@@ -86,8 +86,8 @@ set $ws8  "8"
 set $ws9  "9"
 set $ws10 "10"
 
-set $left   HDMI-A-1 HDMI-A-2
-set $right  DisplayPort-1 DisplayPort-2
+set $left   HDMI-A-0 HDMI-A-1 HDMI-A-2
+set $right  DisplayPort-0 DisplayPort-1 DisplayPort-2
 
 workspace $ws1  output $left
 workspace $ws2  output $left
@@ -99,8 +99,6 @@ workspace $ws7  output $right
 workspace $ws8  output $right
 workspace $ws9  output $right
 workspace $ws10 output $right
-
-exec --no-startup-id ~/.screenlayout/monitors.sh
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
@@ -307,16 +305,11 @@ bindsym $mod+n exec --no-startup-id thunar
 bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
-# Screenshots : Ubuntu
+# Screenshots
 bindsym Print exec --no-startup-id maim "/home/$USER/Pictures/$(date)"
 bindsym $mod+Print exec --no-startup-id maim --window $(xdotool getactivewindow) "/home/$USER/Pictures/$(date)"
 bindsym Shift+Print exec --no-startup-id maim --select "/home/$USER/Pictures/$(date)"
 
-# Endeavour OS
-#bindsym Print exec --no-startup-id i3-scrot
-#bindsym $mod+Print --release exec --no-startup-id i3-scrot -w
-#bindsym $mod+Shift+Print --release exec --no-startup-id i3-scrot -s
-#bindsym Print exec scrot ~/%Y-%m-%d-%T-screenshot.png && notify-send "Screenshot saved to ~/$(date +"%Y-%m-%d-%T")-screenshot.png"
 bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 
 # Power Profiles menu switcher (rofi)
@@ -357,10 +350,8 @@ exec_always --no-startup-id picom -b --config  ~/.config/picom.conf
 # autostart applications/services on login: #
 #############################################
 
-#get auth work with polkit-gnome in EndeavourOS
-#exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-# In Ubuntu use the following
-exec --no-startup-id lxpolkit
+#get auth work with polkit-gnome in EndeavourOS or lxpolkit for Ubuntu 24.04
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2>/dev/null || lxpolkit
 
 # dex execute .desktop files + apps using /etc/xdg/autostart.
 # when second to i3 a DE is installed or mixed usage of i3 + xfce4 or GNOME
@@ -649,3 +640,6 @@ bindsym $mod+F9 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro start"
 bindsym $mod+F10 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro toggle"
 bindsym $mod+F11 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro skip"
 bindsym $mod+F12 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro stop"
+
+# Set up monitors
+exec --no-startup-id ~/.screenlayout/monitors.sh

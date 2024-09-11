@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Do not run the rest of the file
+echo "nothing to do for post up" && exit 0
+
 if [ -e "$HOME"/.vim/autoload/plug.vim ]; then
   vim +PlugUpgrade +qa
 else

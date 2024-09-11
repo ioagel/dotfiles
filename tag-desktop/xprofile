@@ -4,3 +4,6 @@ export T_WARN=75
 export T_CRIT=95
 # uses sensors output for chip
 export SENSOR_CHIP="k10temp-pci-00c3"
+
+# Make Jetbrains happy
+export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"

@@ -5,11 +5,11 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   HIST_STAMPS="dd.mm.yyyy"
   export UPDATE_ZSH_DAYS=7
   COMPLETION_WAITING_DOTS="true"
-  plugins=(archlinux ssh-agent fasd brew colored-man-pages colorize
+  plugins=(archlinux ssh-agent brew colored-man-pages colorize
           common-aliases docker-compose docker dotenv github gitignore
           jsontools npm safe-paste sudo themes tmux yarn vagrant
           history-substring-search asdf fzf zsh-syntax-highlighting
-          zsh-autosuggestions terraform z kubectl)
+          zsh-autosuggestions terraform kubectl)
   ZSH_DISABLE_COMPFIX="true"
 
   source $ZSH/oh-my-zsh.sh
