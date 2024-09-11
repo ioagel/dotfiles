@@ -49,7 +49,7 @@ while true; do
 done 2>/dev/null &
 
 if [ "$OS" = 'Darwin' ]; then
-  . ./mac
+  . ./mac.sh
 elif [ "$(lsb_release -is 2>/dev/null)" = 'Ubuntu' ]; then
   # we are definitely in Ubuntu from the check above
   . ./ubuntu.sh
