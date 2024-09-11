@@ -2,19 +2,21 @@
 # NOTE: hitting the GitHub api without an auth token limits the requests
 # at 60/hour.
 
-snapd="$(snap version 2> /dev/null | sed -n 2p | awk '{print $2}')"
+snapd="$(snap version 2>/dev/null | sed -n 2p | awk '{print $2}')"
 
 # add required repositories
 sudo add-apt-repository -y universe
 
 sudo apt -y update
 
+# luarocks, tree-sitter-cli needed for neovim (specifically lazyvim)
 sudo apt -y install \
-  autoconf automake build-essential python-dev libtool libssl-dev pkg-config \
+  autoconf automake build-essential python3-dev python3-pip libtool libssl-dev pkg-config \
   libreadline-dev libncurses-dev coreutils libyaml-dev libxslt-dev \
   libffi-dev unixodbc-dev unzip curl gnupg git tmux \
   rcm zsh htop unixodbc fasd shellcheck jq tree wget silversearcher-ag cmake \
-  apt-transport-https ca-certificates zlib1g-dev ripgrep bat nala fdfind zoxide
+  apt-transport-https ca-certificates zlib1g-dev ripgrep bat nala fdfind zoxide \
+  luarocks tree-sitter-cli
 
 # Install gui apps and fonts
 if [ "$WITH_GUI" = 'yes' ]; then
@@ -62,10 +64,10 @@ if [ "$WITH_GUI" = 'yes' ]; then
   fc-cache -fr
   ##########################
 
-#  if [ "$snapd" != 'unavailable' ]; then
-#    sudo snap install code --classic
-#    sudo snap install spotify
-#  fi
+  #  if [ "$snapd" != 'unavailable' ]; then
+  #    sudo snap install code --classic
+  #    sudo snap install spotify
+  #  fi
 
   wget -P /tmp https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
   sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb

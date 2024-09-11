@@ -57,6 +57,8 @@ new_window pixel 1
 # Set inner/outer gaps
 gaps inner 6
 gaps outer 3
+bindsym $mod+g gaps inner all set 0; gaps outer all set 0
+bindsym $mod+Shift+g gaps inner all set 6; gaps outer all set 3
 
 # show window title bars (not officially supported with i3gaps)
 #default_border normal
@@ -84,7 +86,21 @@ set $ws8  "8"
 set $ws9  "9"
 set $ws10 "10"
 
-include $MONITOR_CONFIG
+set $left   HDMI-A-1 HDMI-A-2
+set $right  DisplayPort-1 DisplayPort-2
+
+workspace $ws1  output $left
+workspace $ws2  output $left
+workspace $ws3  output $left
+workspace $ws4  output $left
+workspace $ws5  output $left
+workspace $ws6  output $right
+workspace $ws7  output $right
+workspace $ws8  output $right
+workspace $ws9  output $right
+workspace $ws10 output $right
+
+exec --no-startup-id ~/.screenlayout/monitors.sh
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
@@ -193,10 +209,10 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # keybinding in fancy rofi (automated):
-bindsym F1 exec ~/.config/i3/scripts/keyhint-2
+bindsym $mod+F1 exec ~/.config/i3/scripts/keyhint-2
 # alternative
 # keybinding list in editor:
-bindsym $mod+F1 exec gedit ~/.config/i3/keybindings
+bindsym $mod+Shift+F1 exec gedit ~/.config/i3/keybindings
 
 # Backlight control
 bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
@@ -236,8 +252,8 @@ bindsym $mod+v split v
 bindsym $mod+f fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+g layout tabbed
+#bindsym $mod+s layout stacking
+#bindsym $mod+g layout tabbed
 bindsym $mod+e layout toggle split
 
 # toggle tiling / floating
@@ -423,6 +439,8 @@ for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
 for_window [class="gnome-calculator" instance="gnome-calculator"] floating enable
 
 # set floating (nontiling) for special apps
+for_window [class="battle.net.exe"] floating enable
+
 for_window [class="Xsane" instance="xsane"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
 for_window [class="qt5ct" instance="qt5ct"] floating enable
@@ -619,16 +637,14 @@ exec --no-startup-id 1password
 # Advanced Screenshots
 exec --no-startup-id flameshot
 
-exec --no-startup-id solaar -w hide --restart-on-wake-up
+exec --no-startup-id solaar -w hide
 
-# make CapsLock behave like Ctrl:
-exec --no-startup-id "setxkbmap -option ctrl:nocaps"
-# make short-pressed Ctrl behave like Escape:
-exec --no-startup-id "xcape -e Control_L=Escape"
+# make CapsLock behave like Ctrl and make short-pressed Ctrl behave like Escape
+exec --no-startup-id "setxkbmap -option ctrl:nocaps && xcape -e Control_L=Escape"
 
 bindsym $mod+F2 exec --no-startup-id sh ~/.config/i3/scripts/keyboard_changer.sh
 
-# i3-gnome-pomodor settings
+# i3-gnome-pomodoro settings
 bindsym $mod+F9 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro start"
 bindsym $mod+F10 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro toggle"
 bindsym $mod+F11 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro skip"

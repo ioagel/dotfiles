@@ -210,6 +210,18 @@ if [ "$OS" = 'Linux' ]; then
   fi
 fi
 
+# Setup bat
+BAT_THEMES_DIR="$HOME/.config/bat/themes"
+if [ ! -e "$BAT_THEMES_DIR" ]; then
+  fancy_echo "########## Install bat themes ##########"
+  mkdir "$BAT_THEMES_DIR"
+  wget -P "$BAT_THEMES_DIR" https://github.com/catppuccin/bat/raw/main/themes/Catppuccin%20Latte.tmTheme
+  wget -P "$BAT_THEMES_DIR" https://github.com/catppuccin/bat/raw/main/themes/Catppuccin%20Frappe.tmTheme
+  wget -P "$BAT_THEMES_DIR" https://github.com/catppuccin/bat/raw/main/themes/Catppuccin%20Macchiato.tmTheme
+  wget -P "$BAT_THEMES_DIR" https://github.com/catppuccin/bat/raw/main/themes/Catppuccin%20Mocha.tmTheme
+  bat cache --build
+fi
+
 if [ -r "$HOME/.rcrc" ]; then
   fancy_echo "########## Updating dotfiles ##########"
   rcup -t "$1"
@@ -225,10 +237,9 @@ if [ -f "$HOME/.laptop.local" ]; then
 fi
 
 # Set default terminal theme
-echo "night" > "$HOME"/.terminal-theme
+echo "night" >"$HOME"/.terminal-theme
 
 # Setup tmux plugin manager
-test ! -d ~/.tmux/plugins/tpm && \
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm && \
+test ! -d ~/.tmux/plugins/tpm &&
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm &&
   ~/.tmux/plugins/tpm/bin/install_plugins
-

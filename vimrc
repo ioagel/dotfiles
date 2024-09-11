@@ -1,6 +1,9 @@
 " vim:foldmethod=marker
 " The folding settings above make the {{{ and }}} sections fold up.
 
+" Because I use asdf, neovim throws a warning in 'checkhealth'
+let g:python3_host_prog = '/usr/bin/python3'
+
 set encoding=utf-8
 
 " Leader

@@ -7,10 +7,26 @@ if command -V batcat >/dev/null; then
   BAT_CMD=batcat
 fi
 
-if grep 'day' <~/.terminal-theme; then
-  # We are in 'day' mode
-  $BAT_CMD --theme OneHalfLight "$@"
-  exit 0
+# Initialize a flag for the theme argument
+theme_found=0
+
+# Loop through all command line arguments
+for arg in "$@"; do
+  # Check if the argument contains "--theme"
+  if echo "$arg" | grep -q -- "--theme"; then
+    theme_found=1
+    break
+  fi
+done
+
+# Check if we are in 'day' mode and the user did not pass the --theme argument
+if [ "$theme_found" -eq 0 ] && grep 'day' <~/.terminal-theme >/dev/null; then
+  # Check if we pass a file as an argument,
+  # and only then show the file with the appropriate theme
+  if [ -f "$1" ]; then
+    $BAT_CMD --theme="Catppuccin Latte" "$@"
+    exit 0
+  fi
 fi
 
 $BAT_CMD "$@"
