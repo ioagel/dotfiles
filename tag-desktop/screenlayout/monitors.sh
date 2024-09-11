@@ -5,7 +5,7 @@ output=$(xrandr --listactivemonitors | awk '{print $4}')
 LEFT_MONITOR=HDMI-A-2
 RIGHT_MONITOR=DisplayPort-2
 
-if echo "$output" | grep -q "HDMI-A-1" && echo "$output" | grep -q "DisplayPort-1"; then
+if echo "$output" | grep -qE "^HDMI-A-1$" && echo "$output" | grep -qE "^DisplayPort-1$"; then
   # rx580 ports
   LEFT_MONITOR=HDMI-A-1
   RIGHT_MONITOR=DisplayPort-1
