@@ -636,10 +636,10 @@ exec --no-startup-id "setxkbmap -option ctrl:nocaps && xcape -e Control_L=Escape
 bindsym $mod+F2 exec --no-startup-id sh ~/.config/i3/scripts/keyboard_changer.sh
 
 # i3-gnome-pomodoro settings
-bindsym $mod+F9 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro start"
-bindsym $mod+F10 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro toggle"
-bindsym $mod+F11 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro skip"
-bindsym $mod+F12 exec --no-startup-id "~/.local/bin/i3-gnome-pomodoro stop"
+bindsym $mod+F9  exec --no-startup-id i3-gnome-pomodoro start
+bindsym $mod+F10 exec --no-startup-id i3-gnome-pomodoro toggle
+bindsym $mod+F11 exec --no-startup-id i3-gnome-pomodoro skip
+bindsym $mod+F12 exec --no-startup-id i3-gnome-pomodoro stop
 
 # Set up monitors
 exec --no-startup-id ~/.screenlayout/monitors.sh

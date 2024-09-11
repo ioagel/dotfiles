@@ -3,5 +3,5 @@
 # 'gnome-pomodoro-git' and 'pipx install i3-gnome-pomodoro'
 # https://github.com/kantord/i3-gnome-pomodoro
 
-pomodoro=$(~/.local/bin/i3-gnome-pomodoro status)
+pomodoro=$(i3-gnome-pomodoro status)
 echo $pomodoro
