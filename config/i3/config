@@ -86,7 +86,7 @@ set $ws8  "8"
 set $ws9  "9"
 set $ws10 "10"
 
-set $left   HDMI-A-0 HDMI-A-1 HDMI-A-2
+set $left   HDMI-A-0 HDMI-A-1 HDMI-A-2 DP-1-3
 set $right  DisplayPort-0 DisplayPort-1 DisplayPort-2
 
 workspace $ws1  output $left
@@ -626,7 +626,7 @@ exec --no-startup-id redshift-gtk
 exec --no-startup-id 1password
 
 # Advanced Screenshots
-exec --no-startup-id flameshot
+# exec --no-startup-id flameshot
 
 exec --no-startup-id solaar -w hide
 

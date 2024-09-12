@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# switch from vfio-pci to nvidia
+
+# RX580 video
+ID1="0000:01:00.0"
+GPU_ID="1002 67df"
+# RX580 audio
+ID2="0000:01:00.1"
+GPU_AUDIO_ID="1002 aaf0"
+
+echo "Unbinding GPU from vfio driver"
+sudo sh -c "echo -n $ID1 > /sys/bus/pci/drivers/vfio-pci/unbind" || echo "Failed to unbind amd gpu video"
+sudo sh -c "echo -n $ID2 > /sys/bus/pci/drivers/vfio-pci/unbind" || echo "Failed to unbind amd gpu audio"
+
+# # Remove GPU from vfio-pci
+# echo "Remove GPU from vfio-pci"
+# sudo sh -c "echo -n $GPU_ID > /sys/bus/pci/drivers/vfio-pci/remove_id" || echo "Failed to remove amd gpu video from vfio-pci"
+# sudo sh -c "echo -n $GPU_AUDIO_ID > /sys/bus/pci/drivers/vfio-pci/remove_id" || echo "Failed to remove amd gpu audio from vfio-pci"
+#
+# # Remove vfio driver
+# echo "Remove vfio kernel driver"
+# sudo modprobe -r vfio-pci
+
+echo "Binding GPU to amdgpu driver"
+sudo sh -c "echo -n $ID1 > /sys/bus/pci/drivers/amdgpu/bind" || echo "Failed to bind amd gpu video"
+sudo sh -c "echo -n $ID2 > /sys/bus/pci/drivers/snd_hda_intel/bind" || echo "Failed to bind amd gpu audio"
