@@ -186,7 +186,7 @@ bindsym $mod+r mode "resize"
 ######################################
 
 # start a terminal
-bindsym $mod+Return exec ~/.bin/alacritty
+bindsym $mod+Return exec --no-startup-id ~/.bin/alacritty
 
 # kill focused window
 bindsym $mod+q kill
@@ -210,7 +210,7 @@ bindsym $mod+Shift+r restart
 bindsym $mod+F1 exec ~/.config/i3/scripts/keyhint-2
 # alternative
 # keybinding list in editor:
-bindsym $mod+Shift+F1 exec gedit ~/.config/i3/keybindings
+bindsym $mod+Shift+F1 exec --no-startup-id gedit ~/.config/i3/keybindings
 
 # Backlight control
 bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
@@ -315,26 +315,13 @@ bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 # Power Profiles menu switcher (rofi)
 bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles
 
-bindsym $mod+Ctrl+m exec pavucontrol
+bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 
 ##############
 # compositor #
 ##############
 
 # transparency
-# uncomment one of them to be used
-# options could need changes, related to used GPU and drivers.
-# to find the right setting consult the archwiki or ask at the forum.
-#
-# xcompmgr: https://wiki.archlinux.org/title/Xcompmgr
-# manpage: https://man.archlinux.org/man/xcompmgr.1.en
-# install xcompmgr package to use it (yay -S xcompmgr)
-#exec --no-startup-id xcompmgr -C -n &
-# or an more specialized config like this:
-#exec --no-startup-id xcompmgr -c -C -t-5 -l-5 -r4.2 -o.55 &
-#
-# or:
-#
 # picom: https://wiki.archlinux.org/title/Picom
 # manpage: https://man.archlinux.org/man/picom.1.en
 # The default configuration is available in /etc/xdg/picom.conf
@@ -359,7 +346,8 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 # if enabled you should comment welcome app.
 # https://github.com/jceb/dex
 #exec --no-startup-id dex -a -s /etc/xdg/autostart/:~/.config/autostart/
-exec --no-startup-id dex --autostart --environment i3
+# The following was used to autostart apps through system
+#exec --no-startup-id dex --autostart --environment i3
 
 # start welcome app
 #exec --no-startup-id sh /usr/share/endeavouros/scripts/welcome --startdelay=3
@@ -598,6 +586,9 @@ bar {
 #	}
 #}
 
+# Set up monitors
+exec --no-startup-id ~/.screenlayout/monitors.sh
+
 #####################################
 # Application menu handled by rofi: #
 #####################################
@@ -620,18 +611,8 @@ exec --no-startup-id greenclip daemon>/dev/null
 bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" \
   -show clipboard -config ~/.config/rofi/rofidmenu.rasi
 
-# monitor light temperature
-exec --no-startup-id redshift-gtk -l 37.88167:23.76396 -m randr
-
-exec --no-startup-id 1password
-
-# Advanced Screenshots
-# exec --no-startup-id flameshot
-
-exec --no-startup-id solaar -w hide
-
 # make CapsLock behave like Ctrl and make short-pressed Ctrl behave like Escape
-exec --no-startup-id "setxkbmap -option ctrl:nocaps && xcape -e Control_L=Escape"
+exec_always --no-startup-id sh ~/.config/i3/scripts/keyboard_keys_overrides.sh
 
 bindsym $mod+F2 exec --no-startup-id sh ~/.config/i3/scripts/keyboard_changer.sh
 
@@ -641,5 +622,18 @@ bindsym $mod+F10 exec --no-startup-id i3-gnome-pomodoro toggle
 bindsym $mod+F11 exec --no-startup-id i3-gnome-pomodoro skip
 bindsym $mod+F12 exec --no-startup-id i3-gnome-pomodoro stop
 
-# Set up monitors
-exec --no-startup-id ~/.screenlayout/monitors.sh
+##### Start GUI apps on login
+# Set screen for day/night
+exec --no-startup-id redshift-gtk -l 37.88167:23.76396 -m randr
+
+# Network applet
+exec --no-startup-id nm-applet
+
+# Logitech mouse
+exec --no-startup-id solaar --window=hide --restart-on-wake-up
+
+exec --no-startup-id 1password
+
+# Start synology drive
+exec --no-startup-id synology-drive
+
