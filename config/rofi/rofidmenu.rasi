@@ -3,7 +3,7 @@
  * Maintainer: joekamprad <joekamprad@endeavouros.com>
  *******************************************************/
 configuration {
-    font:                "FiraCode Nerd Font 16";
+    font:                "FiraCode Nerd Font 14";
     show-icons:          true;
     icon-theme:          "Qogir";
     display-drun:        "Apps";
