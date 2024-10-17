@@ -1,0 +1,13 @@
+genpass() {
+  CHARS=${1:-32}
+
+  ITEM=$(op item create \
+    --dry-run \
+    --category Password \
+    --generate-password="letters,digits,symbols,$CHARS" \
+    --format json)
+
+  PASS=$(echo "$ITEM" | jq -r '.fields[] | select(.id == "password").value')
+
+  echo "$PASS"
+}

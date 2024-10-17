@@ -38,6 +38,9 @@ _load_settings "$HOME/.zsh/configs"
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
-# aliases
+#### aliases
+# I use 'sp' for spotify command line script
+unalias sp # oh-my-zsh rails plugin
+
 [[ -f ~/.aliases ]] && source ~/.aliases
 

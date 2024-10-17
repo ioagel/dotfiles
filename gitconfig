@@ -33,6 +33,7 @@
   ff = only
 [commit]
   template = ~/.gitmessage
+  gpgsign = true
 [fetch]
   prune = true
 [rebase]
@@ -46,7 +47,7 @@
 [user]
   name = Ioannis Angelakopoulos
   email = ioagel@gmail.com
-	signingkey = DC54C034556A80568BB29BB67AE0960F4A8837C7
+  signingkey = DC54C034556A80568BB29BB67AE0960F4A8837C7
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f

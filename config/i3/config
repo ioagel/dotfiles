@@ -49,7 +49,7 @@ workspace_layout default
 ##############################
 
 #border indicator on windows:
-new_window pixel 1
+new_window pixel 2
 
 # thin borders
 # hide_edge_borders both
@@ -91,7 +91,7 @@ set $ws12 "12"
 
 #set $left   HDMI-A-0 HDMI-A-1 DP-1-3 DisplayPort-2
 #set $right  DisplayPort-0 DisplayPort-1 HDMI-A-2
-set $monitor DisplayPort-1
+set $monitor DisplayPort-1 DisplayPort-2
 
 workspace $ws1  output $monitor
 workspace $ws2  output $monitor
@@ -159,6 +159,8 @@ bindsym $mod+Shift+F8 move container to workspace $ws12; workspace $ws12
 # assign [class="jetbrains-idea"] $ws2
 # assign [class="jetbrains-pycharm"] $ws3
 #assign [class="Virt-manager"] $ws10
+assign [class="easyeffects"] $ws10
+assign [class="Spotify"] $ws10
 
 # automatic set focus new window if it opens on another workspace than the current:
 #for_window [class=Xfce4-terminal] focus
@@ -196,7 +198,9 @@ bindsym $mod+r mode "resize"
 ######################################
 
 # start a terminal
-bindsym $mod+Return exec --no-startup-id ~/.bin/alacritty
+# bindsym $mod+Return exec --no-startup-id ~/.bin/alacritty
+# bindsym $mod+Return exec --no-startup-id kitty
+bindsym $mod+Return exec --no-startup-id wezterm
 
 # kill focused window
 bindsym $mod+q kill
@@ -282,9 +286,11 @@ bindsym $mod+Shift+minus move scratchpad
 # If there are multiple scratchpad windows, this command cycles through them.
 bindsym $mod+minus scratchpad show
 # Per app scratchpad
-bindsym $mod+F3 [instance="Alacritty"] scratchpad show
+bindsym $mod+F3 [instance="org.wezfurlong.wezterm"] scratchpad show
 bindsym $mod+F4 [instance="thunar"] scratchpad show
-bindsym $mod+F5 [instance="gnome-pomodoro"] scratchpad show
+# bindsym $mod+F5 [instance="easyeffects"] scratchpad show
+bindsym $mod+F5 [instance="obsidian"] scratchpad show
+bindsym $mod+F6 [instance="gnome-pomodoro"] scratchpad show
 
 
 # Multimedia Keys
@@ -310,7 +316,8 @@ bindsym XF86AudioPrev exec playerctl previous
 # bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
-bindsym $mod+w exec --no-startup-id google-chrome-stable
+# bindsym $mod+w exec --no-startup-id google-chrome-stable
+bindsym $mod+w exec --no-startup-id brave
 bindsym $mod+n exec --no-startup-id thunar
 bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
@@ -369,8 +376,10 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 #exec_always --no-startup-id conky
 
 # set wallpaper
-exec --no-startup-id sleep 2 && nitrogen --restore
-# exec --no-startup-id sleep 1 && feh --bg-fill /usr/share/endeavouros/backgrounds/endeavouros-wallpaper.png
+#exec --no-startup-id sleep 2 && nitrogen --restore
+#INFO:  Use this: crontab -e (to change wallpaper every 10 min)
+# */10 * * * * nitrogen --random --set-zoom-fill ~/Pictures/wallpapers/super-ultrawide/
+exec_always --no-startup-id sleep 2 && nitrogen --random --set-zoom-fill ~/Pictures/wallpapers/super-ultrawide/
 
 # set powersavings for display:
 exec --no-startup-id xset s 480 dpms 600 600 600
@@ -426,6 +435,10 @@ for_window [class="Yad" instance="yad"] floating enable
 for_window [class="Galculator" instance="galculator"] floating enable
 for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
 for_window [class="gnome-calculator" instance="gnome-calculator"] floating enable
+for_window [class="pavucontrol"] floating enable
+for_window [class="Solaar"] floating enable
+for_window [class="1Password"] floating enable
+for_window [class="Caffeine"] floating enable
 
 # set floating (nontiling) for special apps
 for_window [class="battle.net.exe"] floating enable
@@ -597,7 +610,7 @@ bar {
 #}
 
 # Set up monitors
-exec --no-startup-id ~/.screenlayout/monitors.sh
+exec_always --no-startup-id ~/.screenlayout/monitors.sh
 
 #####################################
 # Application menu handled by rofi: #
@@ -646,4 +659,10 @@ exec --no-startup-id 1password
 
 # Start synology drive
 exec --no-startup-id synology-drive
+
+# Start prevent screensaver/sleep app
+exec --no-startup-id caffeine
+
+# Start Easyeffects for EQing Presonus speakers
+exec --no-startup-id easyeffects
 

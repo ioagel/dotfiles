@@ -26,6 +26,8 @@ alias lzd='lazydocker'
 
 alias lzg='lazygit'
 
+alias ssh="TERM=xterm-256color ssh"
+
 # ssh related
 alias sshk="ssh-keygen -R "
 
