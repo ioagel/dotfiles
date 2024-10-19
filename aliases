@@ -15,8 +15,8 @@ command -v fdfind >/dev/null && alias fd="fdfind"
 # terminal colors - Valid only when alacritty is teh terminal and old .vimrc exists
 #alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
 #alias night="sed -i '2s/^/# /' ~/.dotfiles/config/alacritty/alacritty.toml && rm -f ~/.vimrc_background"
-#alias day="echo 'day' > ~/.terminal-theme"
-#alias night="echo 'night' > ~/.terminal-theme"
+alias day="echo 'day' > ~/.terminal-theme"
+alias night="echo 'night' > ~/.terminal-theme"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
