@@ -1,9 +1,7 @@
 .vagrant.d/
 Downloads/
 snap/
-SynologyDrive/
 iso/
-.SynologyDrive/
 Videos/
 Templates/
 .cache/
@@ -12,11 +10,8 @@ Templates/
 .pki/
 .gradle/
 .gem/
-.hplip/
-.mozilla/
 .npm/
 .yarn/
-.1password/
 .android/
 .cups/
 .dotnet/
@@ -29,12 +24,10 @@ Templates/
 .w3m/
 .kube/cache/
 .kube/http-cache/
-.config/google-chrome/
 .lesshst
 .xsession-errors
 .zhistory
-.config/1Password/
-.dotfiles/vim/backups/
-.dotfiles/vim/undodir/
-.local/state/nvim/shada/
 .local/share/JetBrains/
+.op-token
+.cf-creds
+.vault-token

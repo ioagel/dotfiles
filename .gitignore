@@ -1,14 +1,20 @@
 !bin
 vim/bundle/
+.archived/vim/bundle/
 # ...but not their contents
 vim/backups/*
 vim/undodir/*
+.archived/vim/backups/*
+.archived/vim/undodir/*
 # Keep these folders...
 !vim/backups/.gitkeep
 !vim/undodir/.gitkeep
+!.archived/vim/backups/.gitkeep
+!.archived/vim/undodir/.gitkeep
 # Ignore the binary version because it will be automatically updated and
 # reloaded when words are added with `zg`
 vim/vim-spell-en.utf-8.add.spl
+.archived/vim/vim-spell-en.utf-8.add.spl
 /Brewfile.lock.json
 .idea
 /Brewfile.current
