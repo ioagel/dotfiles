@@ -1,0 +1,12 @@
+#!/bin/sh
+# Unbind AMD RX580 GPU from driver
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run with sudo. Aborting."
+  exit 1
+fi
+
+# RX580 video
+gpu="0000:01:00.0"
+
+echo "$gpu" >"/sys/bus/pci/devices/$gpu/driver/unbind" 2>/dev/null || echo "Already unbound from the driver"

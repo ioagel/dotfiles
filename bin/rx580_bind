@@ -1,0 +1,12 @@
+#!/bin/sh
+# Bind AMD RX580 GPU to driver
+
+set -e
+
+# RX580 video
+gpu="0000:01:00.0"
+gpu_vd="$(cat /sys/bus/pci/devices/$gpu/vendor) $(cat /sys/bus/pci/devices/$gpu/device)"
+
+echo "$gpu_vd" | sudo tee "/sys/bus/pci/drivers/vfio-pci/remove_id" 2>/dev/null || echo "GPU not in vfio"
+echo 1 | sudo tee "/sys/bus/pci/devices/$gpu/remove"
+echo 1 | sudo tee "/sys/bus/pci/rescan"

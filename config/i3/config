@@ -420,6 +420,8 @@ for_window [class="Caffeine"] floating enable
 
 # set floating (nontiling) for special apps
 for_window [class="battle.net.exe"] floating enable
+for_window [class="steam_proton"] floating enable
+for_window [class="bottles"] floating enable
 
 for_window [class="Xsane" instance="xsane"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
@@ -589,5 +591,6 @@ exec --no-startup-id easyeffects
 
 bindsym $mod+F7 exec --no-startup-id ~/.bin/2monitor
 bindsym $mod+Shift+F7 exec --no-startup-id ~/.bin/3monitor
+bindsym $mod+Shift+F8 exec --no-startup-id ~/.bin/2monitor-ultrawide
 bindsym $mod+F8 exec --no-startup-id ~/.bin/1monitor
 
