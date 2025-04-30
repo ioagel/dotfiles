@@ -7,7 +7,8 @@ local config = wezterm.config_builder()
 config = {
 	term = "wezterm",
 
-	font = wezterm.font("Hasklug Nerd Font Mono"),
+	font = wezterm.font("CaskaydiaMono Nerd Font"),
+	-- font = wezterm.font("Hasklug Nerd Font Mono"),
 	-- font = wezterm.font("JetBrainsMono Nerd Font"),
 	font_size = 12,
 
@@ -18,8 +19,8 @@ config = {
 	window_padding = {
 		left = 2,
 		right = 2,
-		top = 5,
-		bottom = 0,
+		top = 0,
+		bottom = 0
 	},
 }
 

@@ -20,6 +20,11 @@ alias vim='$EDITOR'
 alias e='$EDITOR'
 alias n='$EDITOR'
 
+# Needed for starship prompt to show properly
+# If initialized before the prompt, then use:
+# alias fast='fastfetch'
+alias fast='fastfetch --pipe false'
+
 # terminal colors - Valid only when alacritty is teh terminal and old .vimrc exists
 #alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
 #alias night="sed -i '2s/^/# /' ~/.dotfiles/config/alacritty/alacritty.toml && rm -f ~/.vimrc_background"

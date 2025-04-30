@@ -1,9 +1,7 @@
 #continuation_prompt = '▶▶ '
 
 # Inserts a blank line between shell prompts
-#add_newline = true
-
+add_newline = false
 
 [kubernetes]
 disabled = false
-
