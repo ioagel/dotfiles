@@ -47,9 +47,13 @@
 [user]
   name = Ioannis Angelakopoulos
   email = ioagel@gmail.com
-  signingkey = DC54C034556A80568BB29BB67AE0960F4A8837C7
+  signingkey = ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9WrVPo7Gh/NuUmje/mDEAw4UE90FRZDL9iC5HWTd5qr/nt4viIkrC7Xyo9n/sa2qyFLaruPbecKDCmhcbu5QZXHPrH1w8mvI2gNS214K2XxPdbmXQyD1y7lidnMp3WJhl+DrAWdeHgcQ8ttX5D5V/vOYfWYLHsCwY2EatDj8pO7gV+S3KYqbw8IyzTPooYcRXi5ojKRABU0KIlV1BnBAP3XPlM6a5Lw5zdc9sJMAvSBYR+IOZ3EZM7EmtMrKCrKj1lAUO0Kw0m0VIbT0MoJHJ6uUuy5R0QWoxtZCWCxyyucGrygP0ZRmmKP9s4y8c+89cTiG6iPWi0bRQ0F8bKOCQadiwavaE5Mmoz01yLJ7sszZqB10UzSVGhgbEIWpLrYfy4Vb1iP93dz2eWDFnB9HjUx0gaqKgEZggVWbl9qOS0Wdfg3Q3QNArSeFv5Cy86jFvA+iPkkLhEeWaaifPHXI77kT5dtQAit078OSvjtt//SRVOBCUc1Afcmws13koZLwOtSi/XHc97X8sj61B22U7wmGi5q7CoVYRWtBd3UKIprD/k8hXa56Ts6zwqLddiwBmqLZHsaZnCqb3sXAG12kof4/8udps10fWqVaSEERL+OiUlC5VodXICwBZJ82Y7W8Zpmf4HhdLZ2OfS75fjNhvPaViVliofEPLSyw8x5vGTw==
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
   process = git-lfs filter-process
   required = true
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = /opt/1Password/op-ssh-sign

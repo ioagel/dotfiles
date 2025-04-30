@@ -22,6 +22,8 @@ config = {
 		top = 0,
 		bottom = 0
 	},
+
+	default_prog = { "zellij" },
 }
 
 return config
