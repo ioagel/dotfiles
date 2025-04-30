@@ -1,19 +1,16 @@
-# load our own completion functions
-fpath=(${ASDF_DIR}/completions ~/.zsh/completion /usr/local/share/zsh/site-functions $fpath)
+# load our own completion and function paths
+# shellcheck disable=SC2206
+fpath=($ZSH_DIR/functions $ZSH_DIR/completion /usr/local/share/zsh/site-functions $fpath)
+
+# Autoload specific functions we want available
+autoload -U change-extension
+autoload -U cs
+autoload -U envup
+autoload -U fs
+autoload -U g
+autoload -U genpass
+autoload -U mcd
+# Add other autoload lines here if needed
+
+# Initialize completion system
 autoload -Uz compinit && compinit
-
-# NOTE: commented the following code because asdf completion fail
-# completion; use cache if updated within 24h
-# autoload -Uz compinit
-# if [[ -n $HOME/.zcompdump(#qN.mh+24) ]]; then
-#   compinit -d $HOME/.zcompdump;
-# else
-#   compinit -C;
-# fi;
-
-# disable zsh bundled function mtools command mcd
-# which causes a conflict.
-compdef -d mcd
-
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down

@@ -1,4 +1,21 @@
+# This script enables automatic, per-directory shell customization by sourcing .autosrc files
+# and running user-defined functions on directory entry and exit.
+# It’s useful for project-specific environment setup, custom prompts, or other context-aware shell tweaks.
 # https://github.com/seanyeh/autosrc
+#
+# How to use:
+# 1. Create a .autosrc file in your project directory.
+# 2. Define functions named autosrc_enter and autosrc_exit in your .autosrc file.
+#
+# autosrc_enter() {
+#  echo "Welcome to $(pwd)!"
+#  export MY_VAR="foo"
+# }
+# autosrc_exit() {
+#  echo "Leaving $(pwd)..."
+#  unset MY_VAR
+# }
+
 AUTOSRC=".autosrc"
 
 AUTOSRC_IGNORE=0

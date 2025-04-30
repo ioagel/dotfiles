@@ -49,7 +49,7 @@ workspace_layout default
 ##############################
 
 #border indicator on windows:
-new_window pixel 2
+new_window pixel 4
 
 # thin borders
 # hide_edge_borders both
@@ -422,6 +422,9 @@ for_window [class="Caffeine"] floating enable
 for_window [class="battle.net.exe"] floating enable
 for_window [class="steam_proton"] floating enable
 for_window [class="bottles"] floating enable
+for_window [class="VirtualBox Manager"] floating enable
+for_window [class="VirtualBox Machine"] floating enable
+for_window [class="VirtualBox"] floating enable
 
 for_window [class="Xsane" instance="xsane"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol"] floating enable

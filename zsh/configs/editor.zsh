@@ -1,7 +1,8 @@
-export VISUAL=vim
-
 if type nvim > /dev/null 2>&1; then
-  export VISUAL=nvim
+  export EDITOR=nvim
+else
+  export EDITOR=vim
 fi
 
-export EDITOR=$VISUAL
+export VISUAL=$EDITOR
+export SUDO_EDITOR=$EDITOR

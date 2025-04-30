@@ -1,20 +1,42 @@
-if [ -d "$HOME/.oh-my-zsh" ]; then
-  export ZSH=$HOME/.oh-my-zsh
-  ZSH_THEME=""
-  HYPHEN_INSENSITIVE="true"
-  HIST_STAMPS="dd.mm.yyyy"
-  export UPDATE_ZSH_DAYS=7
-  COMPLETION_WAITING_DOTS="true"
-  # removed 'ssh-agent' because I use 1Password
-  plugins=(archlinux colored-man-pages colorize
-          common-aliases docker-compose docker dotenv github gitignore
-          jsontools npm safe-paste sudo themes tmux yarn vagrant
-          history-substring-search asdf fzf zsh-syntax-highlighting
-          zsh-autosuggestions terraform kubectl ruby rails)
-  ZSH_DISABLE_COMPFIX="true"
+# shellcheck disable=SC2034
+ZSH=$HOME/.oh-my-zsh
 
-  source $ZSH/oh-my-zsh.sh
+# ZSH_THEME="handled by starhip prompt"
+HYPHEN_INSENSITIVE="true"
+HIST_STAMPS="dd.mm.yyyy"
+COMPLETION_WAITING_DOTS="true"
 
-  #Star Ship
-  eval "$(starship init zsh)"
-fi
+zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+zstyle ':omz:update' frequency 7
+
+# removed 'ssh-agent' because I use 1Password
+# shellcheck disable=SC2034
+plugins=(
+  vi-mode
+  zsh-syntax-highlighting
+  zsh-autosuggestions
+  history-substring-search
+  extract
+  archlinux
+  colored-man-pages
+  colorize
+  common-aliases
+  docker
+  dotenv
+  safe-paste
+  sudo
+  vagrant
+  fzf
+  kubectl
+  rails
+  zoxide
+  mise
+)
+
+ZSH_DISABLE_COMPFIX="true"
+
+# vi-mode plugin configuration
+VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
+VI_MODE_SET_CURSOR=true
+
+source "$ZSH"/oh-my-zsh.sh

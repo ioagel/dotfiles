@@ -1,13 +1,41 @@
-genpass() {
-  CHARS=${1:-32}
+# Generates a secure password using the 1Password CLI ('op').
+# Needs 1Password CLI installed and configured.
+#
+# Usage:
+#   genpass        # Generates a password with the default length (20 chars)
+#   genpass <N>    # Generates a password with <N> characters
+#
+# Example:
+#   genpass 32     # Generates a 32-character password
 
-  ITEM=$(op item create \
+# Check if 1Password CLI (op) is installed
+if ! command -v op >/dev/null 2>&1; then
+    echo "Error: 1Password CLI ('op') not found in PATH." >&2
+    echo "Please install it: https://developer.1password.com/docs/cli/get-started/" >&2
+    return 1
+fi
+
+local CHARS=${1:-20}
+local ITEM PASS # Keep variables local
+
+ITEM=$(op item create \
     --dry-run \
     --category Password \
     --generate-password="letters,digits,symbols,$CHARS" \
     --format json)
 
-  PASS=$(echo "$ITEM" | jq -r '.fields[] | select(.id == "password").value')
+# Check if op command succeeded (jq will fail otherwise)
+if [ $? -ne 0 ]; then
+    echo "Error: 'op item create' command failed." >&2
+    return 1
+fi
 
-  echo "$PASS"
-}
+PASS=$(echo "$ITEM" | jq -r '.fields[] | select(.id == "password").value')
+
+# Check if jq command succeeded
+if [ $? -ne 0 ] || [ -z "$PASS" ]; then
+    echo "Error: Failed to extract password using jq." >&2
+    return 1
+fi
+
+echo "$PASS"

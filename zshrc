@@ -1,46 +1,59 @@
-# load custom executable functions
-for function in ~/.zsh/functions/*; do
-  source $function
-done
+ZSH_DIR="$HOME/.dotfiles/zsh"
 
-# extra files in ~/.zsh/configs/pre , ~/.zsh/configs , and ~/.zsh/configs/post
+# Credits to: Thoughtbot dotfiles https://github.com/thoughtbot/dotfiles for initial implementation
+# extra files in $ZSH_DIR/configs/pre , $ZSH_DIR/configs , and $ZSH_DIR/configs/post
 # these are loaded first, second, and third, respectively.
 _load_settings() {
-  _dir="$1"
-  if [ -d "$_dir" ]; then
-    if [ -d "$_dir/pre" ]; then
-      for config in "$_dir"/pre/**/*~*.zwc(N-.); do
-        . $config
-      done
+    local _dir="$1"
+    local config
+
+    if [ ! -d "$_dir" ]; then
+        return 1 # Exit if base directory doesn't exist
     fi
 
+    setopt nullglob extendedglob
+
+    # Process 'pre' directory
+    if [ -d "$_dir/pre" ]; then
+        # Glob for all regular files recursively, sorted by name
+        for config in "$_dir"/pre/**/*(N-.); do
+            # Skip .zwc files inside the loop
+            if [[ "$config" == *.zwc ]]; then
+                continue
+            fi
+            # Source the config file
+            . "$config"
+        done
+    fi
+
+    # Process main directory (excluding pre/post subdirectories)
+    # Glob for all regular files recursively, sorted by name
     for config in "$_dir"/**/*(N-.); do
-      case "$config" in
-        "$_dir"/(pre|post)/*|*.zwc)
-          :
-          ;;
-        *)
-          . $config
-          ;;
-      esac
+        # Skip files within pre/post directories and .zwc files
+        if [[ "$config" == "$_dir"/pre/* || "$config" == "$_dir"/post/* || "$config" == *.zwc ]]; then
+            continue
+        fi
+        # Source the config file
+        . "$config"
     done
 
+    # Process 'post' directory
     if [ -d "$_dir/post" ]; then
-      for config in "$_dir"/post/**/*~*.zwc(N-.); do
-        . $config
-      done
+        # Glob for all regular files recursively, sorted by name
+        for config in "$_dir"/post/**/*(N-.); do
+            # Skip .zwc files inside the loop
+            if [[ "$config" == *.zwc ]]; then
+                continue
+            fi
+            # Source the config file
+            . "$config"
+        done
     fi
-  fi
 }
-_load_settings "$HOME/.zsh/configs"
+_load_settings "$ZSH_DIR/configs"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
+# Include custom zshrc
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
-#### aliases
-# I use 'sp' for spotify command line script
-unalias sp # oh-my-zsh rails plugin
-
+# Include custom secret aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
-

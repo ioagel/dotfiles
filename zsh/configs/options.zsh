@@ -5,9 +5,8 @@ DIRSTACKSIZE=5
 # Enable extended globbing
 setopt extendedglob
 
-# Allow [ or ] whereever you want
+# Allow [ or ] wherever you want
 unsetopt nomatch
-
 
 # lf icons
 export LF_ICONS="\

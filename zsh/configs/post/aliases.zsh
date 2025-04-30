@@ -1,16 +1,24 @@
-# Unix
+### Unaliases
+# I use 'sp' for spotify command line script
+unalias sp 2>/dev/null # oh-my-zsh rails plugin
+unalias g 2>/dev/null # oh-my-zsh git plugin
+
+## File System
 alias ll="ls -al"
 alias ltr="ls -lAFhtr"
 alias ln="ln -v"
 alias df="df -h"
 alias mkdir="mkdir -p"
-alias vim="$EDITOR"
-alias e="$EDITOR"
 alias cd="z" # using zoxide utility
 # In ubuntu at least, 'fd' is already aliased, and I overwrite it here
 # Using the 'fdfind' utility as it is called in Ubuntu
 # https://github.com/sharkdp/fd
 command -v fdfind >/dev/null && alias fd="fdfind"
+
+## Editor
+alias vim='$EDITOR'
+alias e='$EDITOR'
+alias n='$EDITOR'
 
 # terminal colors - Valid only when alacritty is teh terminal and old .vimrc exists
 #alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
@@ -40,13 +48,7 @@ alias kns="kubens"
 alias kctx="kubectx"
 
 # i3 config
-alias i3e="$EDITOR ~/.config/i3/config"
+alias i3e='$EDITOR ~/.config/i3/config'
 
 # zsh config
 alias soz='source ~/.zshrc'
-
-# Include custom secret aliases
-[[ -f ~/.aliases.secret ]] && source ~/.aliases.secret
-
-# Include custom aliases
-[[ -f ~/.aliases.local ]] && source ~/.aliases.local

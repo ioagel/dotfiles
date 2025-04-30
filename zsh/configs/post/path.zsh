@@ -1,20 +1,21 @@
 export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
 
-export ASDF_GOLANG_MOD_VERSION_ENABLED=true
-
-# adds gnu-sed from brew path in front
-if [ "$(uname)" = 'Darwin' ]; then
-    PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-fi
-
 # home dir bin dirs
-PATH="$HOME/.bin:$HOME/.local/bin:$PATH"
+PATH="$HOME/.bin:$HOME/bin:$HOME/.local/bin:$PATH"
 
-# mkdir .git/safe in the root of repositories you trust
+# What does .git/safe/../../bin mean?
+# - .git/safe is a directory inside your repo’s .git folder.
+# - ../../bin means: from .git/safe, go up two directories (to the repo root), then into bin.
+# So, if your repo root is /home/user/project, then .git/safe/../../bin resolves to /home/user/project/bin.
+# What’s the effect?
+# - This adds the bin directory from your current git repository to your PATH,
+# but only if you are inside a repo where .git/safe exists.
+# - This is a safety measure: it only activates custom scripts from bin,
+# in repositories you explicitly trust (where you created .git/safe).
+# Summary:
+# This code safely adds the bin directory of trusted git repositories to your PATH,
+# so you can run project-specific scripts, but only in repos you mark as “safe” by creating .git/safe.
 PATH=".git/safe/../../bin:$PATH"
 
 export -U PATH
-
-# Setup zoxide for smarter paths
-command -v zoxide >/dev/null && eval "$(zoxide init zsh)"

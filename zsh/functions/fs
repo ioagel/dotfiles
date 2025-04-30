@@ -1,0 +1,4 @@
+# fs: Find files/dirs by name (case-insensitive) containing $1, passing further args to find.
+# Example: fs config -type f (find only files not directories)
+
+find . -iname "*$1*" ${@:2}

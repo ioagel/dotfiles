@@ -1,11 +1,10 @@
-local cmp_window = require("cmp.config.window")
-
 return {
   "hrsh7th/nvim-cmp",
-  opts = {
-    window = {
-      completion = cmp_window.bordered(),
-      documentation = cmp_window.bordered(),
-    },
+  version = false, -- last release is way too old
+  event = "InsertEnter",
+  dependencies = {
+    "hrsh7th/cmp-nvim-lsp",
+    "hrsh7th/cmp-buffer",
+    "hrsh7th/cmp-path",
   },
 }

@@ -1,9 +1,9 @@
 -- Keymaps are automatically loaded on the VeryLazy event
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
-local telescope = require("telescope.builtin")
+-- local telescope = require("telescope.builtin")
 vim.keymap.set("n", "<leader>fs", "<cmd>w<cr>", { silent = true, desc = "Save the current buffer" })
-vim.keymap.set("n", "<leader>gw", telescope.lsp_dynamic_workspace_symbols, { desc = "Workspace Symbols" })
+-- vim.keymap.set("n", "<leader>gw", telescope.lsp_dynamic_workspace_symbols, { desc = "Workspace Symbols" })
 
 vim.keymap.set("n", "Q", ":q<CR>", { silent = true })
 

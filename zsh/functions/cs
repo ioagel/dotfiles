@@ -1,0 +1,4 @@
+# cs: Grep recursively for pattern $1 (case-sensitive), passing further args to grep.
+# Example: cs my_variable -i -n (this is case insensitive and shows line numbers)
+
+grep -I --color=auto "$1" ${@:2} -R .

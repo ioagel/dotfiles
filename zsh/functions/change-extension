@@ -2,8 +2,8 @@
 #
 #   change-extension erb haml
 
-function change-extension() {
-  foreach f (**/*.$1)
-    mv $f $f:r.$2
-  end
-}
+# Use Zsh glob qualifiers: N = nullglob, . = regular files only
+setopt localoptions extendedglob # Ensure extendedglob is active for this function if needed
+for f in **/*.$1(N.); do
+  mv -- "$f" "$f:r.$2"
+done
