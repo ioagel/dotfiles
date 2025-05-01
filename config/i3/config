@@ -592,8 +592,7 @@ exec --no-startup-id easyeffects
 
 ### Monitor setup
 
-bindsym $mod+F7 exec --no-startup-id ~/.bin/2monitor
-bindsym $mod+Shift+F7 exec --no-startup-id ~/.bin/3monitor
-bindsym $mod+Shift+F8 exec --no-startup-id ~/.bin/2monitor-ultrawide
-bindsym $mod+F8 exec --no-startup-id ~/.bin/1monitor
-
+bindsym $mod+F7 exec --no-startup-id ~/.bin/set-monitor-layout monitor ''
+bindsym $mod+Shift+F7 exec --no-startup-id ~/.bin/set-monitor-layout monitor3 '25:75'
+bindsym $mod+F8 exec --no-startup-id ~/.bin/set-monitor-layout monitor2 ''
+bindsym $mod+Shift+F8 exec --no-startup-id ~/.bin/set-monitor-layout monitor2 33

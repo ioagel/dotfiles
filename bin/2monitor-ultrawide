@@ -1,6 +1,0 @@
-#!/bin/sh
-
-virtmon 33
-sleep 2
-ln -sf ~/.config/i3/config.d/monitor2.conf ~/.config/i3/config.d/monitor-current.conf
-i3-msg restart

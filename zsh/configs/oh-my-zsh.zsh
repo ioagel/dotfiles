@@ -6,7 +6,7 @@ HYPHEN_INSENSITIVE="true"
 HIST_STAMPS="dd.mm.yyyy"
 COMPLETION_WAITING_DOTS="true"
 
-zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+zstyle ':omz:update' mode reminder # just remind me to update when it's time
 zstyle ':omz:update' frequency 7
 
 # removed 'ssh-agent' because I use 1Password

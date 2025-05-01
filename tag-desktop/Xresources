@@ -1,9 +1,8 @@
-Xcursor.theme: Qogir
-Xcursor.size:  24
-!Xft.dpi:       144
+Xcursor.theme: Yaru
+Xcursor.size: 24
 Xft.antialias: true
-Xft.hinting:   true
-Xft.rgba:      rgb
-Xft.autohint:  false
+Xft.hinting: true
+Xft.rgba: rgb
+Xft.autohint: false
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault

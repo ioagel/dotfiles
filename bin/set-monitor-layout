@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# Script to set i3 monitor configuration based on provided profile name
+# and optional arguments for the 'virtmon' command.
+
+# --- Configuration ---
+CONFIG_NAME="$1"  # e.g., 'monitor', 'monitor2', 'monitor3'
+VIRTMON_ARGS="$2" # e.g., '' (empty), '33', '25:75' (colon used as safe separator from i3 config)
+
+# Base directory for monitor config files
+CONFIG_DIR="$HOME/.config/i3/config.d"
+
+# Path to the specific monitor profile config file
+CONFIG_FILE="$CONFIG_DIR/$CONFIG_NAME.conf"
+
+# Path to the symlink that i3 includes
+CURRENT_LINK="$CONFIG_DIR/monitor-current.conf"
+
+# --- Validation ---
+# Check if the target configuration file actually exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Error: Config file '$CONFIG_FILE' not found." >&2
+    exit 1
+fi
+
+# --- Execute virtmon ---
+# Prepare the argument for virtmon. Initialize with the received argument.
+FINAL_VIRTMON_ARG="$VIRTMON_ARGS"
+
+# Check if VIRTMON_ARGS was provided
+if [ -n "$VIRTMON_ARGS" ]; then
+    # If the argument contains a colon (used for the '25,75' case),
+    # replace the colon with a comma, as expected by virtmon.
+    case "$VIRTMON_ARGS" in
+    *:*)
+        FINAL_VIRTMON_ARG=$(echo "$VIRTMON_ARGS" | sed 's/:/,/g')
+        echo "Calling virtmon with reconstructed arg: '$FINAL_VIRTMON_ARG'"
+        ;;
+    *)
+        echo "Calling virtmon with arg: '$FINAL_VIRTMON_ARG'"
+        ;;
+    esac
+    # Call virtmon with the final (potentially comma-separated) argument
+    virtmon "$FINAL_VIRTMON_ARG"
+else
+    # Call virtmon with no arguments if none were provided
+    echo "Calling virtmon with no args"
+    virtmon
+fi
+
+# --- Apply i3 Changes ---
+# Pause briefly to allow virtmon/system to apply display changes
+sleep 2
+
+# Update the symlink to point to the selected monitor config file
+ln -sf "$CONFIG_FILE" "$CURRENT_LINK"
+
+# Restart i3 inplace to load the new monitor configuration
+i3-msg restart
+
+exit 0
