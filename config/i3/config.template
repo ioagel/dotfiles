@@ -304,10 +304,10 @@ bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 # For modifications, it can be copied to ~/.config/picom/picom.conf or ~/.config/picom.conf
 # install picom package (yay -S picom)
 # start using default config
-# exec_always --no-startup-id picom -b
+exec_always --no-startup-id picom -b
 #
 # for custom config:
-exec_always --no-startup-id picom -b --config  ~/.config/picom.conf
+# exec_always --no-startup-id picom -b --config  <custom_directory>/picom.conf
 
 #############################################
 # autostart applications/services on login: #
