@@ -2,7 +2,7 @@ export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
 
 # home dir bin dirs
-PATH="$HOME/.bin:$HOME/bin:$HOME/.local/bin:$PATH"
+PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
 # What does .git/safe/../../bin mean?
 # - .git/safe is a directory inside your repo’s .git folder.

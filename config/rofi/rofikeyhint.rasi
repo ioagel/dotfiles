@@ -3,9 +3,8 @@
  * Maintainer: joekamprad <joekamprad@endeavouros.com>
  *******************************************************/
 configuration {
-    font:                "FiraCode Nerd Font 14";
+    font:                "CaskaydiaMono Nerd Font 14";
     show-icons:          false;
-    icon-theme:          "Qogir";
     display-drun:        "KeyHint";
     drun-display-format: "{name}";
     scroll-method:       0;
@@ -14,8 +13,6 @@ configuration {
     hide-scrollbar:      true;
     sidebar-mode:        false;
 }
-
-@import "~/.config/rofi/arc_dark_transparent_colors.rasi"
 
 window {
     background-color: @background;
