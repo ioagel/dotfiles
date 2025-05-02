@@ -415,7 +415,7 @@ client.background            ${CLIENT_BACKGROUND}
 bindsym $mod+m bar mode toggle
 
 # Set up monitors
-exec_always --no-startup-id ~/.screenlayout/monitors.sh
+exec_always --no-startup-id ~/.config/i3/scripts/monitors
 
 #####################################
 # Application menu handled by rofi: #
@@ -436,9 +436,9 @@ bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" \
   -show clipboard -config ~/.config/rofi/rofidmenu.rasi
 
 # make CapsLock behave like Ctrl and make short-pressed Ctrl behave like Escape
-exec_always --no-startup-id sh ~/.config/i3/scripts/keyboard_keys_overrides.sh
+exec_always --no-startup-id ~/.config/i3/scripts/keyboard_keys_overrides
 
-bindsym $mod+F2 exec --no-startup-id sh ~/.config/i3/scripts/keyboard_changer.sh
+bindsym $mod+F2 exec --no-startup-id ~/.config/i3/scripts/keyboard_changer
 
 # i3-gnome-pomodoro settings
 bindsym $mod+F9  exec --no-startup-id i3-gnome-pomodoro start
