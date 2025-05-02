@@ -248,7 +248,7 @@ bindsym $mod+Shift+minus move scratchpad
 bindsym $mod+minus scratchpad show
 # Per app scratchpad
 bindsym $mod+F3 [instance="org.wezfurlong.wezterm"] scratchpad show
-bindsym $mod+F4 [instance="thunar"] scratchpad show
+bindsym $mod+F4 [instance="org.gnome.Nautilus"] scratchpad show
 # bindsym $mod+F5 [instance="easyeffects"] scratchpad show
 bindsym $mod+F5 [instance="obsidian"] scratchpad show
 bindsym $mod+F6 [instance="gnome-pomodoro"] scratchpad show
@@ -279,7 +279,7 @@ bindsym XF86AudioPrev exec playerctl previous
 ## App shortcuts
 # bindsym $mod+w exec --no-startup-id google-chrome-stable
 bindsym $mod+w exec --no-startup-id brave
-bindsym $mod+n exec --no-startup-id thunar
+bindsym $mod+n exec --no-startup-id nautilus --new-window --no-desktop
 bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
