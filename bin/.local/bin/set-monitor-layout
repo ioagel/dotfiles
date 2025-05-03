@@ -10,7 +10,7 @@ set -e
 # 1. Corresponding layout files (monitor.conf, monitor2.conf, etc.) exist
 #    within the dotfiles config directory.
 # 2. A generated bar config (bar.conf) exists in the same directory,
-#    created by build-i3-config.sh.
+#    created by build-i3-config.
 # 3. The monitor layout files define a variable '$__tray_monitor' specifying
 #    the desired tray output (e.g., 'primary', 'DisplayPort-1', 'VM-1').
 # 4. The user manages symlinking the final config files from the dotfiles
@@ -28,9 +28,7 @@ if [ -z "$CONFIG_NAME" ]; then
     exit 1
 fi
 
-# Define directory paths (using standard $HOME/.dotfiles convention)
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
-GENERATED_CONFIG_DIR="$DOTFILES_DIR/config/i3/config.d"
+GENERATED_CONFIG_DIR="$HOME/.config/i3/config.d"
 
 # Define full paths to the relevant generated configuration files
 TARGET_MONITOR_CONF="$GENERATED_CONFIG_DIR/$CONFIG_NAME.conf"
@@ -40,14 +38,20 @@ GENERATED_BAR_CONF="$GENERATED_CONFIG_DIR/bar.conf"
 # Ensure the necessary generated files exist before proceeding
 if [ ! -f "$TARGET_MONITOR_CONF" ]; then
     echo "Error: Monitor config file not found: '$TARGET_MONITOR_CONF'" >&2
-    echo "Hint: Check layout name or run build-i3-config.sh." >&2
+    echo "Hint: Check layout name or run build-i3-config." >&2
     exit 1
 fi
 if [ ! -f "$GENERATED_BAR_CONF" ]; then
     echo "Error: Generated bar config file not found: '$GENERATED_BAR_CONF'" >&2
-    echo "Hint: Run build-i3-config.sh first." >&2
+    echo "Hint: Run build-i3-config first." >&2
     exit 1
 fi
+
+# --- Create/Update Symlink ---
+# This symlink is included by the main i3 config to load the correct workspace assignments.
+SYMLINK_PATH="$GENERATED_CONFIG_DIR/monitor-layout-current.conf"
+echo "Updating symlink '$SYMLINK_PATH' -> '$TARGET_MONITOR_CONF'..."
+ln -sf "$TARGET_MONITOR_CONF" "$SYMLINK_PATH"
 
 # --- Execute virtmon (if applicable) ---
 # Applies virtual monitor splits using the 'virtmon' utility
