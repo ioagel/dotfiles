@@ -10,7 +10,7 @@ set -e
 # 1. Corresponding layout files (monitor.conf, monitor2.conf, etc.) exist
 #    within the dotfiles config directory.
 # 2. A generated bar config (bar.conf) exists in the same directory,
-#    created by apply-i3-theme.sh.
+#    created by build-i3-config.sh.
 # 3. The monitor layout files define a variable '$__tray_monitor' specifying
 #    the desired tray output (e.g., 'primary', 'DisplayPort-1', 'VM-1').
 # 4. The user manages symlinking the final config files from the dotfiles
@@ -40,12 +40,12 @@ GENERATED_BAR_CONF="$GENERATED_CONFIG_DIR/bar.conf"
 # Ensure the necessary generated files exist before proceeding
 if [ ! -f "$TARGET_MONITOR_CONF" ]; then
     echo "Error: Monitor config file not found: '$TARGET_MONITOR_CONF'" >&2
-    echo "Hint: Check layout name or run apply-i3-theme.sh." >&2
+    echo "Hint: Check layout name or run build-i3-config.sh." >&2
     exit 1
 fi
 if [ ! -f "$GENERATED_BAR_CONF" ]; then
     echo "Error: Generated bar config file not found: '$GENERATED_BAR_CONF'" >&2
-    echo "Hint: Run apply-i3-theme.sh first." >&2
+    echo "Hint: Run build-i3-config.sh first." >&2
     exit 1
 fi
 
