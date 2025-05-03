@@ -1,61 +1,97 @@
 #!/bin/sh
 
-# Script to set i3 monitor configuration based on provided profile name
-# and optional arguments for the 'virtmon' command.
+# Exit immediately if a command exits with a non-zero status.
+set -e
 
-# --- Configuration ---
-CONFIG_NAME="$1"  # e.g., 'monitor', 'monitor2', 'monitor3'
-VIRTMON_ARGS="$2" # e.g., '' (empty), '33', '25:75' (colon used as safe separator from i3 config)
+# --- Script Purpose ---
+# This script applies a specific i3 monitor layout configuration and updates
+# the i3 bar configuration to show the system tray on the correct monitor
+# for that layout. It assumes:
+# 1. Corresponding layout files (monitor.conf, monitor2.conf, etc.) exist
+#    within the dotfiles config directory.
+# 2. A generated bar config (bar.conf) exists in the same directory,
+#    created by apply-i3-theme.sh.
+# 3. The monitor layout files define a variable '$__tray_monitor' specifying
+#    the desired tray output (e.g., 'primary', 'DisplayPort-1', 'VM-1').
+# 4. The user manages symlinking the final config files from the dotfiles
+#    repo to ~/.config/i3.
 
-# Base directory for monitor config files
-CONFIG_DIR="$HOME/.config/i3/config.d"
+# --- Configuration and Input ---
+CONFIG_NAME="$1"  # The desired layout name (e.g., 'monitor', 'monitor2')
+VIRTMON_ARGS="$2" # Optional arguments for the 'virtmon' command
 
-# Path to the specific monitor profile config file
-CONFIG_FILE="$CONFIG_DIR/$CONFIG_NAME.conf"
-
-# Path to the symlink that i3 includes
-CURRENT_LINK="$CONFIG_DIR/monitor-current.conf"
-
-# --- Validation ---
-# Check if the target configuration file actually exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Error: Config file '$CONFIG_FILE' not found." >&2
+# Check if a layout name was provided
+if [ -z "$CONFIG_NAME" ]; then
+    echo "Usage: $0 <config_name> [virtmon_args]" >&2
+    echo "  Example: $0 monitor" >&2
+    echo "  Example: $0 monitor2 33" >&2
     exit 1
 fi
 
-# --- Execute virtmon ---
-# Prepare the argument for virtmon. Initialize with the received argument.
-FINAL_VIRTMON_ARG="$VIRTMON_ARGS"
+# Define directory paths (using standard $HOME/.dotfiles convention)
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+GENERATED_CONFIG_DIR="$DOTFILES_DIR/config/i3/config.d"
 
-# Check if VIRTMON_ARGS was provided
+# Define full paths to the relevant generated configuration files
+TARGET_MONITOR_CONF="$GENERATED_CONFIG_DIR/$CONFIG_NAME.conf"
+GENERATED_BAR_CONF="$GENERATED_CONFIG_DIR/bar.conf"
+
+# --- Input Validation ---
+# Ensure the necessary generated files exist before proceeding
+if [ ! -f "$TARGET_MONITOR_CONF" ]; then
+    echo "Error: Monitor config file not found: '$TARGET_MONITOR_CONF'" >&2
+    echo "Hint: Check layout name or run apply-i3-theme.sh." >&2
+    exit 1
+fi
+if [ ! -f "$GENERATED_BAR_CONF" ]; then
+    echo "Error: Generated bar config file not found: '$GENERATED_BAR_CONF'" >&2
+    echo "Hint: Run apply-i3-theme.sh first." >&2
+    exit 1
+fi
+
+# --- Execute virtmon (if applicable) ---
+# Applies virtual monitor splits using the 'virtmon' utility
+echo "Setting up virtmon..."
 if [ -n "$VIRTMON_ARGS" ]; then
-    # If the argument contains a colon (used for the '25,75' case),
-    # replace the colon with a comma, as expected by virtmon.
+    # virtmon expects comma separation (e.g., '25,75') but we use colon
+    # in the i3 config keybinding for safety. Convert colon to comma.
     case "$VIRTMON_ARGS" in
-    *:*)
-        FINAL_VIRTMON_ARG=$(echo "$VIRTMON_ARGS" | sed 's/:/,/g')
-        echo "Calling virtmon with reconstructed arg: '$FINAL_VIRTMON_ARG'"
-        ;;
-    *)
-        echo "Calling virtmon with arg: '$FINAL_VIRTMON_ARG'"
-        ;;
+    *:*) FINAL_VIRTMON_ARG=$(echo "$VIRTMON_ARGS" | sed 's/:/,/g') ;;
+    *) FINAL_VIRTMON_ARG="$VIRTMON_ARGS" ;;
     esac
-    # Call virtmon with the final (potentially comma-separated) argument
+    echo "Calling virtmon with arg: '$FINAL_VIRTMON_ARG'"
     virtmon "$FINAL_VIRTMON_ARG"
 else
-    # Call virtmon with no arguments if none were provided
-    echo "Calling virtmon with no args"
+    echo "Calling virtmon with no args (default behavior)"
     virtmon
 fi
 
-# --- Apply i3 Changes ---
-# Pause briefly to allow virtmon/system to apply display changes
-sleep 2
+# --- Update i3 Bar Tray Output ---
+# Read the target monitor file to find which monitor should host the tray
+echo "Extracting tray setting from '$TARGET_MONITOR_CONF'..."
+# Find the line 'set $__tray_monitor <value>' and extract the <value>
+TRAY_MONITOR_VALUE=$(grep '^set \$__tray_monitor' "$TARGET_MONITOR_CONF" | awk '{print $3}')
 
-# Update the symlink to point to the selected monitor config file
-ln -sf "$CONFIG_FILE" "$CURRENT_LINK"
+# Ensure a value was actually found
+if [ -z "$TRAY_MONITOR_VALUE" ]; then
+    echo "Error: Could not extract \$__tray_monitor value from '$TARGET_MONITOR_CONF'." >&2
+    exit 1
+fi
+echo "Extracted tray monitor value: [$TRAY_MONITOR_VALUE]"
 
-# Restart i3 inplace to load the new monitor configuration
+# Modify the generated bar.conf *in place* within the dotfiles directory
+echo "Updating tray_output directive in '$GENERATED_BAR_CONF'..."
+# Find the line starting with 'tray_output' (allowing for whitespace)
+# and replace the entire line with the correct value.
+sed -i "s/^\s*tray_output.*/  tray_output $TRAY_MONITOR_VALUE/" "$GENERATED_BAR_CONF"
+echo "Tray output directive updated in '$GENERATED_BAR_CONF'."
+
+# --- Restart i3 ---
+# Pause briefly to allow virtmon changes (if any) to settle before restart
+sleep 1
+
+echo "Restarting i3 to apply changes..."
 i3-msg restart
 
+echo "Monitor layout '$CONFIG_NAME' applied successfully."
 exit 0

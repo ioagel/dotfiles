@@ -6,6 +6,9 @@ set $monitor DisplayPort-1
 # set $monitor DisplayPort-0
 # set $monitor DisplayPort-2
 
+# Define the monitor for the system tray (used by set-monitor-layout)
+set $__tray_monitor primary
+
 workspace $ws1  output $monitor
 workspace $ws2  output $monitor
 workspace $ws3  output $monitor
@@ -16,32 +19,3 @@ workspace $ws7  output $monitor
 workspace $ws8  output $monitor
 workspace $ws9  output $monitor
 workspace $ws10 output $monitor
-
-# Start i3bar to display a workspace bar
-bar {
-  status_command i3blocks -c ~/.config/i3/i3blocks.conf
-  position top
-  # i3bar_command i3bar --transparency
-  tray_output primary
-  tray_padding 0
-
-  # When strip_workspace_numbers is set to yes,
-  # any workspace that has a name of the form
-  # "[n][:][NAME]" will display only the name.
-  strip_workspace_numbers yes
-  # strip_workspace_name no
-
-  # Bar colors (placeholders will be replaced by build script)
-  colors {
-    background ${BAR_BACKGROUND}
-    statusline ${BAR_STATUSLINE}
-    separator  ${BAR_SEPARATOR}
-
-    #                  border                            background                    text
-    focused_workspace  ${BAR_FOCUSED_WORKSPACE_BORDER}  ${BAR_FOCUSED_WORKSPACE_BG}  ${BAR_FOCUSED_WORKSPACE_TEXT}
-    active_workspace   ${BAR_ACTIVE_WORKSPACE_BORDER}   ${BAR_ACTIVE_WORKSPACE_BG}   ${BAR_ACTIVE_WORKSPACE_TEXT}
-    inactive_workspace ${BAR_INACTIVE_WORKSPACE_BORDER} ${BAR_INACTIVE_WORKSPACE_BG} ${BAR_INACTIVE_WORKSPACE_TEXT}
-    binding_mode       ${BAR_BINDING_MODE_BORDER}       ${BAR_BINDING_MODE_BG}       ${BAR_BINDING_MODE_TEXT}
-    urgent_workspace   ${BAR_URGENT_WORKSPACE_BORDER}   ${BAR_URGENT_WORKSPACE_BG}   ${BAR_URGENT_WORKSPACE_TEXT}
-  }
-}

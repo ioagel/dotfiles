@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e # Exit immediately if a command exits with a non-zero status.
-# set -u # Exit if unset variable is used (optional, but good practice)
+set -u # Exit if unset variable is used (optional, but good practice)
 
 # Check if a theme name was provided
 if [ -z "$1" ]; then
@@ -45,6 +45,7 @@ fi
         ["$CONFIG_TEMPLATE_DIR/config.d/monitor.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor.conf"
         ["$CONFIG_TEMPLATE_DIR/config.d/monitor2.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor2.conf"
         ["$CONFIG_TEMPLATE_DIR/config.d/monitor3.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor3.conf"
+        ["$CONFIG_TEMPLATE_DIR/config.d/bar.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/bar.conf" # Restore bar template processing
     )
 
     # Build the list of variables expected by envsubst
@@ -71,8 +72,30 @@ fi
     done
 ) # End of subshell
 
+# --- Set Default Tray Output in bar.conf ---
+# After applying the theme, ensure bar.conf reflects the default 'monitor' layout tray setting.
+DEFAULT_MONITOR_CONF="$CONFIG_OUTPUT_DIR/config.d/monitor.conf"
+GENERATED_BAR_CONF="$CONFIG_OUTPUT_DIR/config.d/bar.conf"
+
+echo "Setting default tray output in '$GENERATED_BAR_CONF' based on '$DEFAULT_MONITOR_CONF'..."
+
+if [ -f "$DEFAULT_MONITOR_CONF" ] && [ -f "$GENERATED_BAR_CONF" ]; then
+    # Extract the default tray monitor value
+    DEFAULT_TRAY_VALUE=$(grep '^set \$__tray_monitor' "$DEFAULT_MONITOR_CONF" | awk '{print $3}')
+
+    if [ -n "$DEFAULT_TRAY_VALUE" ]; then
+        # Update the tray_output line in the generated bar.conf
+        sed -i "s/^\s*tray_output.*/  tray_output $DEFAULT_TRAY_VALUE/" "$GENERATED_BAR_CONF"
+        echo "Default tray output set to '$DEFAULT_TRAY_VALUE' in '$GENERATED_BAR_CONF'."
+    else
+        echo "Warning: Could not extract \$__tray_monitor value from '$DEFAULT_MONITOR_CONF'. Default tray not set." >&2
+    fi
+else
+    echo "Warning: Default monitor config ('$DEFAULT_MONITOR_CONF') or generated bar config ('$GENERATED_BAR_CONF') not found. Default tray not set." >&2
+fi
+
 echo "Theme '$THEME_NAME' applied successfully to files in $CONFIG_OUTPUT_DIR."
-echo "Reload i3 config ($mod+Shift+c) to see changes."
+echo "Run set-monitor-layout <layout> if needed, then reload i3 (\$mod+Shift+c)."
 
 # Send notification
 notify-send "i3 Theme Applied" "Switched to '$THEME_NAME' theme. Reload i3."

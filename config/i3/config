@@ -82,7 +82,13 @@ set $ws8  "8"
 set $ws9  "9"
 set $ws10 "10"
 
-include ~/.config/i3/config.d/monitor-current.conf
+# Include the current monitor layout (variables, workspace assignments)
+# This file is managed by the set-monitor-layout script
+include ~/.config/i3/config.d/monitor-layout-current.conf
+
+# Include the themed bar configuration
+# Tray output placeholder within this file is replaced by set-monitor-layout
+include ~/.config/i3/config.d/bar.conf
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
