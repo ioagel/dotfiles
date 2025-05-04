@@ -1,3 +1,0 @@
-DOTFILES_DIRS="$HOME/.dotfiles-secret $HOME/.dotfiles-local $HOME/.dotfiles"
-EXCLUDES="README.md LICENSE install.sh ubuntu.sh sh_functions systemd archlinux ubuntu fonts config/nvim_mine"
-SYMLINK_DIRS="backups undodir"

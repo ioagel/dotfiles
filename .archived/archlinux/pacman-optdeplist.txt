@@ -1,6 +1,0 @@
-gobject-introspection
-python-bottle
-qemu-hw-s390x-virtio-gpu-ccw
-qemu-pr-helper
-qemu-tools
-rust
