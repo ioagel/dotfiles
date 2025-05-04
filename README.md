@@ -79,3 +79,7 @@ build-zellij-config -t gruvbox-dark
 
 - Need to compile `i3blocks` from git: <https://github.com/vivien/i3blocks>, because it has older version
   - To support variable passing to custom scripts
+
+## NOTES
+
+- Adds `.stow-local-ignore` in `home` package to prevent `.gitignore` from being ignored by stow.
