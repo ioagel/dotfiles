@@ -5,5 +5,6 @@ export T_CRIT=95
 # uses sensors output for chip
 export SENSOR_CHIP="k10temp-pci-00c3"
 
-# Make Jetbrains happy
-export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
+# Load common path configuration
+# shellcheck source=/dev/null
+[ -f "$HOME/.path_common" ] && . "$HOME/.path_common"

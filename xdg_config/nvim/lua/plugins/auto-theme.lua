@@ -38,17 +38,8 @@ return {
         -- Set the initial colorscheme
         update_colorscheme()
 
-        -- Create an autocommand to check the system theme periodically
-        local check_interval_ms = 5000 -- 5 seconds
-
-        local timer = vim.loop.new_timer()
-        if timer then
-            timer:start(0, check_interval_ms, vim.schedule_wrap(function()
-                update_colorscheme()
-            end))
-        end
-
         -- Create a user command to manually update the colorscheme
+        -- This is used by the i3 theme-toggle.sh script
         vim.api.nvim_create_user_command("UpdateColorscheme", update_colorscheme, {})
     end,
 }

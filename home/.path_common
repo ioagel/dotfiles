@@ -1,6 +1,11 @@
 export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
 
+if [ -d "$HOME/.local/share/JetBrains/Toolbox/scripts" ]; then
+    # Make Jetbrains happy
+    PATH="$HOME/.local/share/JetBrains/Toolbox/scripts:$PATH"
+fi
+
 # home dir bin dirs
 PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
@@ -18,4 +23,9 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # so you can run project-specific scripts, but only in repos you mark as “safe” by creating .git/safe.
 PATH=".git/safe/../../bin:$PATH"
 
-export -U PATH
+# if shell is zsh, use the -U flag to prevent duplicates
+if [ -n "$ZSH_VERSION" ]; then
+    export -U PATH
+else
+    export PATH
+fi
