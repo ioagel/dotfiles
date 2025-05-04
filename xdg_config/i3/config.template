@@ -465,7 +465,8 @@ exec --no-startup-id nm-applet
 # Logitech mouse
 exec --no-startup-id solaar --window=hide --restart-on-wake-up
 
-exec --no-startup-id 1password
+# Start 1Password
+exec --no-startup-id 1password --silent
 
 # Start synology drive
 exec --no-startup-id synology-drive
@@ -481,3 +482,6 @@ bindsym $mod+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor ''
 bindsym $mod+Shift+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor3 '25:75'
 bindsym $mod+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 ''
 bindsym $mod+Shift+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 33
+
+# Theme toggle
+bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/theme-toggle

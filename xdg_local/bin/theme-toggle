@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Get current GNOME theme setting
+current_theme=$(gsettings get org.gnome.desktop.interface color-scheme)
+
+# Toggle theme
+if [[ $current_theme == *"light"* ]]; then
+  # Current theme is light, switch to dark
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+
+  # Update Zellij config to use dark theme
+  build-zellij-config -t gruvbox-dark
+
+  echo "Switched to dark theme"
+else
+  # Current theme is dark, switch to light
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
+
+  # Update Zellij config to use light theme
+  build-zellij-config -t catppuccin-latte
+
+  echo "Switched to light theme"
+fi
+
+# Find running Neovim instances and update their colorscheme
+# This requires the neovim-remote package (yay -S neovim-remote)
+if command -v nvr &>/dev/null; then
+  # Find all Neovim server sockets
+  for socket in /tmp/nvimsocket* /run/user/$(id -u)/nvim*; do
+    if [ -e "$socket" ]; then
+      # Send UpdateColorscheme command to each Neovim instance
+      NVIM_LISTEN_ADDRESS="$socket" nvr --remote-send '<Esc>:UpdateColorscheme<CR>' &>/dev/null
+    fi
+  done
+else
+  echo "neovim-remote not found. Install with: yay -S neovim-remote"
+  echo "Neovim instances will update their theme on the next periodic check"
+fi
