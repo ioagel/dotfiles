@@ -83,7 +83,7 @@ elif [ -e "$alacritty_themes_dir" ]; then
     warning "Path '$alacritty_themes_dir' exists but is not a git repository. Skipping theme clone/update."
 else
     log "Cloning Alacritty themes repository..."
-    if git clone "$alacritty_themes_repo" "$alacritty_themes_dir"; then
+    if git clone --depth 1 "$alacritty_themes_repo" "$alacritty_themes_dir"; then
         log "Successfully cloned Alacritty themes."
     else
         warning "Failed to clone Alacritty themes repository."

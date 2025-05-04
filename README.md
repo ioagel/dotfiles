@@ -61,6 +61,18 @@ sudo stow -R -t /etc etc
 sudo systemctl daemon-reload
 sudo systemctl enable <service_name>
 # sudo systemctl start <service_name>
+
+## Post Stowing
+# Install or update alacritty themes
+git clone --depth 1 https://github.com/alacritty/alacritty-themes.git ~/.config/alacritty/themes
+# or
+cd ~/.config/alacritty/themes && git pull
+
+# Build i3 config
+build-i3-config -t gruvbox
+
+# Build zellij config
+build-zellij-config -t gruvbox-dark
 ```
 
 ## Ubuntu (24.04)
