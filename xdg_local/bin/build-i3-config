@@ -54,14 +54,13 @@ if [ -z "$THEME_NAME" ]; then
 fi
 
 # --- Configuration ---
-# Assume dotfiles directory is in a fixed location
-DOTFILES_DIR="$HOME/.dotfiles"
+I3_CONFIG_DIR=~/.config/i3
 
-# Construct paths based on the fixed dotfiles location
-THEME_DIR="$DOTFILES_DIR/config/i3/themes"
+# Construct paths based on the fixed i3 config dir location
+THEME_DIR="$I3_CONFIG_DIR/themes"
 THEME_VARS_FILE="$THEME_DIR/${THEME_NAME}.vars"
-CONFIG_TEMPLATE_DIR="$DOTFILES_DIR/config/i3"
-CONFIG_OUTPUT_DIR="$HOME/.config/i3"
+CONFIG_TEMPLATE_DIR="$I3_CONFIG_DIR"
+CONFIG_OUTPUT_DIR="$I3_CONFIG_DIR"
 # --- End Configuration ---
 
 # Check if the theme variables file exists

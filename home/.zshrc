@@ -1,4 +1,4 @@
-ZSH_DIR="$HOME/.dotfiles/zsh"
+ZSH_DIR="$HOME/.zsh"
 
 # Credits to: Thoughtbot dotfiles https://github.com/thoughtbot/dotfiles for initial implementation
 # extra files in $ZSH_DIR/configs/pre , $ZSH_DIR/configs , and $ZSH_DIR/configs/post

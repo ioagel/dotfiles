@@ -28,7 +28,7 @@ if [ -z "$CONFIG_NAME" ]; then
     exit 1
 fi
 
-GENERATED_CONFIG_DIR="$HOME/.config/i3/config.d"
+GENERATED_CONFIG_DIR=~/.config/i3/config.d
 
 # Define full paths to the relevant generated configuration files
 TARGET_MONITOR_CONF="$GENERATED_CONFIG_DIR/$CONFIG_NAME.conf"

@@ -20,7 +20,7 @@ vim/vim-spell-en.utf-8.add.spl
 /Brewfile.lock.json
 /Brewfile.current
 keyboard_language
-/config/alacritty/themes/
-/config/zellij/config.kdl
-/config/i3/config.d/*.conf
-/config/i3/config
+**/alacritty/themes/
+**/zellij/config.kdl
+**/i3/config.d/*.conf
+**/i3/config
