@@ -420,6 +420,9 @@ client.background            ${CLIENT_BACKGROUND}
 # Hide/Show taskbar
 bindsym $mod+m bar mode toggle
 
+# Toggle system tray visibility
+bindsym $mod+Shift+m exec --no-startup-id ~/.config/i3/scripts/toggle-i3-tray
+
 # Set up monitors
 exec_always --no-startup-id ~/.config/i3/scripts/monitors
 
