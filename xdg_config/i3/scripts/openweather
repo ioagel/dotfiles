@@ -59,7 +59,7 @@ VERY_HOT_TEMP="#fe8019"
 # Function to output colored temperature
 output_temp() {
   local COLOR="$1"
-  echo "<span color='$COLOR'>${WEATHER_ICON} ${WEATHER_TEMP}°C</span>"
+  echo "<span color='$COLOR'>${WEATHER_ICON}  ${WEATHER_TEMP}°C</span>"
 }
 
 # Make sure WEATHER_TEMP is set
