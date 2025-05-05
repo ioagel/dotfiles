@@ -22,7 +22,7 @@ sub help {
     print "Usage: cpu_usage [-w <warning>] [-c <critical>] [-d <decimals>]\n";
     print "-w <percent>: warning threshold to become yellow\n";
     print "-c <percent>: critical threshold to become red\n";
-    print "-d <decimals>:  Use <decimals> decimals for percentage (default is $decimals) \n"; 
+    print "-d <decimals>:  Use <decimals> decimals for percentage (default is $decimals) \n";
     exit 0;
 }
 
@@ -53,10 +53,10 @@ printf "%02.${decimals}f%%\n", $cpu_usage;
 
 # Print color, if needed
 if ($cpu_usage >= $t_crit) {
-    print "#FF0000\n";
+    print "#fb4934\n";
     exit 33;
 } elsif ($cpu_usage >= $t_warn) {
-    print "#FFFC00\n";
+    print "#fabd2f\n";
 }
 
 exit 0;

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Check if tray_output is "none" in current config
+if grep -q "tray_output none" ~/.config/i3/config.d/bar.conf; then
+    # Default to primary monitor
+    tray_monitor="primary"
+
+    # Try to get the monitor layout from set-monitor-layout script
+    if [ -f ~/.config/i3/config.d/monitor-layout-current.conf ]; then
+        monitor_from_layout=$(grep "^set \$__tray_monitor" ~/.config/i3/config.d/monitor-layout-current.conf | awk '{print $3}')
+        if [ -n "$monitor_from_layout" ]; then
+            tray_monitor="$monitor_from_layout"
+        fi
+    fi
+
+    # Update bar.conf to enable tray on the monitor
+    sed -i "s/tray_output none/tray_output $tray_monitor/" ~/.config/i3/config.d/bar.conf
+else
+    # Update bar.conf to disable tray
+    sed -i "s/tray_output .*/tray_output none/" ~/.config/i3/config.d/bar.conf
+fi
+
+# Reload i3 to apply changes
+i3-msg reload
