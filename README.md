@@ -18,6 +18,8 @@ This repository uses Stow packages organized by target directory:
 - [GNU Stow](https://www.gnu.org/software/stow/)
 - `sudo` access (for managing files in `/etc`)
 - `neovim-remote` for having live-update of neovim color theme (in arch do: `yay -S neovim-remote`)
+- `python-i3ipc` for window_title.py i3blocks script
+- `xsettingsd` for gtk live theme changes
 - Set zsh as your login shell:
 
   ```bash
@@ -82,12 +84,15 @@ build-i3-config -t gruvbox
 
 # Build zellij config
 build-zellij-config -t gruvbox-dark
+
+# Set the GTK theme to dark
+ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
 ```
 
 ## Ubuntu (24.04)
 
 - Need to compile `i3blocks` from git: <https://github.com/vivien/i3blocks>, because it has older version
-    - To support variable passing to custom scripts
+  - To support variable passing to custom scripts
 
 ## NOTES
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Default to i3blocks mode
+POLYBAR_MODE=false
+if [[ "$1" == "--polybar" ]]; then
+    POLYBAR_MODE=true
+fi
+
 # Has 1 space at the end of the string
 WIRED_ICON=" "
 # Has 1 space at the end of the string
@@ -62,15 +68,31 @@ IFACE=$(get_active_interface)
 if is_network_up; then
     # Check if the interface is wireless
     if is_wireless "$IFACE"; then
-        echo "<span color='$NETWORK_UP'>$WIRELESS_ICON</span>"
+        if $POLYBAR_MODE; then
+            echo "%{F$NETWORK_UP}$WIRELESS_ICON%{F-}"
+        else
+            echo "<span color='$NETWORK_UP'>$WIRELESS_ICON</span>"
+        fi
     else
-        echo "<span color='$NETWORK_UP'>$WIRED_ICON</span>"
+        if $POLYBAR_MODE; then
+            echo "%{F$NETWORK_UP}$WIRED_ICON%{F-}"
+        else
+            echo "<span color='$NETWORK_UP'>$WIRED_ICON</span>"
+        fi
     fi
 else
     # Network is down - use appropriate icon based on interface type
     if is_wireless "$IFACE"; then
-        echo "<span color='$NETWORK_DOWN'>$WIRELESS_ICON</span>"
+        if $POLYBAR_MODE; then
+            echo "%{F$NETWORK_DOWN}$WIRELESS_ICON%{F-}"
+        else
+            echo "<span color='$NETWORK_DOWN'>$WIRELESS_ICON</span>"
+        fi
     else
-        echo "<span color='$NETWORK_DOWN'>$WIRED_ICON</span>"
+        if $POLYBAR_MODE; then
+            echo "%{F$NETWORK_DOWN}$WIRED_ICON%{F-}"
+        else
+            echo "<span color='$NETWORK_DOWN'>$WIRED_ICON</span>"
+        fi
     fi
 fi

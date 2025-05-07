@@ -46,7 +46,7 @@ workspace_layout default
 new_window pixel 4
 
 # thin borders
-# hide_edge_borders both
+hide_edge_borders smart
 
 # Set inner/outer gaps
 gaps inner 6
@@ -86,7 +86,8 @@ include ~/.config/i3/config.d/monitor-layout-current.conf
 
 # Include the themed bar configuration
 # Tray output placeholder within this file is replaced by set-monitor-layout
-include ~/.config/i3/config.d/bar.conf
+# When using polybar, comment out the following line
+# include ~/.config/i3/config.d/bar.conf
 
 # switch/iterate between workspaces
 bindsym $mod+Tab workspace next
@@ -252,7 +253,7 @@ bindsym $mod+Shift+minus move scratchpad
 bindsym $mod+minus scratchpad show
 # Per app scratchpad
 bindsym $mod+F3 [instance="org.wezfurlong.wezterm"] scratchpad show
-bindsym $mod+F4 [instance="org.gnome.Nautilus"] scratchpad show
+bindsym $mod+F4 [instance="thunar"] scratchpad show
 # bindsym $mod+F5 [instance="easyeffects"] scratchpad show
 bindsym $mod+F5 [instance="obsidian"] scratchpad show
 bindsym $mod+F6 [instance="gnome-pomodoro"] scratchpad show
@@ -283,7 +284,7 @@ bindsym XF86AudioPrev exec playerctl previous
 ## App shortcuts
 # bindsym $mod+w exec --no-startup-id google-chrome-stable
 bindsym $mod+w exec --no-startup-id brave
-bindsym $mod+n exec --no-startup-id nautilus --new-window --no-desktop
+bindsym $mod+n exec --no-startup-id thunar
 bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
@@ -295,7 +296,7 @@ bindsym Shift+Print exec --no-startup-id maim --select "/home/$USER/Pictures/$(d
 bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 
 # Power Profiles menu switcher (rofi)
-bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles
+bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles-menu
 
 bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 
@@ -339,6 +340,9 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 
 # start conky:
 #exec_always --no-startup-id conky
+
+# start xsettingsd: GTK theme changes
+exec_always --no-startup-id sh -c 'killall xsettingsd 2>/dev/null || true; xsettingsd'
 
 # set wallpaper
 exec_always --no-startup-id sleep 2 && nitrogen --random --set-zoom-fill ~/Pictures/wallpapers/super-ultrawide/
@@ -421,7 +425,10 @@ client.background            ${CLIENT_BACKGROUND}
 bindsym $mod+m bar mode toggle
 
 # Toggle system tray visibility
-bindsym $mod+Shift+m exec --no-startup-id ~/.config/i3/scripts/toggle-i3-tray
+# When using polybar, comment out the following line
+# bindsym $mod+Shift+m exec --no-startup-id ~/.config/i3/scripts/toggle-i3-tray
+# Use the following line instead:
+bindsym $mod+Shift+m exec --no-startup-id polybar-msg action systray module_toggle
 
 # Set up monitors
 exec_always --no-startup-id ~/.config/i3/scripts/monitors
@@ -488,3 +495,6 @@ bindsym $mod+Shift+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monit
 
 # Theme toggle
 bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/theme-toggle
+
+# Launch polybar
+exec_always --no-startup-id ~/.config/polybar/scripts/launch.sh

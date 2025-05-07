@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+#
+# Copyright (C) 2015 James Murphy
+# Licensed under the terms of the GNU GPL v2 only.
+#
+# i3blocks blocklet script to monitor bandwidth usage
+
+# Default to i3blocks mode
+POLYBAR_MODE=false
+# Check if --polybar is the first argument, then shift
+if [[ "$1" == "--polybar" ]]; then
+  POLYBAR_MODE=true
+  shift # Remove --polybar from arguments so getopts doesn't see it
+fi
+
+function default_interface {
+  local found_iface
+  found_iface=$(ip route | awk '/^default via/ {print $5; exit}')
+  echo "$found_iface"
+}
+
+# Interface setup
+
+# Capture default_interface output for debugging
+_def_iface_output=$(default_interface)
+
+iface="${IFACE:-$_def_iface_output}"
+# dt and unit should be defined here or earlier from env vars / defaults
+dt="${DT:-3}"
+unit="${UNIT:-MB}"
+
+if [ -z "$iface" ]; then
+  echo "ERROR: Could not determine default interface. Please set IFACE environment variable or ensure 'ip route' provides a default. Exiting." >&2
+  exit 1
+fi
+
+# Unit and Scalar calculation
+case "${unit:-MB}" in                                                   # Use unit if set, else MB default
+Kb | Kbit | Kbits) bytes_per_unit=$((1024 / 8)) ;;                      # Kibibits
+KB | KByte | KBytes) bytes_per_unit=$((1024)) ;;                        # Kibibytes
+Mb | Mbit | Mbits) bytes_per_unit=$((1024 * 1024 / 8)) ;;               # Mebibits
+MB | MByte | MBytes) bytes_per_unit=$((1024 * 1024)) ;;                 # Mebibytes
+Gb | Gbit | Gbits) bytes_per_unit=$((1024 * 1024 * 1024 / 8)) ;;        # Gibibits
+GB | GByte | GBytes) bytes_per_unit=$((1024 * 1024 * 1024)) ;;          # Gibibytes
+Tb | Tbit | Tbits) bytes_per_unit=$((1024 * 1024 * 1024 * 1024 / 8)) ;; # Tebibits
+TB | TByte | TBytes) bytes_per_unit=$((1024 * 1024 * 1024 * 1024)) ;;   # Tebibytes
+*) echo "Error: Bad unit '$unit'" >&2 && exit 1 ;;
+esac
+
+# Variables for awk
+shell_awk_bytes_per_unit="${bytes_per_unit}"
+shell_awk_dt="${dt}"
+
+# Define default icon text based on the mode, allowing override from environment
+# ICON_TEXT_POLYBAR="${ICON_TEXT_POLYBAR:-▼}" # Default Polybar icon
+# ICON_TEXT_I3BLOCKS="${ICON_TEXT_I3BLOCKS:-<span font='FontAwesome'>➔</span>}" # Default i3blocks icon (FontAwesome arrow)
+ICON_TEXT_POLYBAR="${ICON_TEXT_POLYBAR:''}"   # the icon is provided by another module
+ICON_TEXT_I3BLOCKS="${ICON_TEXT_I3BLOCKS:''}" # the icon is provided by another block
+
+# Determine final printf format string for awk based on POLYBAR_MODE
+if $POLYBAR_MODE; then
+  FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_POLYBAR}%1.0f/%1.0f %s/s\\n"
+else
+  FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_I3BLOCKS}%1.0f/%1.0f %s/s\\n"
+fi
+
+# Get initial byte counts
+init_line=$(grep "^[ ]*${iface}:" /proc/net/dev)
+if [[ -z "$init_line" ]]; then
+  echo "Error: Interface '$iface' not found in /proc/net/dev at start. (Script line approx: $LINENO)" >&2
+  exit 1
+fi
+shell_old_received_bytes=$(echo "$init_line" | awk '{print $2}')
+shell_old_sent_bytes=$(echo "$init_line" | awk '{print $10}')
+
+# Main loop
+while true; do
+  current_line=$(grep "^[ ]*${iface}:" /proc/net/dev)
+
+  if [[ -z "$current_line" ]]; then
+    # Interface disappeared or /proc/net/dev is unreadable briefly
+    # Output current ICON_TEXT_TO_USE with error message
+    echo "${ICON_TEXT_TO_USE} Error: IFACE?"
+    sleep "$dt"
+    continue
+  fi
+
+  output_stats=$(echo "$current_line" | awk \
+    -v old_r_b="$shell_old_received_bytes" \
+    -v old_s_b="$shell_old_sent_bytes" \
+    -v b_per_unit="$shell_awk_bytes_per_unit" \
+    -v interval_dt="$shell_awk_dt" \
+    -v unit_str="${unit}" \
+    -v awk_format_str="$FINAL_AWK_PRINTF_FORMAT" \
+    '
+    {
+        curr_r_b = $2;
+        curr_s_b = $10;
+
+        # Calculate rates in bytes per second
+        rx_bytes_ps = (curr_r_b - old_r_b) / interval_dt;
+        wx_bytes_ps = (curr_s_b - old_s_b) / interval_dt;
+
+        # Convert to target units
+        rx_s = rx_bytes_ps / b_per_unit;
+        wx_s = wx_bytes_ps / b_per_unit;
+
+        # Prevent negative values if counters reset or interface flaps
+        if (rx_s < 0) rx_s = 0;
+        if (wx_s < 0) wx_s = 0;
+
+        printf awk_format_str, rx_s, wx_s, unit_str;
+        fflush(stdout);
+    }')
+
+  echo "$output_stats"
+
+  # Update shell_old_received_bytes and shell_old_sent_bytes for the next iteration
+  shell_old_received_bytes=$(echo "$current_line" | awk '{print $2}')
+  shell_old_sent_bytes=$(echo "$current_line" | awk '{print $10}')
+
+  sleep "${dt}"
+done

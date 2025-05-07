@@ -49,3 +49,6 @@ max_line_length = 120
 
 [i3blocks.conf]
 trim_trailing_whitespace = false
+
+[*.ini]
+trim_trailing_whitespace = false
