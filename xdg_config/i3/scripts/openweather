@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Set locale to C to avoid decimal point issues, with different locales
+export LC_NUMERIC=C
+
 command -v jq >/dev/null 2>&1 || {
   echo >&2 "Program 'jq' required but it is not installed.
 Aborting."
@@ -14,9 +17,9 @@ Aborting."
 # To use this script you need to create an API key here https://home.openweathermap.org
 # You need to put your Open Weather APIKEY here:
 APIKEY="$(sops -d ~/.local/share/openweathermap/openweathermap_api_key)"
-# And get your Latitute and Longitudes to put in here:
-LAT="37.9795"
-LON="23.7162"
+# And get your Latitute and Longitudes to put in here (Ano Glyfada, Athens, GR):
+LAT="37.8650"
+LON="23.7550"
 URL="http://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&units=metric&appid=${APIKEY}"
 
 WEATHER_RESPONSE=$(wget -qO- "${URL}")
@@ -56,10 +59,23 @@ NORMAL_TEMP="#b8bb26"
 HOT_TEMP="#fabd2f"
 VERY_HOT_TEMP="#fe8019"
 
-# Function to output colored temperature
+# Check if we're running in polybar or i3blocks (default: i3blocks)
+FORMAT_TYPE="i3blocks"
+if [[ "$1" == "--polybar" ]]; then
+  FORMAT_TYPE="polybar"
+fi
+
+# Function to output colored temperature based on the environment
 output_temp() {
   local COLOR="$1"
-  echo "<span color='$COLOR'>${WEATHER_ICON}  ${WEATHER_TEMP}°C</span>"
+
+  if [[ "$FORMAT_TYPE" == "polybar" ]]; then
+    # Polybar format
+    echo "%{F$COLOR}${WEATHER_ICON}%{F-}  ${WEATHER_TEMP}°C"
+  else
+    # i3blocks format (default)
+    echo "<span color='$COLOR'>${WEATHER_ICON}  ${WEATHER_TEMP}°C</span>"
+  fi
 }
 
 # Make sure WEATHER_TEMP is set

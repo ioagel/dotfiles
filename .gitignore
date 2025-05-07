@@ -4,3 +4,4 @@
 **/zellij/config.kdl
 **/i3/config.d/*.conf
 **/i3/config
+**/xsettingsd/xsettingsd.conf

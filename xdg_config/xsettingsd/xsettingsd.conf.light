@@ -1,0 +1,9 @@
+# Configure our fonts.
+Xft/Antialias 1
+Xft/HintStyle "hintslight"
+Xft/Hinting 1
+Xft/RGBA "rgb"
+Xft/lcdfilter "lcddefault"
+
+Net/ThemeName "Yaru-sage"
+Net/IconThemeName "Yaru-sage-dark"

@@ -5,7 +5,7 @@ set -e
 
 # --- Configuration ---
 # Get the absolute path to the directory where this script resides (e.g., ~/.dotfiles)
-DOTFILES_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Define packages and their targets. Add more here if needed.
 # Format: "package_directory_name:target_path"
@@ -40,10 +40,10 @@ error() {
 
 # --- Pre-checks ---
 log "Checking dependencies..."
-if ! command -v stow &> /dev/null; then
+if ! command -v stow &>/dev/null; then
     error "'stow' command not found. Please install stow first."
 fi
-if ! command -v sudo &> /dev/null && [ "$SYSTEM_PACKAGE" != "" ]; then
+if ! command -v sudo &>/dev/null && [ "$SYSTEM_PACKAGE" != "" ]; then
     error "'sudo' command not found, but it's required for the system package '$SYSTEM_PACKAGE'."
 fi
 log "Dependencies met."
@@ -53,13 +53,13 @@ log "Stowing user packages..."
 cd "$DOTFILES_DIR" # Stow needs to be run from the parent of the package dirs
 
 for item in "${USER_PACKAGES[@]}"; do
-    IFS=":" read -r package target <<< "$item"
+    IFS=":" read -r package target <<<"$item"
     package_path="$DOTFILES_DIR/$package"
 
     if [ -d "$package_path" ]; then
         log "Stowing '$package' to '$target'..."
         if stow -R -t "$target" "$package"; then
-             log "Successfully stowed '$package'."
+            log "Successfully stowed '$package'."
         else
             error "Failed to stow '$package'. Check stow output for details."
         fi
@@ -117,10 +117,10 @@ if [ -d "$system_package_path" ]; then
                 log "Enabling systemd service '$service'..."
                 # Use --now to enable and start, or just enable if you prefer manual start
                 if sudo systemctl enable "$service"; then
-                     log "Enabled '$service'."
+                    log "Enabled '$service'."
                 else
-                     # Don't exit script, maybe just needs manual intervention
-                     warning "Failed to enable '$service'. It might already be enabled or have issues."
+                    # Don't exit script, maybe just needs manual intervention
+                    warning "Failed to enable '$service'. It might already be enabled or have issues."
                 fi
                 # Optional: Start the service
                 # log "Starting systemd service '$service'..."
@@ -144,7 +144,7 @@ fi
 log "Running final build/activation steps..."
 
 # 2. Zellij Config Build
-if command -v build-zellij-config &> /dev/null; then
+if command -v build-zellij-config &>/dev/null; then
     log "Running build-zellij-config..."
     if build-zellij-config -t gruvbox-dark; then
         log "Successfully ran build-zellij-config."
@@ -156,7 +156,7 @@ else
 fi
 
 # 3. i3 Config Build
-if command -v build-i3-config &> /dev/null; then
+if command -v build-i3-config &>/dev/null; then
     log "Running build-i3-config..."
     if build-i3-config -t gruvbox; then
         log "Successfully ran build-i3-config."
@@ -166,6 +166,12 @@ if command -v build-i3-config &> /dev/null; then
 else
     warning "'build-i3-config' command not found. Skipping."
 fi
+
+# 4. xsettingsd Config (GTK Apps) - Default to dark theme
+if ! command -v xsettingsd &>/dev/null; then
+    warning "'xsettingsd' command not found. Install it to be able to auto-switch themes in GTK apps."
+fi
+ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
 
 log "Dotfiles installation script finished!"
 
