@@ -10,8 +10,8 @@ current_profile=$(/usr/bin/powerprofilesctl get)
 
 # Define colors
 PERFORMANCE_COLOR="#fe8019" # Orange-light
-BALANCED_COLOR="#83a598"    # Blue-light
-POWERSAVER_COLOR="#8ec07c"  # Aqua-light
+BALANCED_COLOR="#d79921"    # Yellow
+POWERSAVER_COLOR="#689d68"  # Aqua
 UNKNOWN_COLOR="#a89984"     # Disabled
 
 # Check if we are running in polybar mode
