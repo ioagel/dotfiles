@@ -15,6 +15,10 @@ if [[ $current_theme == *"light"* ]]; then
   ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
   killall -HUP xsettingsd
 
+  # Update Polybar theme to dark
+  ln -sf "$HOME/.config/polybar/modules/colors-dark.ini" "$HOME/.config/polybar/modules/colors.ini"
+  polybar-msg cmd restart &>/dev/null
+
   echo "Switched to dark theme"
 else
   # Current theme is dark, switch to light
@@ -26,6 +30,10 @@ else
   # Update xsettingsd config to use light theme (GTK Apps)
   ln -sf ~/.config/xsettingsd/xsettingsd.conf.light ~/.config/xsettingsd/xsettingsd.conf
   killall -HUP xsettingsd
+
+  # Update Polybar theme to light
+  ln -sf "$HOME/.config/polybar/modules/colors-light.ini" "$HOME/.config/polybar/modules/colors.ini"
+  polybar-msg cmd restart &>/dev/null
 
   echo "Switched to light theme"
 fi
