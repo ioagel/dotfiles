@@ -363,7 +363,7 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 #exec --no-startup-id xscreensaver --no-splash
 
 # Desktop notifications
-exec_always --no-startup-id dunst --config ~/.config/dunst/dunstrc
+exec_always --no-startup-id killall dunst 2>/dev/null; dunst
 
 ##################
 # floating rules #
