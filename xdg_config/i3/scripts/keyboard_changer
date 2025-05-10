@@ -4,10 +4,10 @@ current_lang=$(setxkbmap -print | awk -F"+" '/xkb_symbols/ {print $2}')
 
 if [ $current_lang = 'us' ]; then
   setxkbmap gr
-  notify-send "Keyboard layout changed to Greek"
+  notify-send "Keyboard Layout" "Changed to Greek 🇬🇷"
 fi
 
 if [ $current_lang = 'gr' ]; then
   setxkbmap us
-  notify-send "Keyboard layout changed to English"
+  notify-send "Keyboard Layout" "Changed to English 🇺🇸"
 fi

@@ -8,32 +8,34 @@ if [[ $current_theme == *"light"* ]]; then
   # Current theme is light, switch to dark
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
+  # Update i3 config to dark
+  build-i3-config -t gruvbox-dark
+
   # Update Zellij config to use dark theme
   build-zellij-config -t gruvbox-dark
 
   # Update xsettingsd config to use dark theme (GTK Apps)
   ln -sf ~/.config/xsettingsd/themes/gruvbox-dark.conf ~/.config/xsettingsd/xsettingsd.conf
-  killall -HUP xsettingsd
 
   # Update Polybar theme to dark
   ln -sf "$HOME/.config/polybar/modules/themes/gruvbox-dark.ini" "$HOME/.config/polybar/modules/colors.ini"
-  polybar-msg cmd restart &>/dev/null
 
   echo "Switched to dark theme"
 else
   # Current theme is dark, switch to light
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
 
+  # Update i3 config to light
+  build-i3-config -t catppuccin-latte
+
   # Update Zellij config to use light theme
   build-zellij-config -t catppuccin-latte
 
   # Update xsettingsd config to use light theme (GTK Apps)
   ln -sf ~/.config/xsettingsd/themes/catppuccin-latte.conf ~/.config/xsettingsd/xsettingsd.conf
-  killall -HUP xsettingsd
 
   # Update Polybar theme to light
   ln -sf "$HOME/.config/polybar/modules/themes/catppuccin-latte.ini" "$HOME/.config/polybar/modules/colors.ini"
-  polybar-msg cmd restart &>/dev/null
 
   echo "Switched to light theme"
 fi
@@ -52,3 +54,12 @@ else
   echo "neovim-remote not found. Install with: yay -S neovim-remote"
   echo "Neovim instances will update their theme on the next periodic check"
 fi
+
+# Reload xsettingsd to apply changes to GTK apps
+killall -HUP xsettingsd
+
+# Reload polybar
+polybar-msg cmd restart &>/dev/null
+
+# Reload i3 config
+i3-msg reload
