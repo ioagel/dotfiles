@@ -80,13 +80,16 @@ git clone --depth 1 https://github.com/alacritty/alacritty-themes.git ~/.config/
 cd ~/.config/alacritty/themes && git pull
 
 # Build i3 config
-build-i3-config -t gruvbox
+build-i3-config -t gruvbox-dark
 
 # Build zellij config
 build-zellij-config -t gruvbox-dark
 
-# Set the GTK theme to dark
-ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
+# Set the GTK theme to dark (gruvbox-dark)
+ln -sf ~/.config/xsettingsd/themes/gruvbox-dark.conf ~/.config/xsettingsd/xsettingsd.conf
+
+# Set the Polybar theme to dark (gruvbox-dark)
+ln -sf ~/.config/polybar/modules/themes/gruvbox-dark.ini ~/.config/polybar/modules/colors.ini
 ```
 
 ## Ubuntu (24.04)

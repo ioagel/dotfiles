@@ -3,6 +3,30 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# --- Option Parsing ---
+THEME="gruvbox-dark" # Default theme
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    -t | --theme)
+        if [[ -n $2 && $2 != -* ]]; then
+            THEME="$2"
+            shift
+        else
+            error "Missing argument for $1 (theme name)"
+        fi
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        # You may want to collect unrecognized args for later use
+        ;;
+    esac
+    shift
+done
+
 # --- Configuration ---
 # Get the absolute path to the directory where this script resides (e.g., ~/.dotfiles)
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
@@ -30,11 +54,13 @@ log() {
 }
 
 warning() {
-    echo "[WARN] $1"
+    # Yellow color: \033[1;33m, Reset: \033[0m
+    echo -e "\033[1;33m[WARN] $1\033[0m"
 }
 
 error() {
-    echo "[ERROR] $1" >&2
+    # Red color: \033[1;31m, Reset: \033[0m
+    echo -e "\033[1;31m[ERROR] $1\033[0m" >&2
     exit 1
 }
 
@@ -146,7 +172,7 @@ log "Running final build/activation steps..."
 # 2. Zellij Config Build
 if command -v build-zellij-config &>/dev/null; then
     log "Running build-zellij-config..."
-    if build-zellij-config -t gruvbox-dark; then
+    if build-zellij-config -t "$THEME"; then
         log "Successfully ran build-zellij-config."
     else
         warning "build-zellij-config command failed."
@@ -158,7 +184,7 @@ fi
 # 3. i3 Config Build
 if command -v build-i3-config &>/dev/null; then
     log "Running build-i3-config..."
-    if build-i3-config -t gruvbox; then
+    if build-i3-config -t "$THEME"; then
         log "Successfully ran build-i3-config."
     else
         warning "build-i3-config command failed."
@@ -168,10 +194,18 @@ else
 fi
 
 # 4. xsettingsd Config (GTK Apps) - Default to dark theme
+log "Setting up xsettingsd..."
 if ! command -v xsettingsd &>/dev/null; then
     warning "'xsettingsd' command not found. Install it to be able to auto-switch themes in GTK apps."
 fi
-ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
+ln -sf ~/.config/xsettingsd/themes/${THEME}.conf ~/.config/xsettingsd/xsettingsd.conf
+
+# 5. Polybar Config
+log "Setting up polybar..."
+if ! command -v polybar &>/dev/null; then
+    warning "'polybar' command not found."
+fi
+ln -sf ~/.config/polybar/modules/themes/${THEME}.ini ~/.config/polybar/modules/colors.ini
 
 log "Dotfiles installation script finished!"
 

@@ -12,11 +12,11 @@ if [[ $current_theme == *"light"* ]]; then
   build-zellij-config -t gruvbox-dark
 
   # Update xsettingsd config to use dark theme (GTK Apps)
-  ln -sf ~/.config/xsettingsd/xsettingsd.conf.dark ~/.config/xsettingsd/xsettingsd.conf
+  ln -sf ~/.config/xsettingsd/themes/gruvbox-dark.conf ~/.config/xsettingsd/xsettingsd.conf
   killall -HUP xsettingsd
 
   # Update Polybar theme to dark
-  ln -sf "$HOME/.config/polybar/modules/colors-dark.ini" "$HOME/.config/polybar/modules/colors.ini"
+  ln -sf "$HOME/.config/polybar/modules/themes/gruvbox-dark.ini" "$HOME/.config/polybar/modules/colors.ini"
   polybar-msg cmd restart &>/dev/null
 
   echo "Switched to dark theme"
@@ -28,11 +28,11 @@ else
   build-zellij-config -t catppuccin-latte
 
   # Update xsettingsd config to use light theme (GTK Apps)
-  ln -sf ~/.config/xsettingsd/xsettingsd.conf.light ~/.config/xsettingsd/xsettingsd.conf
+  ln -sf ~/.config/xsettingsd/themes/catppuccin-latte.conf ~/.config/xsettingsd/xsettingsd.conf
   killall -HUP xsettingsd
 
   # Update Polybar theme to light
-  ln -sf "$HOME/.config/polybar/modules/colors-light.ini" "$HOME/.config/polybar/modules/colors.ini"
+  ln -sf "$HOME/.config/polybar/modules/themes/catppuccin-latte.ini" "$HOME/.config/polybar/modules/colors.ini"
   polybar-msg cmd restart &>/dev/null
 
   echo "Switched to light theme"
