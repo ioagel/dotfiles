@@ -207,6 +207,19 @@ if ! command -v polybar &>/dev/null; then
 fi
 ln -sf ~/.config/polybar/modules/themes/${THEME}.ini ~/.config/polybar/modules/colors.ini
 
+# 6. Yazi Setup
+log "Setting up yazi..."
+if ! command -v yazi &>/dev/null; then
+    warning "'yazi' command not found."
+    warning "Please install yazi first and run manually: ya pack -u"
+else
+    ya pack -u
+    log "Successfully setup yazi."
+fi
+# Zellij and Yazi light theme incompatibility forces this
+# TODO: Fix this when zellij supports light themes of yazi
+ln -sf ~/.config/yazi/themes/theme-${THEME}.toml ~/.config/yazi/theme.toml
+
 log "Dotfiles installation script finished!"
 
 exit 0

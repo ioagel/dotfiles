@@ -10,6 +10,7 @@ autoload -U fs
 autoload -U g
 autoload -U genpass
 autoload -U mcd
+autoload -U y
 # Add other autoload lines here if needed
 
 # Initialize completion system
