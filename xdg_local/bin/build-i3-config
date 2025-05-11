@@ -82,9 +82,6 @@ fi
     declare -A TEMPLATE_MAP
     TEMPLATE_MAP=(
         ["$CONFIG_TEMPLATE_DIR/config.template"]="$CONFIG_OUTPUT_DIR/config"
-        ["$CONFIG_TEMPLATE_DIR/config.d/monitor.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor.conf"
-        ["$CONFIG_TEMPLATE_DIR/config.d/monitor2.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor2.conf"
-        ["$CONFIG_TEMPLATE_DIR/config.d/monitor3.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/monitor3.conf"
         ["$CONFIG_TEMPLATE_DIR/config.d/bar.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/bar.conf" # Restore bar template processing
     )
 

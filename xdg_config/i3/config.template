@@ -438,7 +438,7 @@ bindsym $mod+m bar mode toggle
 # Use the following line instead:
 bindsym $mod+Shift+m exec --no-startup-id polybar-msg action systray module_toggle
 
-# Set up monitors
+# Set up monitors (It is needed even on single monitor setup, because virtmon breaks otherwise)
 exec_always --no-startup-id ~/.config/i3/scripts/monitors
 
 #####################################

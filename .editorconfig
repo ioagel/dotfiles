@@ -17,6 +17,13 @@ binary_next_line = true
 switch_case_indent = true
 space_redirects = true
 
+[**/{.zsh,scripts,bin}/**/*]
+indent_size = 4
+shell_variant = bash
+binary_next_line = true
+switch_case_indent = true
+space_redirects = true
+
 # Zsh config files
 [.{zshrc,zshenv,zprofile,zlogin,zlogout}]
 indent_size = 4
