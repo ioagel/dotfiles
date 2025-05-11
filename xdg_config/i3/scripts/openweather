@@ -4,22 +4,22 @@
 export LC_NUMERIC=C
 
 command -v jq >/dev/null 2>&1 || {
-  echo >&2 "Program 'jq' required but it is not installed.
+    echo >&2 "Program 'jq' required but it is not installed.
 Aborting."
-  exit 1
+    exit 1
 }
 command -v wget >/dev/null 2>&1 || {
-  echo >&2 "Program 'wget' required but is not installed.
+    echo >&2 "Program 'wget' required but is not installed.
 Aborting."
-  exit 1
+    exit 1
 }
 
 # To use this script you need to create an API key here https://home.openweathermap.org
 # You need to put your Open Weather APIKEY here:
 APIKEY="$(cat ~/.openweathermap/api_key_i3)"
-# And get your Latitute and Longitudes to put in here (Ano Glyfada, Athens, GR):
-LAT="37.8650"
-LON="23.7550"
+# And get your Latitude and Longitude to put in here:
+LAT="$(cat ~/.openweathermap/home_latitude)"
+LON="$(cat ~/.openweathermap/home_longitude)"
 URL="http://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&units=metric&appid=${APIKEY}"
 
 WEATHER_RESPONSE=$(wget -qO- "${URL}")
@@ -38,17 +38,17 @@ WIND_DIR=${DIR_ARRAY[WIND_DIR]}
 
 case $WEATHER_CONDITION in
 'Clouds')
-  WEATHER_ICON=""
-  ;;
+    WEATHER_ICON=""
+    ;;
 'Rain')
-  WEATHER_ICON=""
-  ;;
+    WEATHER_ICON=""
+    ;;
 'Snow')
-  WEATHER_ICON=""
-  ;;
+    WEATHER_ICON=""
+    ;;
 *)
-  WEATHER_ICON=""
-  ;;
+    WEATHER_ICON=""
+    ;;
 esac
 
 # Print temperature, wind speed, and wind direction
@@ -62,39 +62,39 @@ VERY_HOT_TEMP="#fe8019"
 # Check if we're running in polybar or i3blocks (default: i3blocks)
 FORMAT_TYPE="i3blocks"
 if [[ "$1" == "--polybar" ]]; then
-  FORMAT_TYPE="polybar"
+    FORMAT_TYPE="polybar"
 fi
 
 # Function to output colored temperature based on the environment
 output_temp() {
-  local COLOR="$1"
+    local COLOR="$1"
 
-  if [[ "$FORMAT_TYPE" == "polybar" ]]; then
-    # Polybar format
-    echo "%{F$COLOR}${WEATHER_ICON}%{F-}  ${WEATHER_TEMP}°C"
-  else
-    # i3blocks format (default)
-    echo "<span color='$COLOR'>${WEATHER_ICON}  ${WEATHER_TEMP}°C</span>"
-  fi
+    if [[ "$FORMAT_TYPE" == "polybar" ]]; then
+        # Polybar format
+        echo "%{F$COLOR}${WEATHER_ICON}%{F-}  ${WEATHER_TEMP}°C"
+    else
+        # i3blocks format (default)
+        echo "<span color='$COLOR'>${WEATHER_ICON}  ${WEATHER_TEMP}°C</span>"
+    fi
 }
 
 # Make sure WEATHER_TEMP is set
 if [[ -z "$WEATHER_TEMP" ]]; then
-  echo "No temperature data"
-  exit 1
+    echo "No temperature data"
+    exit 1
 fi
 
 # Print temperature with color based on range
 if [[ $WEATHER_TEMP -le 15 ]]; then
-  # Cold: <= 15°C
-  output_temp "$COLD_TEMP"
+    # Cold: <= 15°C
+    output_temp "$COLD_TEMP"
 elif [[ $WEATHER_TEMP -ge 40 ]]; then
-  # Very hot: >= 40°C
-  output_temp "$VERY_HOT_TEMP"
+    # Very hot: >= 40°C
+    output_temp "$VERY_HOT_TEMP"
 elif [[ $WEATHER_TEMP -ge 30 ]]; then
-  # Hot: 30-39°C
-  output_temp "$HOT_TEMP"
+    # Hot: 30-39°C
+    output_temp "$HOT_TEMP"
 else
-  # Normal: 16-29°C
-  output_temp "$NORMAL_TEMP"
+    # Normal: 16-29°C
+    output_temp "$NORMAL_TEMP"
 fi
