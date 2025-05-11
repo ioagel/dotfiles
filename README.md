@@ -90,6 +90,10 @@ ln -sf ~/.config/xsettingsd/themes/gruvbox-dark.conf ~/.config/xsettingsd/xsetti
 
 # Set the Polybar theme to dark (gruvbox-dark)
 ln -sf ~/.config/polybar/modules/themes/gruvbox-dark.ini ~/.config/polybar/modules/colors.ini
+
+# Setup Yazi
+ya pack -u
+ln -sf ~/.config/yazi/themes/theme-gruvbox-dark.toml ~/.config/yazi/theme.toml
 ```
 
 ## Ubuntu (24.04)
@@ -100,3 +104,21 @@ ln -sf ~/.config/polybar/modules/themes/gruvbox-dark.ini ~/.config/polybar/modul
 ## NOTES
 
 - Adds `.stow-local-ignore` in `home` package to prevent `.gitignore` from being ignored by stow.
+
+- `yazi` light theme is not applied inside `zellij`, even if the last one and the terminal `wezterm` use a light theme.
+
+  This in `theme.toml` fails and still shows the dark theme:
+
+  ```toml
+  [flavor]
+  light = "catppuccin-latte"
+  dark = "gruvbox-dark"
+  ```
+
+  Only this is **working**:
+
+  ```toml
+  [flavor]
+  light = "catppuccin-latte"
+  dark = "catppuccin-latte"
+  ```

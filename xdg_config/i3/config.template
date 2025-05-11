@@ -289,6 +289,9 @@ bindsym $mod+o exec --no-startup-id obsidian
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
 
+# terminal file manager
+bindsym $mod+y exec --no-startup-id wezterm start -- yazi
+
 ### Screenshots (flameshot + maim)
 bindsym Print exec --no-startup-id $HOME/.local/bin/screentaker screen "$HOME/Pictures/Screenshots"
 bindsym $mod+Print exec --no-startup-id $HOME/.local/bin/screentaker window "$HOME/Pictures/Screenshots"

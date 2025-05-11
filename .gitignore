@@ -6,3 +6,6 @@
 **/i3/config
 **/xsettingsd/xsettingsd.conf
 **/polybar/modules/colors.ini
+**/yazi/flavors/*
+**/yazi/theme.toml
+!**/yazi/flavors/.keep

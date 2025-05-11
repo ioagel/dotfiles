@@ -20,6 +20,9 @@ if [[ $current_theme == *"light"* ]]; then
   # Update Polybar theme to dark
   ln -sf "$HOME/.config/polybar/modules/themes/gruvbox-dark.ini" "$HOME/.config/polybar/modules/colors.ini"
 
+  # Update Yazi theme to dark
+  ln -sf ~/.config/yazi/themes/theme-gruvbox-dark.toml ~/.config/yazi/theme.toml
+
   echo "Switched to dark theme"
 else
   # Current theme is dark, switch to light
@@ -36,6 +39,9 @@ else
 
   # Update Polybar theme to light
   ln -sf "$HOME/.config/polybar/modules/themes/catppuccin-latte.ini" "$HOME/.config/polybar/modules/colors.ini"
+
+  # Update Yazi theme to light (HACK: Zellij and Yazi light theme incompatibility forces this)
+  ln -sf ~/.config/yazi/themes/theme-catppuccin-latte.toml ~/.config/yazi/theme.toml
 
   echo "Switched to light theme"
 fi
