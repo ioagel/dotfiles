@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Created by: Ioannis Angelakopoulos
+# Date: 2025-05-11
+#
+# This script takes a screenshot of the current screen/window/selection
+# and saves it to the specified directory.
+#
+# Default directory: $HOME/Pictures/Screenshots
+# Default type: full
+#
+# Usage:
+#   $ screentaker full <directory>
+#   $ screentaker window <directory>
+#   $ screentaker screen <directory>
+#   $ screentaker selection <directory>
+#
+# Example:
+#   $ screentaker full "$HOME/Pictures/Screenshots" or $ screentaker
+#   $ screentaker window "$HOME/Pictures/Screenshots"
+#   $ screentaker screen "$HOME/Pictures/Screenshots"
+#   $ screentaker selection "$HOME/Pictures/Screenshots"
+#
+# Dependencies:
+#   - flameshot
+#   - maim (need this for window screenshots, flameshot doesn't support it)
+#   - xdotool
+#   - notify-send
+
+set -e # Exit immediately if a command exits with a non-zero status.
+
+TYPE="${1:-full}"
+DIR="${2:-$HOME/Pictures/Screenshots}"
+DATE_STRING="$(date +'%a_%b_%d_%H_%M_%S_%Z_%Y')"
+
+if [ -z "$TYPE" ] || [ -z "$DIR" ]; then
+  echo "Usage: $0 <full|window|screen|selection> <directory>"
+  echo "Example: $0 full "$HOME/Pictures/Screenshots""
+  exit 1
+fi
+
+# Ensure directory exists
+mkdir -p "$DIR"
+
+FILE_NAME=""
+COMMAND_TO_RUN=""
+
+case "$TYPE" in
+full)
+  FILE_NAME="full-$DATE_STRING.png"
+  FULL_PATH="$DIR/$FILE_NAME"
+  COMMAND_TO_RUN="flameshot full -p \"$FULL_PATH\""
+  ;;
+window)
+  ACTIVE_WINDOW_ID=$(xdotool getactivewindow)
+  # Get the first word of the window name, sanitize it, and use a fallback if empty
+  WINDOW_NAME_PREFIX=$(xdotool getwindowname "$ACTIVE_WINDOW_ID" 2>/dev/null | head -n1 | awk '{print $1}' | tr -cd '[:alnum:]._-' || echo "active_window")
+  if [ -z "$WINDOW_NAME_PREFIX" ]; then
+    WINDOW_NAME_PREFIX="active_window"
+  fi
+  FILE_NAME="window-${WINDOW_NAME_PREFIX}-$DATE_STRING.png"
+  FULL_PATH="$DIR/$FILE_NAME"
+  COMMAND_TO_RUN="maim --window \"$ACTIVE_WINDOW_ID\" \"$FULL_PATH\""
+  ;;
+screen)
+  # Captures the currently focused screen/monitor without GUI
+  FILE_NAME="screen-$DATE_STRING.png"
+  FULL_PATH="$DIR/$FILE_NAME"
+  COMMAND_TO_RUN="flameshot screen -p \"$FULL_PATH\""
+  ;;
+selection)
+  # Opens flameshot GUI for interactive selection; -p suggests save path and filename
+  FILE_NAME="selection-$DATE_STRING.png"
+  FULL_PATH="$DIR/$FILE_NAME"
+  COMMAND_TO_RUN="flameshot gui -p \"$FULL_PATH\""
+  ;;
+*)
+  echo "Error: Invalid type '$TYPE'. Use 'full', 'window', 'screen', or 'selection'."
+  echo "Usage: $0 <full|window|screen|selection> <directory>"
+  exit 1
+  ;;
+esac
+
+# Execute the command
+if eval "$COMMAND_TO_RUN"; then
+  notify-send "Screenshot Taken" "Saved to $FULL_PATH"
+else
+  notify-send -u critical "Screenshot Failed" "Command: $COMMAND_TO_RUN"
+  exit 1
+fi
+
+exit 0
