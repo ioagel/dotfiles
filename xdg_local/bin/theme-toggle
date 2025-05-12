@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+# Common utility functions
+# shellcheck disable=SC1090
+source ~/.local/bin/_script_utils.sh
+
 DARK_THEME="${DARK_THEME:-gruvbox-dark}"
 LIGHT_THEME="${LIGHT_THEME:-catppuccin-latte}"
 
@@ -11,14 +15,6 @@ YAZI_CONFIG_DIR="$HOME/.config/yazi"
 
 MODE="${1:-toggle}"
 
-# Helper function to check for command existence
-check_command() {
-    if ! command -v "$1" &>/dev/null; then
-        echo "Error: Required command '$1' not found. Please install it." >&2
-        exit 1
-    fi
-}
-
 # Dependency Checks
 check_command "gsettings"
 check_command "build-i3-config"
@@ -27,25 +23,28 @@ check_command "build-vscode-settings"
 check_command "polybar-msg"
 check_command "i3-msg"
 check_command "jq"
+check_command "notify-send" "Please install: libnotify"
 # nvr is checked later inline as it's optional
 
 # --- Theme Update Functions ---
 update_gnome_theme() {
     local mode="$1"
     gsettings set org.gnome.desktop.interface color-scheme "prefer-${mode}"
-    echo "GNOME/GTK theme set to prefer-${mode}."
+    log "GNOME/GTK theme set to prefer-${mode}."
 }
 
 update_i3_theme() {
     local theme_name="$1"
-    build-i3-config -t "${theme_name}"
-    echo "i3 config updated with theme: ${theme_name}."
+    echo "#### Running: build-i3-config"
+    build-i3-config -q -t "${theme_name}"
+    echo "#### Done: build-i3-config"
 }
 
 update_zellij_theme() {
     local theme_name="$1"
-    build-zellij-config -t "${theme_name}"
-    echo "Zellij config updated with theme: ${theme_name}."
+    echo "#### Running: build-zellij-config"
+    build-zellij-config -q -t "${theme_name}"
+    echo "#### Done: build-zellij-config"
 }
 
 update_xsettingsd_theme() {
@@ -53,9 +52,9 @@ update_xsettingsd_theme() {
     local target_conf="${XSETTINGSD_CONFIG_DIR}/themes/${theme_name}.conf"
     if [ -f "${target_conf}" ]; then
         ln -sf "${target_conf}" "${XSETTINGSD_CONFIG_DIR}/xsettingsd.conf"
-        echo "xsettingsd theme linked to ${theme_name}.conf."
+        log "xsettingsd theme linked to ${theme_name}.conf."
     else
-        echo "Warning: xsettingsd theme file not found: ${target_conf}" >&2
+        warning "xsettingsd theme file not found: ${target_conf}"
     fi
 }
 
@@ -64,9 +63,9 @@ update_polybar_theme() {
     local target_ini="${POLYBAR_CONFIG_DIR}/modules/themes/${theme_name}.ini"
     if [ -f "${target_ini}" ]; then
         ln -sf "${target_ini}" "${POLYBAR_CONFIG_DIR}/modules/colors.ini"
-        echo "Polybar theme linked to ${theme_name}.ini."
+        log "Polybar theme linked to ${theme_name}.ini."
     else
-        echo "Warning: Polybar theme file not found: ${target_ini}" >&2
+        warning "Polybar theme file not found: ${target_ini}"
     fi
 }
 
@@ -75,16 +74,17 @@ update_yazi_theme() {
     local target_toml="${YAZI_CONFIG_DIR}/themes/theme-${theme_name}.toml"
     if [ -f "${target_toml}" ]; then
         ln -sf "${target_toml}" "${YAZI_CONFIG_DIR}/theme.toml"
-        echo "Yazi theme linked to theme-${theme_name}.toml."
+        log "Yazi theme linked to theme-${theme_name}.toml."
     else
-        echo "Warning: Yazi theme file not found: ${target_toml}" >&2
+        warning "Yazi theme file not found: ${target_toml}"
     fi
 }
 
 update_vscode_settings() {
     local theme_name="$1"
-    build-vscode-settings -t "${theme_name}"
-    echo "VS Code settings updated with theme: ${theme_name}."
+    echo "#### Running: build-vscode-settings"
+    build-vscode-settings -q -t "${theme_name}"
+    echo "#### Done: build-vscode-settings"
 }
 
 update_neovim_themes() {
@@ -99,13 +99,13 @@ update_neovim_themes() {
             fi
         done
         if [ "$found_instance" -eq 1 ]; then
-            echo "Neovim instances notified to update colorscheme."
+            log "Neovim instances notified to update colorscheme."
         else
-            echo "No running Neovim instances found by nvr."
+            log "No running Neovim instances found by nvr."
         fi
     else
-        echo "neovim-remote (nvr) not found. Install with: yay -S neovim-remote"
-        echo "Neovim instances will update their theme on the next periodic check (if configured)."
+        warning "neovim-remote (nvr) not found. Install with: yay -S neovim-remote"
+        warning "Neovim instances will update their theme on the next periodic check (if configured)."
     fi
 }
 
@@ -126,11 +126,10 @@ elif [[ $MODE == "toggle" ]]; then
         THEME="${LIGHT_THEME}"
     fi
 else
-    echo "Error: Invalid mode '$MODE'. Use 'light', 'dark', or 'toggle'." >&2
-    exit 1
+    error "Invalid mode '$MODE'. Use 'light', 'dark', or 'toggle'."
 fi
 
-echo "Switching to ${MODE} mode with theme: ${THEME}"
+log "Switching to ${MODE} mode with theme: ${THEME}"
 
 # Apply Themes
 update_gnome_theme "${MODE}"
@@ -143,22 +142,24 @@ update_vscode_settings "${THEME}"
 update_neovim_themes
 
 # Reload Services
-echo "Reloading services..."
+log "Reloading services..."
 if pgrep -x xsettingsd >/dev/null; then
     killall -HUP xsettingsd
-    echo "xsettingsd reloaded."
+    log "xsettingsd reloaded."
 else
-    echo "xsettingsd not running, skipping reload."
+    warning "xsettingsd not running, skipping reload."
 fi
 
 if pgrep -x polybar >/dev/null; then
     polybar-msg cmd restart &>/dev/null
-    echo "Polybar restart command sent."
+    log "Polybar restart command sent."
 else
-    echo "Polybar not running, skipping restart."
+    warning "Polybar not running, skipping restart."
 fi
 
 i3-msg reload
-echo "i3 config reloaded."
+log "i3 config reloaded."
 
-echo "Theme switch to ${THEME} (${MODE}) complete."
+log "**** Theme switch to ${THEME} (${MODE}) complete. ****"
+
+notify-send "Theme Switch" "Switched to ${THEME} (${MODE} mode)."

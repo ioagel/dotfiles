@@ -4,16 +4,22 @@
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Exit if unset variable is used (optional, but good practice)
 
-THEME="gruvbox-dark" # Default theme
+# Common utility functions
+# shellcheck disable=SC1090
+source ~/.local/bin/_script_utils.sh
+
+THEME="gruvbox-dark"   # Default theme
+SEND_NOTIFICATION=true # Default: send notification
 
 # --- Usage Function ---
 usage() {
     local script_name
     script_name=$(basename "$0")
-    echo "Usage: $script_name [-t|--theme <theme_name>] [-h|--help]" >&2
+    echo "Usage: $script_name [-t|--theme <theme_name>] [-q|--quiet] [-h|--help]" >&2
     echo "  Applies the specified theme and builds the VS Code settings.json." >&2
     echo "  Options:" >&2
     echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -q, --quiet               Suppress the final notification message." >&2
     echo "    -h, --help                Show this help message." >&2
     exit 1
 }
@@ -31,6 +37,10 @@ while [ $# -gt 0 ]; do
             echo "Error: Option '$1' requires an argument." >&2
             usage
         fi
+        ;;
+    -q | --quiet)
+        SEND_NOTIFICATION=false
+        shift # past argument
         ;;
     -h | --help)
         usage
@@ -62,24 +72,31 @@ theme_settings="${vscode_config_dir}/themes/${THEME}.json"
 # Get the output settings file
 output_settings="${vscode_config_dir}/settings.json"
 
+# Dependency Checks
+check_command "jq"
+check_command "notify-send" "Please install: libnotify"
+
 if [ ! -f "${base_settings}" ]; then
-    echo "Warning: VS Code base settings not found: ${base_settings}. Skipping update."
-    exit 1
+    error "VS Code base settings not found: ${base_settings}. Skipping update."
 fi
 
 if [ ! -f "${theme_settings}" ]; then
-    echo "Warning: VS Code theme settings not found: ${theme_settings}. Skipping update."
-    exit 1
+    error "VS Code theme settings not found: ${theme_settings}. Skipping update."
 fi
 
-echo "Updating VS Code settings using theme: ${THEME}"
+log "Updating VS Code settings using theme: ${THEME}"
 # Use jq to merge base settings with theme-specific settings
 # -s slurps input files into an array; .[0] is base, .[1] is theme
 # * merges the theme object onto the base object
 if jq -s '.[0] * .[1]' "${base_settings}" "${theme_settings}" >"${output_settings}"; then
-    echo "Successfully updated ${output_settings}"
+    log "Successfully updated ${output_settings}"
     # Since Cursor and Windsurf link to this file, they are also updated.
 else
-    echo "Failed to update VS Code settings using jq."
-    exit 1
+    error "Failed to update VS Code settings using jq."
+fi
+
+# Send notification
+if [[ "$SEND_NOTIFICATION" = true ]]; then
+    log "Sending notification..."
+    notify-send "VS Code Settings Applied" "Switched to '$THEME' theme."
 fi

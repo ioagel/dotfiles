@@ -3,23 +3,11 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# Common utility functions
+# shellcheck disable=SC1090
+source ~/.local/bin/_script_utils.sh
+
 THEME="gruvbox-dark" # Default theme
-
-# --- Helper Functions ---
-log() {
-    echo "[INFO] $1"
-}
-
-warning() {
-    # Yellow color: \033[1;33m, Reset: \033[0m
-    echo -e "\033[1;33m[WARN] $1\033[0m"
-}
-
-error() {
-    # Red color: \033[1;31m, Reset: \033[0m
-    echo -e "\033[1;31m[ERROR] $1\033[0m" >&2
-    exit 1
-}
 
 # --- Usage Function ---
 usage() {
@@ -87,12 +75,8 @@ SYSTEMD_SERVICES=(
 
 # --- Pre-checks ---
 log "Checking dependencies..."
-if ! command -v stow &>/dev/null; then
-    error "'stow' command not found. Please install stow first."
-fi
-if ! command -v sudo &>/dev/null && [ "$SYSTEM_PACKAGE" != "" ]; then
-    error "'sudo' command not found, but it's required for the system package '$SYSTEM_PACKAGE'."
-fi
+check_command "stow"
+check_command "sudo"
 log "Dependencies met."
 
 # --- Stowing User Packages ---
@@ -261,6 +245,4 @@ else
     warning "'build-vscode-settings' command not found. Skipping."
 fi
 
-log "Dotfiles installation script finished!"
-
-exit 0
+log "**** Dotfiles installation script finished! ****"
