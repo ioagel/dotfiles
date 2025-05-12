@@ -23,8 +23,10 @@ check_command() {
 check_command "gsettings"
 check_command "build-i3-config"
 check_command "build-zellij-config"
+check_command "build-vscode-settings"
 check_command "polybar-msg"
 check_command "i3-msg"
+check_command "jq"
 # nvr is checked later inline as it's optional
 
 # --- Theme Update Functions ---
@@ -79,6 +81,12 @@ update_yazi_theme() {
     fi
 }
 
+update_vscode_settings() {
+    local theme_name="$1"
+    build-vscode-settings -t "${theme_name}"
+    echo "VS Code settings updated with theme: ${theme_name}."
+}
+
 update_neovim_themes() {
     if command -v nvr &>/dev/null; then
         # Find all Neovim server sockets
@@ -131,6 +139,7 @@ update_zellij_theme "${THEME}"
 update_xsettingsd_theme "${THEME}"
 update_polybar_theme "${THEME}"
 update_yazi_theme "${THEME}"
+update_vscode_settings "${THEME}"
 update_neovim_themes
 
 # Reload Services
