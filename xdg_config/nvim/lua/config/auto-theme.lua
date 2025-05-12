@@ -1,35 +1,46 @@
 ---@diagnostic disable: undefined-global
 
--- Function to get the system theme using vim.fn.system instead of io.popen
-local function get_system_theme()
+-- Mapping from system theme names to Neovim colorschemes
+local theme_map = {
+  ["gruvbox-dark"] = { colorscheme = "gruvbox", background = "dark" },
+  ["catppuccin-latte"] = { colorscheme = "catppuccin-latte", background = "light" },
+  -- Add more mappings as needed
+}
+
+-- Function to get the system theme and mode
+local function get_system_theme_and_mode()
   local result = vim.fn.system("gsettings get org.gnome.desktop.interface color-scheme")
   if vim.v.shell_error ~= 0 then
-    return "dark" -- Default to dark if command fails
+    return "gruvbox-dark", "dark" -- Default
   end
-
-  -- Parse the result (output is typically something like "'prefer-dark'" or "'prefer-light'")
   if result:match("light") then
-    return "light"
+    return "catppuccin-latte", "light"
   else
-    return "dark"
+    return "gruvbox-dark", "dark"
   end
 end
 
--- Function to set the colorscheme based on system theme
-local function update_colorscheme()
-  local theme = get_system_theme()
-  if theme == "light" then
-    vim.o.background = "light"
-    vim.cmd("colorscheme catppuccin-latte")
+-- Function to update colorscheme, optionally with theme and mode
+local function update_colorscheme(opts)
+  local theme, mode
+  if opts and opts.fargs and #opts.fargs >= 1 then
+    theme = opts.fargs[1]
+    mode = opts.fargs[2]
   else
-    vim.o.background = "dark"
-    vim.cmd("colorscheme gruvbox")
+    theme, mode = get_system_theme_and_mode()
+  end
+  local entry = theme_map[theme]
+  if entry then
+    vim.o.background = entry.background
+    vim.cmd("colorscheme " .. entry.colorscheme)
+  else
+    vim.o.background = mode or "dark"
+    vim.cmd("colorscheme gruvbox") -- fallback
   end
 end
 
 -- Set the initial colorscheme
 update_colorscheme()
 
--- Create a user command to manually update the colorscheme
--- This is used by the i3 theme-toggle.sh script
-vim.api.nvim_create_user_command("UpdateColorscheme", update_colorscheme, {})
+-- User command that accepts optional theme and mode
+vim.api.nvim_create_user_command("UpdateColorscheme", update_colorscheme, { nargs = "*" })
