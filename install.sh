@@ -3,28 +3,65 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# --- Option Parsing ---
 THEME="gruvbox-dark" # Default theme
 
+# --- Helper Functions ---
+log() {
+    echo "[INFO] $1"
+}
+
+warning() {
+    # Yellow color: \033[1;33m, Reset: \033[0m
+    echo -e "\033[1;33m[WARN] $1\033[0m"
+}
+
+error() {
+    # Red color: \033[1;31m, Reset: \033[0m
+    echo -e "\033[1;31m[ERROR] $1\033[0m" >&2
+    exit 1
+}
+
+# --- Usage Function ---
+usage() {
+    local script_name
+    script_name=$(basename "$0")
+    echo "Usage: $script_name [-t|--theme <theme_name>] [-h|--help]" >&2
+    echo "  Installs dotfiles using stow and performs initial setup." >&2
+    echo "  Options:" >&2
+    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -h, --help                Show this help message." >&2
+    exit 1
+}
+
+# --- Option Parsing ---
 while [[ $# -gt 0 ]]; do
     case $1 in
     -t | --theme)
         if [[ -n $2 && $2 != -* ]]; then
             THEME="$2"
-            shift
+            shift # past argument
+            shift # past value
         else
-            error "Missing argument for $1 (theme name)"
+            echo "Error: Missing argument for $1 (theme name)" >&2
+            usage
         fi
         ;;
-    --)
+    -h | --help)
+        usage
+        ;;
+    --) # End of options
         shift
         break
         ;;
+    -*)
+        echo "Error: Unknown option '$1'" >&2
+        usage
+        ;;
     *)
-        # You may want to collect unrecognized args for later use
+        echo "Error: Unexpected argument '$1'" >&2
+        usage
         ;;
     esac
-    shift
 done
 
 # --- Configuration ---
@@ -47,22 +84,6 @@ SYSTEMD_SERVICES=(
     "lock-screen-before-sleep@ioangel.service"
     # Add other service filenames here if you add more under etc/systemd/system/
 )
-
-# --- Helper Functions ---
-log() {
-    echo "[INFO] $1"
-}
-
-warning() {
-    # Yellow color: \033[1;33m, Reset: \033[0m
-    echo -e "\033[1;33m[WARN] $1\033[0m"
-}
-
-error() {
-    # Red color: \033[1;31m, Reset: \033[0m
-    echo -e "\033[1;31m[ERROR] $1\033[0m" >&2
-    exit 1
-}
 
 # --- Pre-checks ---
 log "Checking dependencies..."
@@ -219,6 +240,26 @@ fi
 # Zellij and Yazi light theme incompatibility forces this
 # TODO: Fix this when zellij supports light themes of yazi
 ln -sf ~/.config/yazi/themes/theme-${THEME}.toml ~/.config/yazi/theme.toml
+
+# 7. VS Code and related editor settings (Cursor, Windsurf, etc)
+log "Setting up VS Code and related editor settings..."
+# Ensure parent directories exist
+mkdir -p ~/.config/Cursor/User
+mkdir -p ~/.config/Windsurf/User
+# Create symlinks (overwrite if they exist and are not already correct)
+ln -sf ~/.config/Code/User/settings.json ~/.config/Cursor/User/settings.json
+ln -sf ~/.config/Code/User/settings.json ~/.config/Windsurf/User/settings.json
+# Build the VS Code settings
+if command -v build-vscode-settings &>/dev/null; then
+    log "Running build-vscode-settings..."
+    if build-vscode-settings -t "$THEME"; then
+        log "Successfully ran build-vscode-settings."
+    else
+        warning "build-vscode-settings command failed."
+    fi
+else
+    warning "'build-vscode-settings' command not found. Skipping."
+fi
 
 log "Dotfiles installation script finished!"
 

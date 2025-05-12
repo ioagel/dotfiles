@@ -1,24 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Exit if unset variable is used (optional, but good practice)
 
+THEME="gruvbox-dark" # Default theme
+
 # --- Usage Function ---
 usage() {
-    echo "Usage: $0 [-t|--theme] <theme_name>" >&2
+    local script_name
+    script_name=$(basename "$0")
+    echo "Usage: $script_name [-t|--theme <theme_name>] [-h|--help]" >&2
     echo "  Applies the specified theme and builds the i3 config." >&2
+    echo "  Options:" >&2
+    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -h, --help                Show this help message." >&2
     exit 1
 }
 
 # --- Argument Parsing ---
-THEME_NAME=""
-
 # Manual loop to handle both -t and --theme
 while [ $# -gt 0 ]; do
     case "$1" in
     -t | --theme)
-        if [ -n "$2" ]; then
-            THEME_NAME="$2"
+        if [[ -n "$2" && "$2" != -* ]]; then
+            THEME="$2"
             shift # past argument
             shift # past value
         else
@@ -26,39 +31,30 @@ while [ $# -gt 0 ]; do
             usage
         fi
         ;;
-    --theme=*)
-        THEME_NAME="${1#*=}" # Extract value after =
-        shift                # past argument=value
+    -h | --help)
+        usage
+        ;;
+    --) # End of options
+        shift
+        break
         ;;
     -*)
         echo "Error: Unknown option '$1'" >&2
         usage
         ;;
     *)
-        # Allow positional argument as fallback? (Optional, currently disabled)
-        # if [ -z "$THEME_NAME" ]; then
-        #     THEME_NAME="$1"
-        #     shift
-        # else
         echo "Error: Unexpected argument '$1'" >&2
         usage
-        # fi
         ;;
     esac
 done
-
-# Check if theme name was provided
-if [ -z "$THEME_NAME" ]; then
-    echo "Error: Theme name must be specified with -t or --theme." >&2
-    usage
-fi
 
 # --- Configuration ---
 I3_CONFIG_DIR=~/.config/i3
 
 # Construct paths based on the fixed i3 config dir location
 THEME_DIR="$I3_CONFIG_DIR/themes"
-THEME_VARS_FILE="$THEME_DIR/${THEME_NAME}.vars"
+THEME_VARS_FILE="$THEME_DIR/${THEME}.vars"
 CONFIG_TEMPLATE_DIR="$I3_CONFIG_DIR"
 CONFIG_OUTPUT_DIR="$I3_CONFIG_DIR"
 # --- End Configuration ---
@@ -138,10 +134,10 @@ else
     echo "Warning: Default monitor config ('$DEFAULT_MONITOR_CONF') or generated bar config ('$GENERATED_BAR_CONF') not found. Default tray/monitor symlink not set." >&2
 fi
 
-echo "Theme '$THEME_NAME' applied successfully to files in $CONFIG_OUTPUT_DIR."
+echo "Theme '$THEME' applied successfully to files in $CONFIG_OUTPUT_DIR."
 echo "Run set-monitor-layout <layout> if needed, then reload i3 (\$mod+Shift+c)."
 
 # Send notification
-notify-send "i3 Theme Applied" "Switched to '$THEME_NAME' theme. Reload i3."
+notify-send "i3 Theme Applied" "Switched to '$THEME' theme. Reload i3."
 
 exit 0

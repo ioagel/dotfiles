@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Build the VS Code settings file from the base and theme files
+
+set -e # Exit immediately if a command exits with a non-zero status.
+set -u # Exit if unset variable is used (optional, but good practice)
+
+THEME="gruvbox-dark" # Default theme
+
+# --- Usage Function ---
+usage() {
+    local script_name
+    script_name=$(basename "$0")
+    echo "Usage: $script_name [-t|--theme <theme_name>] [-h|--help]" >&2
+    echo "  Applies the specified theme and builds the VS Code settings.json." >&2
+    echo "  Options:" >&2
+    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -h, --help                Show this help message." >&2
+    exit 1
+}
+
+# --- Argument Parsing ---
+# Manual loop to handle both -t and --theme
+while [ $# -gt 0 ]; do
+    case "$1" in
+    -t | --theme)
+        if [[ -n "$2" && "$2" != -* ]]; then
+            THEME="$2"
+            shift # past argument
+            shift # past value
+        else
+            echo "Error: Option '$1' requires an argument." >&2
+            usage
+        fi
+        ;;
+    -h | --help)
+        usage
+        ;;
+    --) # End of options
+        shift
+        break
+        ;;
+    -*)
+        echo "Error: Unknown option '$1'" >&2
+        usage
+        ;;
+    *)
+        echo "Error: Unexpected argument '$1'" >&2
+        usage
+        ;;
+    esac
+done
+
+# Get the VS Code config directory
+vscode_config_dir="$HOME/.config/Code/User"
+
+# Get the base settings file
+base_settings="${vscode_config_dir}/settings-base.json"
+
+# Get the theme settings file
+theme_settings="${vscode_config_dir}/themes/${THEME}.json"
+
+# Get the output settings file
+output_settings="${vscode_config_dir}/settings.json"
+
+if [ ! -f "${base_settings}" ]; then
+    echo "Warning: VS Code base settings not found: ${base_settings}. Skipping update."
+    exit 1
+fi
+
+if [ ! -f "${theme_settings}" ]; then
+    echo "Warning: VS Code theme settings not found: ${theme_settings}. Skipping update."
+    exit 1
+fi
+
+echo "Updating VS Code settings using theme: ${THEME}"
+# Use jq to merge base settings with theme-specific settings
+# -s slurps input files into an array; .[0] is base, .[1] is theme
+# * merges the theme object onto the base object
+if jq -s '.[0] * .[1]' "${base_settings}" "${theme_settings}" >"${output_settings}"; then
+    echo "Successfully updated ${output_settings}"
+    # Since Cursor and Windsurf link to this file, they are also updated.
+else
+    echo "Failed to update VS Code settings using jq."
+    exit 1
+fi
