@@ -9,44 +9,44 @@
 current_profile=$(/usr/bin/powerprofilesctl get)
 
 # Define colors
-PERFORMANCE_COLOR="#fe8019" # Orange-light
-BALANCED_COLOR="#d79921"    # Yellow
-POWERSAVER_COLOR="#689d68"  # Aqua
-UNKNOWN_COLOR="#a89984"     # Disabled
+PERFORMANCE_COLOR="$THEME_PERFORMANCE"
+BALANCED_COLOR="$THEME_BALANCED"
+POWERSAVER_COLOR="$THEME_EFFICIENT"
+UNKNOWN_COLOR="$THEME_ALERT"
 
 # Check if we are running in polybar mode
 FORMAT_TYPE="i3blocks"
 if [[ "$1" == "--polybar" ]]; then
-  FORMAT_TYPE="polybar"
+    FORMAT_TYPE="polybar"
 fi
 
 # Function to format output based on environment
 output_profile() {
-  local ICON="$1"
-  local COLOR="$2"
-  local TEXT="$3"
+    local ICON="$1"
+    local COLOR="$2"
+    local TEXT="$3"
 
-  if [[ "$FORMAT_TYPE" == "polybar" ]]; then
-    # Polybar format using F tags
-    echo "%{F$COLOR}$ICON%{F-} $TEXT"
-  else
-    # i3blocks format using span tags
-    echo "<span color='$COLOR'>$ICON</span> $TEXT"
-  fi
+    if [[ "$FORMAT_TYPE" == "polybar" ]]; then
+        # Polybar format using F tags
+        echo "%{F$COLOR}$ICON%{F-} $TEXT"
+    else
+        # i3blocks format using span tags
+        echo "<span color='$COLOR'>$ICON</span> $TEXT"
+    fi
 }
 
 # Output formatted text based on the current profile
 case "$current_profile" in
 "performance")
-  output_profile "" "$PERFORMANCE_COLOR" "performance"
-  ;;
+    output_profile "" "$PERFORMANCE_COLOR" "performance"
+    ;;
 "balanced")
-  output_profile "" "$BALANCED_COLOR" " balanced"
-  ;;
+    output_profile "" "$BALANCED_COLOR" " balanced"
+    ;;
 "power-saver")
-  output_profile "" "$POWERSAVER_COLOR" "power saver"
-  ;;
+    output_profile "" "$POWERSAVER_COLOR" "power saver"
+    ;;
 *)
-  output_profile "?" "$UNKNOWN_COLOR" "unknown"
-  ;;
+    output_profile "?" "$UNKNOWN_COLOR" "unknown"
+    ;;
 esac

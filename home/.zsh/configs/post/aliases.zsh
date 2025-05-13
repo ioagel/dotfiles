@@ -1,7 +1,7 @@
 ### Unaliases
 # I use 'sp' for spotify command line script
 unalias sp 2>/dev/null # oh-my-zsh rails plugin
-unalias g 2>/dev/null # oh-my-zsh git plugin
+unalias g 2>/dev/null  # oh-my-zsh git plugin
 
 ## File System
 alias ll="ls -al"
@@ -10,6 +10,7 @@ alias ln="ln -v"
 alias df="df -h"
 alias mkdir="mkdir -p"
 alias cd="z" # using zoxide utility
+alias cat='bat --paging=never -p'
 # In ubuntu at least, 'fd' is already aliased, and I overwrite it here
 # Using the 'fdfind' utility as it is called in Ubuntu
 # https://github.com/sharkdp/fd
@@ -26,12 +27,6 @@ alias n='$EDITOR'
 # alias fast='fastfetch'
 alias fast='fastfetch --pipe false'
 alias zel='zellij'
-
-# terminal colors - Valid only when alacritty is teh terminal and old .vimrc exists
-#alias day="sed -i '2s/^# //' ~/.dotfiles/config/alacritty/alacritty.toml && ln -sf ~/.dotfiles/vimrc_background ~/.vimrc_background"
-#alias night="sed -i '2s/^/# /' ~/.dotfiles/config/alacritty/alacritty.toml && rm -f ~/.vimrc_background"
-alias day="echo 'day' > ~/.terminal-theme"
-alias night="echo 'night' > ~/.terminal-theme"
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'

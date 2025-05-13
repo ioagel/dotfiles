@@ -2,11 +2,11 @@
 .idea/
 **/alacritty/themes/
 **/zellij/config.kdl
-**/i3/config
 **/i3/config.d/bar.conf
+**/i3/config.d/config-colors.conf
 **/i3/config.d/monitor-layout-current.conf
 **/xsettingsd/xsettingsd.conf
-**/polybar/modules/colors.ini
 **/yazi/flavors/*
 **/yazi/theme.toml
 !**/yazi/flavors/.keep
+**/themes/active-theme.sh

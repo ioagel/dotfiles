@@ -1,9 +1,57 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# This script is a wrapper for the alacritty command.
+# It checks if the user has already provided a --config-file argument.
+# If not, it tries to determine the theme from the ALACRITTY_THEME environment variable or the active-theme.sh file.
+# If no theme is found, it runs alacritty without injecting a --config-file argument.
+# If the user has provided a --config-file argument, it runs alacritty with the provided config file.
 
-export PATH=/usr/local/bin:/usr/bin
+# Source extract functions
+# shellcheck disable=SC1090
+source ~/.local/lib/extract.sh
 
-if grep 'day' <~/.terminal-theme; then
-  alacritty --config-file ~/.config/alacritty/alacritty-day.toml
+# Set system path to ensure alacritty found is not overridden by this wrapper script
+export PATH="/usr/local/bin:/usr/bin:/bin"
+
+# Set the alacritty command
+ALACRITTY_CMD="alacritty"
+
+user_provided_config_option=0
+# Loop through arguments to check if a config file option is already provided
+for arg_val in "$@"; do
+    if [ "$arg_val" = "-c" ] || [ "$arg_val" = "--config-file" ] || echo "$arg_val" | grep -q '^--config-file='; then
+        user_provided_config_option=1
+        break
+    fi
+done
+
+# If the user hasn't specified a config file, try to determine it from active-theme.sh
+if [ "$user_provided_config_option" -eq 0 ]; then
+    determined_alacritty_config_file=""
+    ACTIVE_THEME_SOURCE_FILE="$HOME/.config/themes/active-theme.sh"
+    alacritty_theme_name_from_file=""
+
+    if [ -f "$ACTIVE_THEME_SOURCE_FILE" ]; then
+        # Attempt to extract ALACRITTY_THEME="theme_name"
+        raw_line=$(grep -m 1 'ALACRITTY_THEME=' "$ACTIVE_THEME_SOURCE_FILE")
+        alacritty_theme_name_from_file=$(get_raw_variable_value "$raw_line")
+    fi
+
+    # If a theme name was extracted, construct the path and check for its existence
+    if [ -n "$alacritty_theme_name_from_file" ]; then
+        potential_config_file="$HOME/.config/alacritty/alacritty-${alacritty_theme_name_from_file}.toml"
+        if [ -f "$potential_config_file" ]; then
+            determined_alacritty_config_file="$potential_config_file"
+        fi
+    fi
+
+    # If a config file was determined, use it
+    if [ -n "$determined_alacritty_config_file" ]; then
+        exec "$ALACRITTY_CMD" --config-file "$determined_alacritty_config_file" "$@"
+    else
+        # Fallback: run alacritty without injecting a --config-file argument
+        exec "$ALACRITTY_CMD" "$@"
+    fi
 else
-  alacritty --config-file ~/.config/alacritty/alacritty-night.toml
+    # User specified -c or --config-file, so let alacritty handle arguments as passed
+    exec "$ALACRITTY_CMD" "$@"
 fi
