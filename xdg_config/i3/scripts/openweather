@@ -54,10 +54,10 @@ esac
 # Print temperature, wind speed, and wind direction
 # echo "${WEATHER_ICON}  ${WEATHER_TEMP}°C: ${WIND_SPEED} km/h ${WIND_DIR}"
 
-COLD_TEMP="#83a598"
-NORMAL_TEMP="#b8bb26"
-HOT_TEMP="#fabd2f"
-VERY_HOT_TEMP="#fe8019"
+COLD_TEMP="$THEME_COLD"
+NORMAL_TEMP="$THEME_NORMAL"
+HOT_TEMP="$THEME_HOT"
+VERY_HOT_TEMP="$THEME_VERY_HOT"
 
 # Check if we're running in polybar or i3blocks (default: i3blocks)
 FORMAT_TYPE="i3blocks"

@@ -1,15 +1,38 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090
 # Build the VS Code settings file from the base and theme files
 
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Exit if unset variable is used (optional, but good practice)
 
-# Common utility functions
-# shellcheck disable=SC1090
-source ~/.local/bin/_script_utils.sh
+# Useful functions
+source ~/.local/lib/utils.sh
+source ~/.local/lib/extract.sh
 
-THEME="gruvbox-dark"   # Default theme
+THEME_DIR="$HOME/.config/themes"
+THEME_VARS_FILE="$THEME_DIR/active-theme.sh"
+
+# If the theme variables are not loaded, we are starting fresh
+# If the theme variables are already loaded, we are using a sourced theme
+# so THEME_NAME and THEME_DISPLAY_NAME are already set
+if [ -z "${THEME_MODE:-}" ]; then
+    # Load the theme variables from the active theme file
+    [ -f "$THEME_VARS_FILE" ] || error "Theme file not found: $THEME_VARS_FILE"
+    raw_line=$(grep -m 1 'THEME_NAME=' "$THEME_VARS_FILE")
+    THEME_NAME=$(get_raw_variable_value "$raw_line")
+    raw_line=$(grep -m 1 'THEME_DISPLAY_NAME=' "$THEME_VARS_FILE")
+    THEME_DISPLAY_NAME=$(get_raw_variable_value "$raw_line")
+fi
+
+ARG_THEME=""           # Default: empty, so the active theme is used or any sourced theme
 SEND_NOTIFICATION=true # Default: send notification
+
+# Get the VS Code config directory
+vscode_config_dir="$HOME/.config/Code/User"
+# Get the base settings file
+base_settings="${vscode_config_dir}/settings-base.json"
+# Get the output settings file
+output_settings="${vscode_config_dir}/settings.json"
 
 # --- Usage Function ---
 usage() {
@@ -18,7 +41,7 @@ usage() {
     echo "Usage: $script_name [-t|--theme <theme_name>] [-q|--quiet] [-h|--help]" >&2
     echo "  Applies the specified theme and builds the VS Code settings.json." >&2
     echo "  Options:" >&2
-    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME_DISPLAY_NAME})." >&2
     echo "    -q, --quiet               Suppress the final notification message." >&2
     echo "    -h, --help                Show this help message." >&2
     exit 1
@@ -30,7 +53,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
     -t | --theme)
         if [[ -n "$2" && "$2" != -* ]]; then
-            THEME="$2"
+            ARG_THEME="$2"
             shift # past argument
             shift # past value
         else
@@ -60,43 +83,70 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Get the VS Code config directory
-vscode_config_dir="$HOME/.config/Code/User"
+# Determine the effective theme ID for shell variables and JSON file
+# This is the canonical theme identifier that will be used for both
+# shell variables (theme.sh) and JSON settings
+effective_theme_id=""
+if [ -n "$ARG_THEME" ]; then # ARG_THEME is what -t sets
+    effective_theme_id="$ARG_THEME"
+elif [ -n "$THEME_NAME" ]; then # THEME_NAME from initial load or inherited
+    effective_theme_id="$THEME_NAME"
+else
+    error "Theme identifier could not be determined."
+fi
 
-# Get the base settings file
-base_settings="${vscode_config_dir}/settings-base.json"
+# Path to the theme's shell variable file
+current_theme_sh_file="$THEME_DIR/$effective_theme_id/theme.sh"
 
-# Get the theme settings file
-theme_settings="${vscode_config_dir}/themes/${THEME}.json"
+if [ ! -f "$current_theme_sh_file" ]; then
+    error "Theme shell variable file not found: $current_theme_sh_file
+    This file should contain theme variables like THEME_NAME, THEME_DISPLAY_NAME, and THEME_MODE.
+    Please ensure the theme '$effective_theme_id' exists in $THEME_DIR/."
+fi
 
-# Get the output settings file
-output_settings="${vscode_config_dir}/settings.json"
+log "Sourcing theme shell variables from $current_theme_sh_file..."
+source "$current_theme_sh_file" # This updates THEME_NAME, THEME_DISPLAY_NAME, THEME_MODE etc.
+
+# Path to the theme's VS Code JSON settings
+# We use effective_theme_id (not THEME_NAME) for the JSON filename to maintain
+# consistency with how the theme was selected (either from -t argument or default)
+theme_settings_json="${vscode_config_dir}/themes/${effective_theme_id}.json"
 
 # Dependency Checks
 check_command "jq"
 check_command "notify-send" "Please install: libnotify"
 
 if [ ! -f "${base_settings}" ]; then
-    error "VS Code base settings not found: ${base_settings}. Skipping update."
+    error "VS Code base settings not found: ${base_settings}
+    This file should contain your base VS Code settings that are common across all themes.
+    Please ensure it exists in $vscode_config_dir/."
 fi
 
-if [ ! -f "${theme_settings}" ]; then
-    error "VS Code theme settings not found: ${theme_settings}. Skipping update."
+if [ ! -f "${theme_settings_json}" ]; then
+    error "VS Code theme settings not found: ${theme_settings_json}
+    This file should contain theme-specific VS Code settings for '$effective_theme_id'.
+    Please ensure it exists in $vscode_config_dir/themes/."
 fi
 
-log "Updating VS Code settings using theme: ${THEME}"
+log "Updating VS Code settings using theme: ${THEME_DISPLAY_NAME}"
+
+# Initialize jq_output as empty string to ensure it's defined
+# This will be used to capture both successful output and error messages
+jq_output=""
+
 # Use jq to merge base settings with theme-specific settings
 # -s slurps input files into an array; .[0] is base, .[1] is theme
 # * merges the theme object onto the base object
-if jq -s '.[0] * .[1]' "${base_settings}" "${theme_settings}" >"${output_settings}"; then
+if jq_output=$(jq -s '.[0] * .[1]' "${base_settings}" "${theme_settings_json}" 2>&1); then
+    echo "$jq_output" >"${output_settings}"
     log "Successfully updated ${output_settings}"
     # Since Cursor and Windsurf link to this file, they are also updated.
 else
-    error "Failed to update VS Code settings using jq."
+    error "Failed to update VS Code settings using jq. Error: ${jq_output}"
 fi
 
 # Send notification
 if [[ "$SEND_NOTIFICATION" = true ]]; then
     log "Sending notification..."
-    notify-send "VS Code Settings Applied" "Switched to '$THEME' theme."
+    notify-send "VS Code Settings Applied" "Switched to '$THEME_DISPLAY_NAME' theme."
 fi

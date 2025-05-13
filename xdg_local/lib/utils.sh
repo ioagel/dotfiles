@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Common utility functions for shell scripts
 
 # --- Logging Functions ---
 log() {

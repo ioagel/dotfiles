@@ -1,25 +1,47 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090 disable=SC2016
 # Generates the i3 config from a template,
 # replacing the theme placeholder with the specified theme name.
 
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Exit if unset variable is used (optional, but good practice)
 
-# Common utility functions
-# shellcheck disable=SC1090
-source ~/.local/bin/_script_utils.sh
+# Useful functions
+source ~/.local/lib/utils.sh
+source ~/.local/lib/extract.sh
 
-THEME="gruvbox-dark"   # Default theme
+THEME_DIR=~/.config/themes
+THEME_VARS_FILE="$THEME_DIR/active-theme.sh"
+
+# If the theme variables are not loaded, we are starting fresh
+# If the theme variables are already loaded, we are using a sourced theme
+# so THEME_NAME and THEME_DISPLAY_NAME are already set
+if [ -z "${THEME_MODE:-}" ]; then
+    # Load the theme variables from the active theme file
+    [ -f "$THEME_VARS_FILE" ] || error "Theme file not found: $THEME_VARS_FILE"
+    raw_line=$(grep -m 1 'THEME_NAME=' "$THEME_VARS_FILE")
+    THEME_NAME=$(get_raw_variable_value "$raw_line")
+    raw_line=$(grep -m 1 'THEME_DISPLAY_NAME=' "$THEME_VARS_FILE")
+    THEME_DISPLAY_NAME=$(get_raw_variable_value "$raw_line")
+fi
+
+ARG_THEME=""           # Default: empty, so the active theme is used or any sourced theme
+BAR_TYPE="polybar"     # Default: polybar
 SEND_NOTIFICATION=true # Default: send notification
+
+I3_CONFIG_DIR=~/.config/i3
+CONFIG_TEMPLATE_DIR="$I3_CONFIG_DIR"
+CONFIG_OUTPUT_DIR="$I3_CONFIG_DIR"
 
 # --- Usage Function ---
 usage() {
     local script_name
     script_name=$(basename "$0")
-    echo "Usage: $script_name [-t|--theme <theme_name>] [-q|--quiet] [-h|--help]" >&2
+    echo "Usage: $script_name [-t|--theme <theme_name>] [-b|--bar <bar_type>] [-q|--quiet] [-h|--help]" >&2
     echo "  Applies the specified theme and builds the i3 config." >&2
     echo "  Options:" >&2
-    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME})." >&2
+    echo "    -t, --theme <theme_name>  Specify the initial theme to activate (default: ${THEME_DISPLAY_NAME})." >&2
+    echo "    -b, --bar <bar_type>      Specify the bar type to use (default: $BAR_TYPE). Options: polybar, i3bar." >&2
     echo "    -q, --quiet               Suppress the final notification message." >&2
     echo "    -h, --help                Show this help message." >&2
     exit 1
@@ -31,7 +53,17 @@ while [ $# -gt 0 ]; do
     case "$1" in
     -t | --theme)
         if [[ -n "$2" && "$2" != -* ]]; then
-            THEME="$2"
+            ARG_THEME="$2"
+            shift # past argument
+            shift # past value
+        else
+            echo "Error: Option '$1' requires an argument." >&2
+            usage
+        fi
+        ;;
+    -b | --bar)
+        if [[ -n "$2" && "$2" != -* ]]; then
+            BAR_TYPE="$2"
             shift # past argument
             shift # past value
         else
@@ -61,15 +93,28 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# --- Configuration ---
-I3_CONFIG_DIR=~/.config/i3
+# Validate the bar type is either polybar or i3bar
+case "$BAR_TYPE" in
+polybar | i3bar)
+    # Valid bar type
+    ;;
+*)
+    echo "Error: Invalid bar type '$BAR_TYPE'. Supported options: polybar, i3bar." >&2
+    usage
+    ;;
+esac
 
-# Construct paths based on the fixed i3 config dir location
-THEME_DIR="$I3_CONFIG_DIR/themes"
-THEME_VARS_FILE="$THEME_DIR/${THEME}.vars"
-CONFIG_TEMPLATE_DIR="$I3_CONFIG_DIR"
-CONFIG_OUTPUT_DIR="$I3_CONFIG_DIR"
-# --- End Configuration ---
+# Determine the effective theme ID
+effective_theme_id=""
+if [ -n "$ARG_THEME" ]; then
+    effective_theme_id="$ARG_THEME"
+elif [ -n "$THEME_NAME" ]; then # THEME_NAME here is the default identifier
+    effective_theme_id="$THEME_NAME"
+else
+    error "Theme identifier could not be determined."
+fi
+
+THEME_VARS_FILE="$THEME_DIR/$effective_theme_id/theme.sh"
 
 # Dependency Checks
 check_command "notify-send" "Please install: libnotify"
@@ -79,45 +124,57 @@ if [ ! -f "$THEME_VARS_FILE" ]; then
     error "Theme file not found: $THEME_VARS_FILE"
 fi
 
-# Source the theme variables into the current environment
-# Run in a subshell to avoid polluting the caller's environment
-(
-    log "Loading theme variables from $THEME_VARS_FILE..."
-    # Filter out comments and empty lines before sourcing
-    grep -vE '^\s*#|^\s*$' "$THEME_VARS_FILE" >/tmp/theme_vars_filtered.sh
-    source /tmp/theme_vars_filtered.sh
-    rm /tmp/theme_vars_filtered.sh # Clean up temporary file
+log "Sourcing theme variables from $THEME_VARS_FILE..."
+source "$THEME_VARS_FILE"
 
-    # Define template and output files
-    declare -A TEMPLATE_MAP
-    TEMPLATE_MAP=(
-        ["$CONFIG_TEMPLATE_DIR/config.template"]="$CONFIG_OUTPUT_DIR/config"
-        ["$CONFIG_TEMPLATE_DIR/config.d/bar.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/bar.conf" # Restore bar template processing
-    )
+# Define template and output files
+declare -A TEMPLATE_MAP
+TEMPLATE_MAP=(
+    ["$CONFIG_TEMPLATE_DIR/config.d/$BAR_TYPE.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/bar.conf"
+    ["$CONFIG_TEMPLATE_DIR/config.d/config-colors.conf.template"]="$CONFIG_OUTPUT_DIR/config.d/config-colors.conf"
+)
 
-    # Build the list of variables expected by envsubst
-    # Reads keys like 'export FOO=..' -> extracts 'FOO' -> prepends '$'
-    VAR_LIST=$(grep -oP '^export\s+\K[^=]+' "$THEME_VARS_FILE" | sed 's/^/$/' | paste -sd,)
-    # echo "Variables for envsubst: $VAR_LIST" # Uncomment for debugging
+vars_for_envsubst=""
+# compgen -A variable lists all variable names (Bash specific)
+# grep '^I3_' filters for those starting with I3_
+i3_var_names=$(compgen -A variable | grep '^I3_')
 
-    # Process each template file
-    for template_file in "${!TEMPLATE_MAP[@]}"; do
-        output_file="${TEMPLATE_MAP[$template_file]}"
-        log "Processing '$template_file' -> '$output_file'"
-
-        if [ ! -f "$template_file" ]; then
-            warning "Template file not found: $template_file. Skipping."
-            continue
-        fi
-
-        # Add Autogenerated header to the output file
-        echo "# AUTOGENERATED by build-i3-config, DO NOT EDIT MANUALLY" >"$output_file"
-        echo "# Instead, edit the template file: $template_file" >>"$output_file"
-
-        # Use envsubst to replace only the variables defined in the theme file
-        envsubst "$VAR_LIST" <"$template_file" >>"$output_file"
+if [ -n "$i3_var_names" ]; then
+    for var_name in $i3_var_names; do
+        # Prepend '$' to each variable name for envsubst format
+        vars_for_envsubst="$vars_for_envsubst \$$var_name"
     done
-) # End of subshell
+    # Remove leading space from the list
+    vars_for_envsubst="${vars_for_envsubst# }"
+fi
+
+# Optional Debugging:
+# log "Variables for envsubst: '$vars_for_envsubst'"
+
+# Process each template file
+for template_file in "${!TEMPLATE_MAP[@]}"; do
+    output_file="${TEMPLATE_MAP[$template_file]}"
+    log "Processing '$template_file' -> '$output_file'"
+
+    if [ ! -f "$template_file" ]; then
+        warning "Template file not found: $template_file. Skipping."
+        continue
+    fi
+
+    # Add Autogenerated header to the output file
+    echo "# AUTOGENERATED by build-i3-config, DO NOT EDIT MANUALLY" >"$output_file"
+    echo "# Instead, edit the template file: $template_file" >>"$output_file"
+
+    if [ -n "$vars_for_envsubst" ]; then
+        # Substitute only the I3_ prefixed variables
+        envsubst "$vars_for_envsubst" <"$template_file" >>"$output_file"
+    else
+        warning "No I3_ prefixed variables found in the current environment for envsubst. Appending template content without substitution."
+        # Append the original template content if no variables are to be substituted
+        cat "$template_file" >>"$output_file"
+        log "Appended template to output as no I3_ variables were identified for substitution."
+    fi
+done
 
 # --- Set Default Tray Output in bar.conf ---
 # After applying the theme, ensure bar.conf reflects the default 'monitor' layout tray setting.
@@ -148,10 +205,11 @@ else
     warning "Default monitor config ('$DEFAULT_MONITOR_CONF') or generated bar config ('$GENERATED_BAR_CONF') not found. Default tray/monitor symlink not set."
 fi
 
-log "Theme '$THEME' applied successfully to files in $CONFIG_OUTPUT_DIR. Reload i3."
+# THEME_DISPLAY_NAME is set in the theme variables file
+log "Theme '$THEME_DISPLAY_NAME' applied successfully to files in $CONFIG_OUTPUT_DIR. Reload i3."
 
 # Send notification
 if [[ "$SEND_NOTIFICATION" = true ]]; then
     log "Sending notification..."
-    notify-send "i3 Theme Applied" "Switched to '$THEME' theme. Reload i3."
+    notify-send "i3 Theme Applied" "Switched to '$THEME_DISPLAY_NAME' theme. Reload i3."
 fi

@@ -5,7 +5,7 @@ set -e
 
 # Common utility functions
 # shellcheck disable=SC1090
-source ~/.local/bin/_script_utils.sh
+source ~/.local/lib/utils.sh
 
 THEME="gruvbox-dark" # Default theme
 
@@ -99,28 +99,6 @@ for item in "${USER_PACKAGES[@]}"; do
     fi
 done
 
-# --- Post-Stow Steps (User) ---
-log "Performing post-stow steps for user packages..."
-
-# 1. Alacritty Themes
-alacritty_themes_dir="$HOME/.config/alacritty/themes"
-alacritty_themes_repo="https://github.com/alacritty/alacritty-theme.git" # Ensure .git suffix for clone
-log "Checking Alacritty themes at '$alacritty_themes_dir'..."
-if [ -d "$alacritty_themes_dir/.git" ]; then
-    log "Alacritty themes directory exists and is a git repo, updating..."
-    (cd "$alacritty_themes_dir" && git pull) || warning "Failed to update Alacritty themes repo."
-elif [ -e "$alacritty_themes_dir" ]; then
-    # Exists but is not a git directory (or is a file)
-    warning "Path '$alacritty_themes_dir' exists but is not a git repository. Skipping theme clone/update."
-else
-    log "Cloning Alacritty themes repository..."
-    if git clone --depth 1 "$alacritty_themes_repo" "$alacritty_themes_dir"; then
-        log "Successfully cloned Alacritty themes."
-    else
-        warning "Failed to clone Alacritty themes repository."
-    fi
-fi
-
 # --- Stowing System Package ---
 log "Stowing system package (requires sudo)..."
 system_package_path="$DOTFILES_DIR/$SYSTEM_PACKAGE"
@@ -171,10 +149,32 @@ else
     warning "Skipping system package '$SYSTEM_PACKAGE': Directory does not exist at '$system_package_path'."
 fi
 
-# --- Final Build/Activation Steps (User) ---
+# --- Final Build/Activation Steps ---
 log "Running final build/activation steps..."
 
-# 2. Zellij Config Build
+# 1. Setup Alacritty Themes
+alacritty_themes_dir="$HOME/.config/alacritty/themes"
+alacritty_themes_repo="https://github.com/alacritty/alacritty-theme.git" # Ensure .git suffix for clone
+log "Checking Alacritty themes at '$alacritty_themes_dir'..."
+if [ -d "$alacritty_themes_dir/.git" ]; then
+    log "Alacritty themes directory exists and is a git repo, updating..."
+    (cd "$alacritty_themes_dir" && git pull) || warning "Failed to update Alacritty themes repo."
+elif [ -e "$alacritty_themes_dir" ]; then
+    # Exists but is not a git directory (or is a file)
+    warning "Path '$alacritty_themes_dir' exists but is not a git repository. Skipping theme clone/update."
+else
+    log "Cloning Alacritty themes repository..."
+    if git clone --depth 1 "$alacritty_themes_repo" "$alacritty_themes_dir"; then
+        log "Successfully cloned Alacritty themes."
+    else
+        warning "Failed to clone Alacritty themes repository."
+    fi
+fi
+
+# 2. Setup the active theme symlink
+ln -sf ~/.config/themes/${THEME}/theme.sh ~/.config/themes/active-theme.sh
+
+# 3. Zellij Config Build
 if command -v build-zellij-config &>/dev/null; then
     log "Running build-zellij-config..."
     if build-zellij-config -t "$THEME"; then
@@ -186,7 +186,7 @@ else
     warning "'build-zellij-config' command not found. Skipping."
 fi
 
-# 3. i3 Config Build
+# 4. i3 Config Build
 if command -v build-i3-config &>/dev/null; then
     log "Running build-i3-config..."
     if build-i3-config -t "$THEME"; then
@@ -198,19 +198,12 @@ else
     warning "'build-i3-config' command not found. Skipping."
 fi
 
-# 4. xsettingsd Config (GTK Apps) - Default to dark theme
+# 5. xsettingsd Config (GTK Apps) - Default to dark theme
 log "Setting up xsettingsd..."
 if ! command -v xsettingsd &>/dev/null; then
     warning "'xsettingsd' command not found. Install it to be able to auto-switch themes in GTK apps."
 fi
 ln -sf ~/.config/xsettingsd/themes/${THEME}.conf ~/.config/xsettingsd/xsettingsd.conf
-
-# 5. Polybar Config
-log "Setting up polybar..."
-if ! command -v polybar &>/dev/null; then
-    warning "'polybar' command not found."
-fi
-ln -sf ~/.config/polybar/modules/themes/${THEME}.ini ~/.config/polybar/modules/colors.ini
 
 # 6. Yazi Setup
 log "Setting up yazi..."

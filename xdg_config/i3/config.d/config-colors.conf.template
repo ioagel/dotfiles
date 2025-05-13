@@ -1,0 +1,9 @@
+# --- Window client colors - colors replaced with placeholders ---
+
+# class                      border                             background                            text                            indicator                             child_border
+client.focused               ${I3_CLIENT_FOCUSED_BORDER}           ${I3_CLIENT_FOCUSED_BACKGROUND}          ${I3_CLIENT_FOCUSED_TEXT}          ${I3_CLIENT_FOCUSED_INDICATOR}           ${I3_CLIENT_FOCUSED_CHILD_BORDER}
+client.focused_inactive      ${I3_CLIENT_FOCUSED_INACTIVE_BORDER}  ${I3_CLIENT_FOCUSED_INACTIVE_BACKGROUND} ${I3_CLIENT_FOCUSED_INACTIVE_TEXT} ${I3_CLIENT_FOCUSED_INACTIVE_INDICATOR}  ${I3_CLIENT_FOCUSED_INACTIVE_CHILD_BORDER}
+client.unfocused             ${I3_CLIENT_UNFOCUSED_BORDER}         ${I3_CLIENT_UNFOCUSED_BACKGROUND}        ${I3_CLIENT_UNFOCUSED_TEXT}        ${I3_CLIENT_UNFOCUSED_INDICATOR}         ${I3_CLIENT_UNFOCUSED_CHILD_BORDER}
+client.urgent                ${I3_CLIENT_URGENT_BORDER}            ${I3_CLIENT_URGENT_BACKGROUND}           ${I3_CLIENT_URGENT_TEXT}           ${I3_CLIENT_URGENT_INDICATOR}            ${I3_CLIENT_URGENT_CHILD_BORDER}
+client.placeholder           ${I3_CLIENT_PLACEHOLDER_BORDER}       ${I3_CLIENT_PLACEHOLDER_BACKGROUND}      ${I3_CLIENT_PLACEHOLDER_TEXT}      ${I3_CLIENT_PLACEHOLDER_INDICATOR}       ${I3_CLIENT_PLACEHOLDER_CHILD_BORDER}
+client.background            ${I3_CLIENT_BACKGROUND}
