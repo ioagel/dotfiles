@@ -29,6 +29,17 @@ font pango: CaskaydiaMono Nerd Font 11
 # set the mod key to the winkey:
 set $mod Mod4
 
+############################################
+# monitors setup                           #
+############################################
+# Set up monitors (It is needed even on single monitor setup, because virtmon breaks otherwise)
+exec_always --no-startup-id ~/.config/i3/scripts/monitors
+
+bindsym $mod+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor ''
+bindsym $mod+Shift+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor3 '25:75'
+bindsym $mod+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 ''
+bindsym $mod+Shift+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 33
+
 #####################
 # workspace layout: #
 #####################
@@ -345,7 +356,7 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 exec_always --no-startup-id sh -c 'killall xsettingsd 2>/dev/null || true; xsettingsd'
 
 # set wallpaper
-exec_always --no-startup-id sleep 2 && nitrogen --random --set-zoom-fill ~/Pictures/wallpapers/super-ultrawide/
+exec_always --no-startup-id sleep 1 && nitrogen --random --set-zoom-fill ~/Pictures/wallpapers/super-ultrawide/; sleep 0.5
 
 # set powersavings for display:
 exec --no-startup-id xset s 480 dpms 600 600 600
@@ -417,12 +428,6 @@ include ~/.config/i3/config.d/config-colors.conf
 ############################################
 include ~/.config/i3/config.d/bar.conf
 
-############################################
-# monitors setup                           #
-############################################
-# Set up monitors (It is needed even on single monitor setup, because virtmon breaks otherwise)
-exec_always --no-startup-id ~/.config/i3/scripts/monitors
-
 #####################################
 # Application menu handled by rofi: #
 #####################################
@@ -451,9 +456,15 @@ bindsym $mod+F10 exec --no-startup-id i3-gnome-pomodoro toggle
 bindsym $mod+F11 exec --no-startup-id i3-gnome-pomodoro skip
 bindsym $mod+F12 exec --no-startup-id i3-gnome-pomodoro stop
 
+# Theme toggle
+bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/theme-toggle
+
 ##### Start GUI apps on login
 # if you do not use dex: exec --no-startup-id dex --autostart --environment i3
 # you need to have tray apps started manually one by one:
+
+# Add a delay before starting tray applications to allow Polybar/Picom to initialize
+exec --no-startup-id sleep 1
 
 # Set screen for day/night
 exec --no-startup-id redshift-gtk -l 37.88167:23.76396 -m randr
@@ -475,12 +486,3 @@ exec --no-startup-id caffeine
 
 # Start Easyeffects for EQing Presonus speakers
 exec --no-startup-id easyeffects
-
-#### Monitor setup
-bindsym $mod+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor ''
-bindsym $mod+Shift+F7 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor3 '25:75'
-bindsym $mod+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 ''
-bindsym $mod+Shift+F8 exec --no-startup-id ~/.local/bin/set-monitor-layout monitor2 33
-
-# Theme toggle
-bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/theme-toggle

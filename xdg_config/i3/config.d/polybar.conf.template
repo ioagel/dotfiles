@@ -1,10 +1,10 @@
 # --- Polybar ---
 
-# Launch polybar
-exec_always --no-startup-id ~/.config/polybar/scripts/launch.sh
-
 # Toggle Polybar visibility
 bindsym $mod+m exec --no-startup-id ~/.config/polybar/scripts/toggle-polybar.sh
 
 # Toggle system tray visibility
 bindsym $mod+Shift+m exec --no-startup-id polybar-msg action systray module_toggle
+
+# Launch polybar
+exec_always --no-startup-id sleep 1 && ~/.config/polybar/scripts/launch.sh

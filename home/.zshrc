@@ -53,10 +53,10 @@ _load_settings() {
 _load_settings "$ZSH_DIR/configs"
 
 # Load common path configuration (used in ~/.xprofile also)
-[ -f "$HOME/.path_common" ] && source "$HOME/.path_common"
+[[ -f ~/.path_common.sh ]] && source ~/.path_common.sh
 
 # Include custom zshrc
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
-# Include custom secret aliases
+# Include custom aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
