@@ -1,3 +1,5 @@
+# Load common path configuration for both shell (e.g. .zshrc) and X (e.g. .xprofile)
+
 export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
 

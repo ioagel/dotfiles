@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ### Used by i3blocks
 # [CPU-temperature] block
 export T_WARN=75
@@ -7,4 +9,4 @@ export SENSOR_CHIP="k10temp-pci-00c3"
 
 # Load common path configuration
 # shellcheck source=/dev/null
-[ -f "$HOME/.path_common" ] && . "$HOME/.path_common"
+[ -f ~/.path_common.sh ] && . ~/.path_common.sh
