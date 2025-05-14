@@ -79,3 +79,23 @@ get_raw_variable_value() {
 
     echo "$value"
 }
+
+# --------- clean_config_file ---------
+# This function removes lines starting with # (and any leading whitespace before #)
+# and removes empty lines from a config file.
+# It then returns the cleaned config file.
+clean_config_file() {
+    if [ -z "$1" ]; then
+        echo "Usage: clean_config_file <filepath>"
+        return 1
+    fi
+
+    if [ ! -f "$1" ]; then
+        echo "Error: File not found - $1"
+        return 1
+    fi
+
+    # 1. Remove lines starting with # (and any leading whitespace before #)
+    # 2. Remove empty lines
+    sed -e 's/^[[:space:]]*#.*//' -e '/^[[:space:]]*$/d' "$1"
+}

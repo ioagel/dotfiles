@@ -10,6 +10,9 @@ source ~/.local/lib/utils.sh
 DARK_THEME="${DARK_THEME:-gruvbox-dark}"       # Default dark theme: gruvbox-dark
 LIGHT_THEME="${LIGHT_THEME:-catppuccin-latte}" # Default light theme: catppuccin-latte
 
+# Notification ID used by notify-send, must be unique
+NOTIFICATION_ID=6775
+
 # Configuration Paths
 XSETTINGSD_CONFIG_DIR="$HOME/.config/xsettingsd"
 YAZI_CONFIG_DIR="$HOME/.config/yazi"
@@ -39,6 +42,18 @@ update_i3_theme() {
     echo "#### Running: build-i3-config"
     build-i3-config -q -t "${theme_name}"
     echo "#### Done: build-i3-config"
+
+    # restart polybar if it's running
+    if pgrep -x polybar >/dev/null; then
+        "${POLYBAR_CONFIG_DIR}/scripts/launch.sh" &>/dev/null &
+        log "Polybar launch script executed."
+    else
+        warning "Polybar not running, skipping re-launch."
+    fi
+
+    # reload i3 config
+    i3-msg reload
+    log "i3 config reloaded."
 }
 
 update_zellij_theme() {
@@ -54,6 +69,14 @@ update_xsettingsd_theme() {
     if [ -f "${target_conf}" ]; then
         ln -sf "${target_conf}" "${XSETTINGSD_CONFIG_DIR}/xsettingsd.conf"
         log "xsettingsd theme linked to ${theme_name}.conf."
+
+        # reload xsettingsd if it's running
+        if pgrep -x xsettingsd >/dev/null; then
+            killall -HUP xsettingsd
+            log "xsettingsd reloaded."
+        else
+            warning "xsettingsd not running, skipping reload."
+        fi
     else
         warning "xsettingsd theme file not found: ${target_conf}"
     fi
@@ -99,6 +122,12 @@ update_neovim_themes() {
     fi
 }
 
+update_dunst_theme() {
+    echo "#### Running: build-dunst-config"
+    build-dunst-config
+    echo "#### Done: build-dunst-config"
+}
+
 # --- Main Logic ---
 
 ## Determine Target Theme and Mode
@@ -131,37 +160,15 @@ source "$HOME/.config/themes/active-theme.sh"
 
 ## Apply Themes
 update_gnome_theme "${MODE}"
-update_i3_theme "${THEME}"
 update_zellij_theme "${THEME}"
 update_xsettingsd_theme "${THEME}"
 update_yazi_theme "${THEME}"
 update_vscode_settings "${THEME}"
 update_neovim_themes
-
-## Reload Services
-log "Reloading services..."
-
-# reload xsettingsd if it's running
-if pgrep -x xsettingsd >/dev/null; then
-    killall -HUP xsettingsd
-    log "xsettingsd reloaded."
-else
-    warning "xsettingsd not running, skipping reload."
-fi
-
-# restart polybar if it's running
-if pgrep -x polybar >/dev/null; then
-    "${POLYBAR_CONFIG_DIR}/scripts/launch.sh" &>/dev/null &
-    log "Polybar launch script executed."
-else
-    warning "Polybar not running, skipping re-launch."
-fi
-
-# reload i3 config
-i3-msg reload
-log "i3 config reloaded."
-##
+update_dunst_theme
+update_i3_theme "${THEME}"
 
 # THEME_DISPLAY_NAME is defined in the active-theme.sh file
 log "**** Theme switch to ${THEME_DISPLAY_NAME} (${MODE}) complete. ****"
-notify-send "Theme Switch" "Switched to ${THEME_DISPLAY_NAME} (${MODE} mode)."
+sleep 1
+notify-send -r $NOTIFICATION_ID "Theme Switch" "Switched to ${THEME_DISPLAY_NAME} (${MODE} mode)."
