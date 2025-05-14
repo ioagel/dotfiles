@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1090 disable=SC1091
+
+set -e
+
+# Utility functions
+source ~/.local/lib/utils.sh
+source ~/.local/lib/extract.sh
+
+# Dependency Checks
+check_command "envsubst" "Please install gettext (for envsubst)"
+check_command "dunstctl" "Please install dunst (for dunstctl)"
+
+# --- Dunst Theme Update Logic ---
+
+update_dunst_config() {
+    local dunst_config_dir="$HOME/.config/dunst"
+    local template_file="${dunst_config_dir}/dunstrc.template"
+    local target_file="${dunst_config_dir}/dunstrc"
+    local temp_target_file=/tmp/dunstrc.tmp
+
+    log "Updating Dunst configuration..."
+
+    if [ ! -f "$HOME/.config/themes/active-theme.sh" ]; then
+        error "Active theme file not found: $HOME/.config/themes/active-theme.sh. Cannot source theme variables."
+    fi
+    # Source active-theme.sh to ensure DUNST_* variables are set
+    # shellcheck disable=SC1090
+    source "$HOME/.config/themes/active-theme.sh"
+
+    if [ -f "$template_file" ]; then
+        # Important: list all variables to be substituted, space-separated
+        # shellcheck disable=SC2016
+        local vars_to_substitute='$DUNST_ICON_PATH $DUNST_LOW_BACKGROUND $DUNST_LOW_FOREGROUND $DUNST_LOW_FRAME_COLOR $DUNST_LOW_ICON $DUNST_NORMAL_BACKGROUND $DUNST_NORMAL_FOREGROUND $DUNST_NORMAL_FRAME_COLOR $DUNST_NORMAL_ICON $DUNST_CRITICAL_BACKGROUND $DUNST_CRITICAL_FOREGROUND $DUNST_CRITICAL_FRAME_COLOR $DUNST_CRITICAL_ICON'
+
+        envsubst "$vars_to_substitute" <"$template_file" >"$temp_target_file"
+        clean_config_file "$temp_target_file" >"$target_file"
+        rm -f "$temp_target_file"
+        log "Dunst config '$target_file' generated from template."
+
+        # Reload dunst
+        if pgrep -x dunst >/dev/null; then
+            dunstctl reload
+            log "Dunst reloaded."
+        else
+            warning "Dunst not running, skipping reload."
+        fi
+        log "Dunst configuration update complete."
+    else
+        error "Dunst template file not found: ${template_file}"
+    fi
+}
+
+# --- Main ---
+update_dunst_config

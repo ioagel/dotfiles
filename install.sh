@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091 disable=SC1090
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# Common utility functions
-# shellcheck disable=SC1090
-source ~/.local/lib/utils.sh
-
 THEME="gruvbox-dark" # Default theme
+MODE="dark"          # Default mode
+
+CONFIG_DIR="$HOME/.config"
+LOCAL_DIR="$HOME/.local"
+
+export PATH="$LOCAL_DIR/bin:$PATH"
+
+# Common utility functions
+source ./xdg_local/lib/utils.sh
 
 # --- Usage Function ---
 usage() {
@@ -61,8 +67,8 @@ DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # Note: 'etc' target is handled separately due to sudo requirement.
 USER_PACKAGES=(
     "home:$HOME"
-    "xdg_config:$HOME/.config"
-    "xdg_local:$HOME/.local"
+    "xdg_config:${CONFIG_DIR}"
+    "xdg_local:${LOCAL_DIR}"
 )
 SYSTEM_PACKAGE="etc"
 SYSTEM_TARGET="/etc"
@@ -153,7 +159,7 @@ fi
 log "Running final build/activation steps..."
 
 # 1. Setup Alacritty Themes
-alacritty_themes_dir="$HOME/.config/alacritty/themes"
+alacritty_themes_dir="${CONFIG_DIR}/alacritty/themes"
 alacritty_themes_repo="https://github.com/alacritty/alacritty-theme.git" # Ensure .git suffix for clone
 log "Checking Alacritty themes at '$alacritty_themes_dir'..."
 if [ -d "$alacritty_themes_dir/.git" ]; then
@@ -171,13 +177,25 @@ else
     fi
 fi
 
-# 2. Setup the active theme symlink
-ln -sf ~/.config/themes/${THEME}/theme.sh ~/.config/themes/active-theme.sh
+# 2. Setup the active theme
+if [ -f "${CONFIG_DIR}/themes/${THEME}/theme.sh" ]; then
+    ln -sf "${CONFIG_DIR}/themes/${THEME}/theme.sh" "${CONFIG_DIR}/themes/active-theme.sh"
+    source "${CONFIG_DIR}/themes/active-theme.sh" # probably not needed, the individual scripts source the theme file
+else
+    error "Active theme file not found: ${CONFIG_DIR}/themes/${THEME}/theme.sh. Cannot create active-theme symlink."
+fi
+
+if command -v gsettings &>/dev/null; then
+    gsettings set org.gnome.desktop.interface color-scheme "prefer-${MODE}"
+else
+    warning "gsettings command not found. Skipping setting color-scheme preference for GNOME/GTK."
+fi
+log "Active theme set to ${THEME}."
 
 # 3. Zellij Config Build
 if command -v build-zellij-config &>/dev/null; then
     log "Running build-zellij-config..."
-    if build-zellij-config -t "$THEME"; then
+    if build-zellij-config -q -t "$THEME"; then
         log "Successfully ran build-zellij-config."
     else
         warning "build-zellij-config command failed."
@@ -189,7 +207,7 @@ fi
 # 4. i3 Config Build
 if command -v build-i3-config &>/dev/null; then
     log "Running build-i3-config..."
-    if build-i3-config -t "$THEME"; then
+    if build-i3-config -q -t "$THEME"; then
         log "Successfully ran build-i3-config."
     else
         warning "build-i3-config command failed."
@@ -203,7 +221,7 @@ log "Setting up xsettingsd..."
 if ! command -v xsettingsd &>/dev/null; then
     warning "'xsettingsd' command not found. Install it to be able to auto-switch themes in GTK apps."
 fi
-ln -sf ~/.config/xsettingsd/themes/${THEME}.conf ~/.config/xsettingsd/xsettingsd.conf
+ln -sf "${CONFIG_DIR}/xsettingsd/themes/${THEME}.conf" "${CONFIG_DIR}/xsettingsd/xsettingsd.conf"
 
 # 6. Yazi Setup
 log "Setting up yazi..."
@@ -216,26 +234,39 @@ else
 fi
 # Zellij and Yazi light theme incompatibility forces this
 # TODO: Fix this when zellij supports light themes of yazi
-ln -sf ~/.config/yazi/themes/theme-${THEME}.toml ~/.config/yazi/theme.toml
+ln -sf "${CONFIG_DIR}/yazi/themes/theme-${THEME}.toml" "${CONFIG_DIR}/yazi/theme.toml"
 
 # 7. VS Code and related editor settings (Cursor, Windsurf, etc)
 log "Setting up VS Code and related editor settings..."
 # Ensure parent directories exist
-mkdir -p ~/.config/Cursor/User
-mkdir -p ~/.config/Windsurf/User
+mkdir -p "${CONFIG_DIR}/Cursor/User"
+mkdir -p "${CONFIG_DIR}/Windsurf/User"
 # Create symlinks (overwrite if they exist and are not already correct)
-ln -sf ~/.config/Code/User/settings.json ~/.config/Cursor/User/settings.json
-ln -sf ~/.config/Code/User/settings.json ~/.config/Windsurf/User/settings.json
+ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"
+ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Windsurf/User/settings.json"
 # Build the VS Code settings
 if command -v build-vscode-settings &>/dev/null; then
     log "Running build-vscode-settings..."
-    if build-vscode-settings -t "$THEME"; then
+    if build-vscode-settings -q -t "$THEME"; then
         log "Successfully ran build-vscode-settings."
     else
         warning "build-vscode-settings command failed."
     fi
 else
     warning "'build-vscode-settings' command not found. Skipping."
+fi
+
+# 8. Dunst Config Build
+log "Building dunst config..."
+if command -v build-dunst-config &>/dev/null; then
+    log "Running build-dunst-config..."
+    if build-dunst-config; then
+        log "Successfully ran build-dunst-config."
+    else
+        warning "build-dunst-config command failed."
+    fi
+else
+    warning "'build-dunst-config' command not found. Skipping."
 fi
 
 log "**** Dotfiles installation script finished! ****"

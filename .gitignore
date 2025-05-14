@@ -10,3 +10,4 @@
 **/yazi/theme.toml
 !**/yazi/flavors/.keep
 **/themes/active-theme.sh
+**/dunst/dunstrc
