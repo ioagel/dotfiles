@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+
+# Script: check-expiries
+# Author: Ioannis Angelakopoulos
+# Date: 05/15/2025
+#
+# Description:
+#   Monitors a list of items with expiration dates from a specified file.
+#   Provides warnings for items that are expired or nearing expiration (configurable period).
+#   Local notifications are attempted via 'notify-send' (or user-defined command).
+#   Optionally, it can integrate with an Uptime Kuma instance to push status updates
+#   (up/down) and relevant messages.
+#
+# Dependencies:
+#   - Core UNIX utilities (date, awk, etc.)
+#   - notify-send: For local desktop notifications (optional, script checks for it).
+#                  Can be changed via the NOTIFY_COMMAND variable.
+#   - curl, jq: Required if Uptime Kuma integration (-u) is enabled.
+#
+# Input File Format (e.g., ~/.item_expirations.txt):
+#   The script reads a semicolon-separated value (CSV-like) file. Each line represents
+#   an item to monitor and should follow this format:
+#
+#   ItemName;YYYY-MM-DD;Optional_Notes_or_Type
+#
+#   - ItemName: A descriptive name for the item (e.g., "MyDomain.com SSL Cert").
+#   - YYYY-MM-DD: The expiration date in ISO 8601 format.
+#   - Optional_Notes_or_Type: Any additional text, like the type of item or a reminder.
+#
+# Example File Content:
+#   # Lines starting with # are ignored, as are empty lines.
+#   MyDomain.com_SSL_Cert;2024-12-31;SSL Certificate
+#   SoftwareLicense_XYZ;2025-01-15;Paid Software - Important Project
+#   GitHub_PAT_ProjectAlpha;2024-11-20;GitHub API Token
+#   GymMembership;2024-09-30
+#
+
+# Default values
+ITEM_EXPIRATION_FILE="$HOME/.item_expirations.txt" # Or any path you prefer
+DAYS_BEFORE_EXPIRATION_TO_WARN=14                  # Warn N days in advance
+NOTIFY_COMMAND="notify-send"                       # Or "echo" for terminal, or a mail command
+ENABLE_UPTIME_KUMA=false                           # Set to true to enable uptime-kuma integration
+UPTIME_KUMA_PUSH_URL=""                            # Uptime Kuma push URL
+
+usage() {
+    local script_name
+    script_name=$(basename "$0")
+    # One-liner description
+    echo "Monitors items for expiration, provides warnings, and can notify Uptime Kuma." >&2
+    echo "" >&2
+    echo "Usage: $script_name [-f <file>] [-u] [-p <url>] [-w <days>] [-h]" >&2
+    echo "" >&2
+    echo "Description:" >&2
+    echo "  This script checks a semicolon-separated file for items with expiration dates." >&2
+    echo "  It issues warnings for items that have already expired or are expiring" >&2
+    echo "  within a user-defined number of days (see -w option)." >&2
+    echo "  Local notifications are attempted via the command configured in the" >&2
+    echo "  NOTIFY_COMMAND variable (default: \"${NOTIFY_COMMAND}\")." >&2
+    echo "  If Uptime Kuma integration is enabled (-u), it will push a status (up/down)" >&2
+    echo "  and any relevant warning/error messages to the specified Uptime Kuma push URL (-p)." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  -f <file>     Path to the item expiration file." >&2
+    echo "                  (Default: \"${ITEM_EXPIRATION_FILE}\")" >&2
+    echo "  -u              Enable Uptime Kuma integration." >&2
+    echo "                  (Default: ${ENABLE_UPTIME_KUMA})" >&2
+    echo "  -p <url>      Uptime Kuma push URL. Required if -u is used." >&2
+    echo "                  (e.g., http[s]://kuma.example.com/api/push/YOUR_TOKEN)" >&2
+    echo "                  (Default: \"${UPTIME_KUMA_PUSH_URL}\")" >&2
+    echo "  -w <days>       Number of days before expiration to issue a warning." >&2
+    echo "                  (Default: ${DAYS_BEFORE_EXPIRATION_TO_WARN})" >&2
+    echo "  -h              Display this help message and exit." >&2
+    echo "" >&2
+    echo "Input File Format (for the file specified by -f or the default):" >&2
+    echo "  Each line must be semicolon-separated: ItemName;YYYY-MM-DD;Optional_Notes_or_Type" >&2
+    echo "  Example: MyCert;2024-12-31;SSL Certificate for example.com" >&2
+    exit 0
+}
+
+# Parse command-line options
+while getopts ":f:up:w:h" opt; do
+    case ${opt} in
+    f)
+        ITEM_EXPIRATION_FILE="$OPTARG"
+        ;;
+    u)
+        ENABLE_UPTIME_KUMA=true
+        ;;
+    p)
+        UPTIME_KUMA_PUSH_URL="$OPTARG"
+        ;;
+    w)
+        DAYS_BEFORE_EXPIRATION_TO_WARN=$OPTARG
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" 1>&2
+        usage
+        ;;
+    :)
+        echo "Invalid option: -$OPTARG requires an argument" 1>&2
+        usage
+        ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+# For separating entries in log file
+echo "######### Running $(basename "$0") at $(date) #########" >&2
+
+if [[ ! -f "$ITEM_EXPIRATION_FILE" ]]; then
+    echo "Item expiration file not found: $ITEM_EXPIRATION_FILE" >&2
+    # If a custom file was specified and not found, it's more of an error
+    if [[ "$ITEM_EXPIRATION_FILE" != "$HOME/.item_expirations.txt" ]]; then
+        exit 1
+    fi
+    exit 0 # Nothing to check if default file is missing
+fi
+
+if ! command -v date &>/dev/null; then
+    echo "Error: 'date' command not found." >&2
+    exit 1
+fi
+
+current_date_seconds=$(date +%s)
+# Calculate the timestamp for the warning threshold
+warn_date_threshold_seconds=$((current_date_seconds + DAYS_BEFORE_EXPIRATION_TO_WARN * 24 * 60 * 60))
+
+echo "Checking expirations in: $ITEM_EXPIRATION_FILE" >&2
+echo "Warning if expiring within: $DAYS_BEFORE_EXPIRATION_TO_WARN days" >&2
+if [[ "$ENABLE_UPTIME_KUMA" = true ]]; then
+    echo "Uptime Kuma integration enabled." >&2
+    if [[ -n "$UPTIME_KUMA_PUSH_URL" ]]; then
+        echo "Using Uptime Kuma Push URL: $UPTIME_KUMA_PUSH_URL" >&2
+    else
+        echo "Warning: Uptime Kuma integration enabled, but no Push URL is set." >&2
+        exit 1
+    fi
+fi
+echo "--------------------------------------------------" >&2
+
+found_issues=0
+UPTIME_KUMA_ACCUMULATED_MESSAGES=""
+
+# Use a more robust read loop, allowing for more fields if you add them (e.g., notes)
+while IFS=';' read -r item_name expiration_date_str item_notes || [[ -n "$item_name" ]]; do
+    # Trim whitespace from fields (optional, but good for robustness)
+    item_name=$(echo "$item_name" | awk '{$1=$1};1')
+    expiration_date_str=$(echo "$expiration_date_str" | awk '{$1=$1};1')
+    item_notes=$(echo "$item_notes" | awk '{$1=$1};1')
+
+    # Skip empty lines or lines starting with #
+    [[ -z "$item_name" || "$item_name" == \#* ]] && continue
+    [[ -z "$expiration_date_str" ]] && continue
+
+    # Validate date format (basic check)
+    if ! [[ "$expiration_date_str" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        echo "Warning: Invalid date format for item '$item_name': '$expiration_date_str'. Expected YYYY-MM-DD. Skipping." >&2
+        continue
+    fi
+
+    expiration_date_seconds=$(date -d "$expiration_date_str" +%s 2>/dev/null)
+    if [[ $? -ne 0 ]]; then
+        echo "Warning: Could not parse date for item '$item_name': '$expiration_date_str'. Skipping." >&2
+        continue
+    fi
+
+    if [[ "$expiration_date_seconds" -lt "$current_date_seconds" ]]; then
+        found_issues=1
+        days_ago=$(((current_date_seconds - expiration_date_seconds) / (24 * 60 * 60)))
+        message="Item '$item_name' HAS EXPIRED on $expiration_date_str (${days_ago} days ago)."
+        if [[ -n "$item_notes" ]]; then message="$message ($item_notes)"; fi
+        echo "CRITICAL: $message" >&2
+        command -v "$NOTIFY_COMMAND" &>/dev/null && "$NOTIFY_COMMAND" -u critical "Item EXPIRED" "$message"
+        if [[ -n "$UPTIME_KUMA_ACCUMULATED_MESSAGES" ]]; then UPTIME_KUMA_ACCUMULATED_MESSAGES+=$'\n'; fi
+        UPTIME_KUMA_ACCUMULATED_MESSAGES+="$message"
+    elif [[ "$expiration_date_seconds" -le "$warn_date_threshold_seconds" ]]; then
+        found_issues=1
+        days_left=$(((expiration_date_seconds - current_date_seconds) / (24 * 60 * 60)))
+        message="Item '$item_name' will expire in $days_left day(s) (on $expiration_date_str)."
+        if [[ -n "$item_notes" ]]; then message="$message ($item_notes)"; fi
+        echo "WARNING: $message" >&2
+        command -v "$NOTIFY_COMMAND" &>/dev/null && "$NOTIFY_COMMAND" -u normal "Item Expiration Warning" "$message"
+        if [[ -n "$UPTIME_KUMA_ACCUMULATED_MESSAGES" ]]; then UPTIME_KUMA_ACCUMULATED_MESSAGES+=$'\n'; fi
+        UPTIME_KUMA_ACCUMULATED_MESSAGES+="$message"
+        # else
+        # echo "INFO: Item '$item_name' (expires $expiration_date_str) is OK." # Optional debug
+    fi
+done <"$ITEM_EXPIRATION_FILE"
+
+if [[ "$found_issues" -eq 0 ]]; then
+    echo "All monitored items are within their valid expiration dates." >&2
+fi
+echo "--------------------------------------------------" >&2
+
+if [[ "$ENABLE_UPTIME_KUMA" = true ]]; then
+    # UPTIME_KUMA_PUSH_URL is guaranteed to be set if we reach here due to earlier exit logic
+
+    if ! command -v curl &>/dev/null; then
+        echo "Uptime Kuma: curl command not found. Cannot send push notification." >&2
+        exit 1 # Or just return/don't proceed with Uptime Kuma part
+    fi
+
+    if ! command -v jq &>/dev/null; then
+        echo "Uptime Kuma: jq command not found. Cannot URL-encode message. Cannot send push notification." >&2
+        exit 1 # Or just return/don't proceed with Uptime Kuma part
+    fi
+
+    kuma_status=""
+    kuma_message_raw=""
+
+    if [[ "$found_issues" -eq 0 ]]; then
+        kuma_status="up"
+        kuma_message_raw="All monitored items are OK."
+        echo "Uptime Kuma: All items OK. Preparing to push status '$kuma_status'." >&2
+    else
+        kuma_status="down"
+        kuma_message_raw="${UPTIME_KUMA_ACCUMULATED_MESSAGES}"
+        echo "Uptime Kuma: Issues found. Preparing to push status '$kuma_status'." >&2
+    fi
+
+    # URL encode the message payload using jq
+    # The -s flag slurps all input into a single string, -R for raw input, -r for raw output.
+    kuma_message_encoded=$(echo -n "$kuma_message_raw" | jq -sRr @uri)
+
+    if [[ -z "$kuma_message_encoded" && -n "$kuma_message_raw" ]]; then
+        echo "Uptime Kuma: Failed to URL-encode message. Original: [$kuma_message_raw]" >&2
+        # Fallback or error out if encoding fails critically, though jq @uri is robust
+    fi
+
+    push_url_with_params="${UPTIME_KUMA_PUSH_URL}?status=${kuma_status}&msg=${kuma_message_encoded}&ping="
+
+    echo "Uptime Kuma: Sending push notification..." >&2
+    if curl -fsS -m 10 --retry 3 -o /dev/null "$push_url_with_params"; then
+        echo "Uptime Kuma: Push notification sent successfully." >&2
+    else
+        echo "Uptime Kuma: Error sending push notification. URL used (message part may be long): ${UPTIME_KUMA_PUSH_URL}&status=${kuma_status}&msg=..." >&2
+    fi
+fi

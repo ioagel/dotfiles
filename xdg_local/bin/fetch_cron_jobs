@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+# Script: fetch_cron_jobs
+# Author: Ioannis Angelakopoulos
+# Date: 05/15/2025
+#
+# Description:
+#   This script connects to a list of specified remote servers via SSH to discover
+#   cron jobs for predefined users (typically 'root' and the SSH user).
+#   It requires a local configuration file (~/.config/fetch_cron_jobs/config)
+#   to define the target servers.
+#   The SSH user (either the current user, or one specified as the first argument)
+#   must have passwordless sudo privileges on the remote servers to execute
+#   'crontab -l -u <username>'.
+#
+#   Discovered cron job entries (excluding comments and empty lines) are saved to
+#   a local CSV file (/tmp/discovered_cron_jobs.csv), with columns for Server,
+#   User, and the CronEntry itself.
+#
+# Prerequisites:
+#   - Local: ssh client, ping, awk.
+#   - Remote: sshd server, sudo, crontab.
+#   - SSH key-based (passwordless) authentication configured for SSH_USER to all TARGET_SERVERS.
+#   - Passwordless sudo for SSH_USER on TARGET_SERVERS to run 'crontab -l -u ...'.
+#     Example sudoers entry on remote server:
+#       your_ssh_user ALL=(ALL) NOPASSWD: /usr/bin/crontab -l -u root, /usr/bin/crontab -l -u your_ssh_user_again
+#
+# Configuration File (~/.config/fetch_cron_jobs/config):
+#   Must define an array variable TARGET_SERVERS.
+#   Example:
+#     TARGET_SERVERS=("server1.example.com" "server2.internal")
+#
+# Usage:
+#   ./fetch_cron_jobs.sh [ssh_username]
+#   If [ssh_username] is omitted, it defaults to the current logged-in user ($USER).
+#
+
+# === Configuration ===
+# Load configuration from a local file (not in Git)
+# Real data stored in 1Password: Vault: Infra, Item: Fetch Cron Jobs Script Config
+CONFIG_FILE="$HOME/.config/fetch_cron_jobs/config"
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "[ERROR] Configuration file not found: $CONFIG_FILE"
+    echo "Please create it with TARGET_SERVERS defined."
+    echo "Example content for $CONFIG_FILE:"
+    echo 'TARGET_SERVERS=("server1.internal" "server2.internal")'
+    exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$CONFIG_FILE"
+
+# Validate that variables were loaded
+if [[ -z "${TARGET_SERVERS[*]}" ]]; then
+    echo "[ERROR] TARGET_SERVERS not defined in $CONFIG_FILE."
+    exit 1
+fi
+
+# User to use for SSH connections. This user needs passwordless sudo for crontab on remote servers.
+SSH_USER="${1:-$USER}" # e.g. make sure has the necessary sudo rights
+
+# Local file to store the discovered cron jobs (will be overwritten on each run)
+LOCAL_OUTPUT_FILE="/tmp/discovered_cron_jobs.csv"
+
+# Users whose crontabs to check on the remote servers
+USERS_TO_CHECK=("root" "$SSH_USER")
+# =====================
+
+# Prepare the output file (clear it and add a header)
+echo "Server;User;CronEntry" >"$LOCAL_OUTPUT_FILE"
+
+echo "Starting cron job discovery..."
+echo "Output will be saved to: $LOCAL_OUTPUT_FILE"
+echo "Ensure SSH user '$SSH_USER' has passwordless sudo rights for 'crontab -l -u ...' on target servers."
+echo "---"
+
+# Loop through each server
+for server in "${TARGET_SERVERS[@]}"; do
+    echo "[INFO] Checking server: $server..."
+
+    # Check if server is reachable (basic ping test, optional but good for feedback)
+    if ! ping -c 1 -W 2 "$server" &>/dev/null; then
+        echo "[WARN] Server $server is not reachable via ping. Skipping..."
+        echo "$server;N/A;UNREACHABLE_SERVER" >>"$LOCAL_OUTPUT_FILE"
+        echo "---"
+        continue
+    fi
+
+    # Loop through each user whose crontab we want to check
+    for user_to_check in "${USERS_TO_CHECK[@]}"; do
+        echo "  [INFO] Checking user: $user_to_check on $server"
+
+        # The remote command to list the crontab for the specified user.
+        # `2>/dev/null` on the remote crontab command silences its "no crontab for..." stderr message.
+        # The exit status of `ssh` will reflect the exit status of the remote command.
+        # `crontab -l` exits 0 if a crontab exists (even if empty), 1 if no crontab file.
+        remote_command="sudo crontab -l -u $user_to_check 2>/dev/null"
+
+        cron_lines_found_for_user=0
+
+        # Execute the remote command via SSH.
+        # `-n` prevents reading from stdin.
+        # `ConnectTimeout` prevents hanging indefinitely.
+        # `BatchMode=yes` ensures it doesn't prompt for passwords (fails if keys aren't set up).
+        if ssh_output_stdout=$(ssh -n -o ConnectTimeout=10 -o BatchMode=yes "${SSH_USER}@${server}" "${remote_command}"); then
+            # SSH command itself was successful AND `crontab -l` exited 0 (meaning a crontab file exists for the user).
+            # The crontab might be empty or contain only comments.
+            if [ -n "$ssh_output_stdout" ]; then
+                # Crontab has content, process each line
+                echo "$ssh_output_stdout" | while IFS= read -r line; do
+                    # Trim leading/trailing whitespace (helps with empty line and comment checks)
+                    trimmed_line=$(echo "$line" | awk '{$1=$1};1')
+
+                    # Skip genuinely empty lines or lines that are only comments
+                    if [[ -n "$trimmed_line" && ! "$trimmed_line" =~ ^# ]]; then
+                        # Append to the local CSV file. Sanitize ';' if necessary, though unlikely in cron entries.
+                        echo "${server};${user_to_check};${trimmed_line}" >>"$LOCAL_OUTPUT_FILE"
+                        cron_lines_found_for_user=$((cron_lines_found_for_user + 1))
+                    fi
+                done
+            fi
+
+            if [ "$cron_lines_found_for_user" -gt 0 ]; then
+                echo "    [OK] Found $cron_lines_found_for_user cron job(s) for $user_to_check."
+            else
+                echo "    [INFO] Crontab for $user_to_check is empty or contains only comments."
+                # Optionally, record this state in the CSV
+                echo "${server};${user_to_check};CRONTAB_EMPTY_OR_COMMENTS_ONLY" >>"$LOCAL_OUTPUT_FILE"
+            fi
+        else
+            # `ssh` command failed. This means either:
+            # 1. `crontab -l` exited non-zero (typically means no crontab file for $user_to_check).
+            # 2. The SSH connection itself failed (e.g., permission denied for $SSH_USER, server down after ping, sudo misconfiguration).
+            # Since we used `2>/dev/null` on the remote `crontab` command, we can't easily see its specific error message here.
+            # The exit code of ssh is the exit code of the remote command if it ran.
+            echo "    [WARN] No crontab file found for $user_to_check, or an SSH/sudo issue occurred."
+            echo "${server};${user_to_check};NO_CRONTAB_FILE_OR_ERROR" >>"$LOCAL_OUTPUT_FILE"
+        fi
+    done
+    echo "---"
+done
+
+echo "[COMPLETE] Cron job discovery finished."
+echo "Results are in: $LOCAL_OUTPUT_FILE"

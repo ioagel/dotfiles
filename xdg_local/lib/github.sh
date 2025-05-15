@@ -20,23 +20,11 @@
 # Depends on: curl, jq
 #
 
-# In your environment or a secure config file
-# I use 1password to store my tokens
-# or
-# export GITHUB_TOKEN_IOAGEL="token_for_ioagel"
-# export GITHUB_TOKEN_FLOULAB="token_for_floulab"
-# export GITHUB_TOKEN_FLOULABS="token_for_floulabs"
-get_token_for_repo() {
-    local repo_full_name="$1" # e.g., "floulab/myrepo"
-    local owner
-    owner=$(echo "$repo_full_name" | cut -d'/' -f1)
-    case "$owner" in
-    "ioagel") op read op://Private/GitHub/ioagelReadToken ;;     # or echo "$GITHUB_TOKEN_IOAGEL"
-    "floulab") echo "" ;;                                        # Not Implemented yet
-    "floulabs") op read op://Private/GitHub/floulabsReadToken ;; # or echo "$GITHUB_TOKEN_FLOULABS"
-    *) echo "" ;;                                                # No specific token, try unauthenticated or a default
-    esac
-}
+# Attempt to source the get_token.sh library if it exists
+if [[ -f ~/.local/lib/get_token.sh ]]; then
+    # shellcheck source=/dev/null
+    source ~/.local/lib/get_token.sh
+fi
 
 latest_release_from_github() {
     local github_repo="$1"
@@ -46,11 +34,12 @@ latest_release_from_github() {
     local curl_auth_header=() # Array to hold authorization header if token is present
     local current_token
 
-    # Check for GITHUB_TOKEN environment variable, first
+    # Check for GITHUB_TOKEN environment variable first
     if [[ -n $GITHUB_TOKEN ]]; then
         current_token=$GITHUB_TOKEN
-    else # Otherwise, try to get a token from the repo owner
-        current_token=$(get_token_for_repo "$github_repo")
+    elif command -v get_token >/dev/null 2>&1; then # Check if get_token function is available
+        # Try to get a token using the get_token function
+        current_token=$(get_token "$github_repo")
     fi
 
     if [[ -n "$current_token" ]]; then
