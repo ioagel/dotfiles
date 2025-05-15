@@ -12,7 +12,7 @@ local current_appearance = utils.get_appearance()
 config = {
 	term = "wezterm",
 
-	font = wezterm.font("CaskaydiaMono Nerd Font"),
+	font = wezterm.font("CaskaydiaCove Nerd Font Mono"),
 	font_size = 12,
 
 	enable_tab_bar = false,

@@ -3,7 +3,7 @@
  * Maintainer: joekamprad <joekamprad@endeavouros.com>
  *******************************************************/
 configuration {
-    font:             "CaskaydiaMono Nerd Font 14";
+    font:             "CaskaydiaCove Nerd Font 14";
     show-icons:       false;
     scroll-method:    0;
     disable-history:  false;

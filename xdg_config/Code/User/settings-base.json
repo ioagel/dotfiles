@@ -1,6 +1,9 @@
 {
-  "editor.fontFamily": "CaskaydiaMono Nerd Font",
+  "editor.fontFamily": "CaskaydiaCove Nerd Font Mono",
   "editor.fontSize": 15,
+  "editor.fontLigatures": true,
+  "editor.mouseWheelZoom": true,
+  "editor.lineNumbers": "relative",
   "editor.tabSize": 2,
   "security.workspace.trust.untrustedFiles": "open",
   "editor.minimap.enabled": false,
@@ -9,6 +12,7 @@
   "editor.formatOnType": false,
   "editor.occurrencesHighlight": "off",
   "editor.selectionHighlight": false,
+  "editor.suggestSelection": "first",
   "editor.suggestOnTriggerCharacters": false,
   "editor.tabCompletion": "on",
   "editor.quickSuggestions": {
@@ -16,6 +20,12 @@
     "comments": false,
     "strings": false
   },
+  "editor.unicodeHighlight.nonBasicASCII": false,
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "editor.largeFileOptimizations": false,
+  "editor.cursorSurroundingLines": 8,
+  "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+  "editor.linkedEditing": true,
   "git.confirmSync": false,
   "git.autofetch": true,
   "git.openRepositoryInParentFolders": "always",
@@ -64,13 +74,9 @@
     "**/.idea": false,
     "**/.venv": false
   },
-  "editor.suggestSelection": "first",
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
   "workbench.iconTheme": "material-icon-theme",
   "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx1G -Xms100m -javaagent:\"/Users/ioangel/.vscode/extensions/gabrielbb.vscode-lombok-1.0.1/server/lombok.jar\"",
-  "editor.fontLigatures": true,
-  "editor.mouseWheelZoom": true,
-  "editor.lineNumbers": "relative",
   "git.enableSmartCommit": true,
   "vsicons.dontShowNewVersionMessage": true,
   "[xml]": {
@@ -97,8 +103,6 @@
     "*.ipynb": "jupyter-notebook"
   },
   "java.project.importOnFirstTimeStartup": "automatic",
-  "editor.unicodeHighlight.nonBasicASCII": false,
-  "editor.unicodeHighlight.ambiguousCharacters": false,
   "bracketPairColorizer.depreciation-notice": false,
   "gitlens.hovers.currentLine.over": "line",
   "ansible.executionEnvironment.containerEngine": "docker",
@@ -191,10 +195,7 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "cSpell.language": "en,el",
-  "editor.largeFileOptimizations": false,
   "terminal.integrated.scrollback": 20000,
-  "editor.cursorSurroundingLines": 8,
-  "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
   "workbench.productIconTheme": "fluent-icons",
   "gitProjectManager.baseProjectsFolders": [
     "~/code",
@@ -207,7 +208,6 @@
   },
   "files.autoSave": "onFocusChange",
   "eslint.run": "onSave",
-  "editor.linkedEditing": true,
   "security.promptForLocalFileProtocolHandling": false,
   "rubyLsp.enabledFeatures": {
     "codeActions": true,
