@@ -19,4 +19,11 @@ fi
 
 echo "Found connected monitor: $CONNECTED_MONITOR"
 
-xrandr --output "$CONNECTED_MONITOR" --primary --mode 5120x1440 --pos 0x0 --rotate normal
+# Check if running in a VM or if hostname is "hades", ThinkPad Laptop
+if [ "$(hostname)" = "hades" ] || systemd-detect-virt -q; then
+    echo "Running in a VM or on host 'hades', setting resolution to 1920x1080."
+    xrandr --output "$CONNECTED_MONITOR" --primary --mode 1920x1080 --pos 0x0 --rotate normal
+else
+    echo "Running on main desktop, setting resolution to 5120x1440."
+    xrandr --output "$CONNECTED_MONITOR" --primary --mode 5120x1440 --pos 0x0 --rotate normal
+fi
