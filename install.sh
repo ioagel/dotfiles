@@ -226,11 +226,14 @@ ln -sf "${CONFIG_DIR}/xsettingsd/themes/${THEME}.conf" "${CONFIG_DIR}/xsettingsd
 # 6. Yazi Setup
 log "Setting up yazi..."
 if ! command -v yazi &>/dev/null; then
-    warning "'yazi' command not found."
-    warning "Please install yazi first and run manually: ya pack -u"
+    warning "'yazi' command not found. Please install yazi first and run manually: ya pack -u"
 else
-    ya pack -u
-    log "Successfully setup yazi."
+    log "Updating Yazi packages..."
+    if ya pack -u; then
+        log "Successfully updated Yazi packages."
+    else
+        warning "Failed to update Yazi packages. You might need to run 'ya pack -u' manually."
+    fi
 fi
 # Zellij and Yazi light theme incompatibility forces this
 # TODO: Fix this when zellij supports light themes of yazi

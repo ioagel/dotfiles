@@ -17,14 +17,11 @@ This repository uses Stow packages organized by target directory:
 
 - [GNU Stow](https://www.gnu.org/software/stow/)
 - `sudo` access (for managing files in `/etc`)
+- `zsh` as an advanced login shell
 - `neovim-remote` for having live-update of neovim color theme (in arch do: `yay -S neovim-remote`)
-- `python-i3ipc` for window_title.py i3blocks script
+- `python-i3ipc` for window_title.py i3blocks script (if using i3blocks, default is polybar)
 - `xsettingsd` for gtk live theme changes
-- Set zsh as your login shell:
-
-  ```bash
-  chsh -s $(which zsh)
-  ```
+- `1Password` and `1Password cli` for sensitive data (needed by `install_sec.sh`)
 
 ## Installation
 
@@ -33,20 +30,25 @@ This repository includes an automated installation script.
 1. **Clone the repository:**
 
    ```bash
-   git clone <your-repo-url> ~/.dotfiles
+   git clone https://github.com/ioagel/dotfiles.git ~/.dotfiles
    cd ~/.dotfiles
    ```
 
 2. **Review the script (Optional but Recommended):**
-   Take a look at `install.sh` to understand what it does, especially the `sudo` commands for the `etc` package.
+   Take a look at [`install.sh`](./install.sh)  to understand what it does, especially the `sudo` commands for the `etc` package.
 
 3. **Run the installer:**
 
    ```bash
    ./install.sh
+
+   # Optional (Setup of sensitive data, requires 1Password)
+   ./install_sec.sh
    ```
 
-The script will:
+4. After the script finishes **log out and log back in** (even better you should `reboot`).
+
+The `install.sh` script will:
 
 - Check for dependencies (`stow`, `sudo`).
 - Use `stow` to create symlinks for the `home`, `xdg_config`, and `xdg_local` packages to the appropriate user
@@ -54,47 +56,12 @@ The script will:
 - Prompt for your password to use `sudo stow` for the `etc` package, linking files into `/etc`.
 - If systemd units are defined in `install.sh` (and present in `etc/systemd/system/`), it will automatically run
   `sudo systemctl daemon-reload` and `sudo systemctl enable <service>` for them.
+- Then it will proceed to the final build steps
 
-## Manual Stowing (Alternative)
+The `install_sec.sh` script (optional) will:
 
-If you prefer not to use the script, you can stow packages manually from the `~/.dotfiles` directory:
-
-```bash
-# User files
-stow -R home
-stow -R -t ~/.config xdg_config
-stow -R -t ~/.local xdg_local
-
-# System files (Requires sudo)
-sudo stow -R -t /etc etc
-
-# Manually reload/enable systemd services if needed
-sudo systemctl daemon-reload
-sudo systemctl enable <service_name>
-# sudo systemctl start <service_name>
-
-## Post Stowing
-# Install or update alacritty themes
-git clone --depth 1 https://github.com/alacritty/alacritty-themes.git ~/.config/alacritty/themes
-# or
-cd ~/.config/alacritty/themes && git pull
-
-# Build i3 config
-build-i3-config -t gruvbox-dark
-
-# Build zellij config
-build-zellij-config -t gruvbox-dark
-
-# Set the GTK theme to dark (gruvbox-dark)
-ln -sf ~/.config/xsettingsd/themes/gruvbox-dark.conf ~/.config/xsettingsd/xsettingsd.conf
-
-# Set the Polybar theme to dark (gruvbox-dark)
-ln -sf ~/.config/polybar/modules/themes/gruvbox-dark.ini ~/.config/polybar/modules/colors.ini
-
-# Setup Yazi
-ya pack -u
-ln -sf ~/.config/yazi/themes/theme-gruvbox-dark.toml ~/.config/yazi/theme.toml
-```
+- Check for the `1Password CLI (`op`)`.
+- Attempt to fetch sensitive configuration files (like `~/.item_expirations.txt` and the cron job fetcher config) from your 1Password vault and place them in the correct locations.
 
 ## Ubuntu (24.04)
 
