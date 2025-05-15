@@ -11,3 +11,4 @@
 !**/yazi/flavors/.keep
 **/themes/active-theme.sh
 **/dunst/dunstrc
+**/polybar/profile_layouts/active_layout.ini

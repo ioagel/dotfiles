@@ -322,10 +322,8 @@ bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 # For modifications, it can be copied to ~/.config/picom/picom.conf or ~/.config/picom.conf
 # install picom package (yay -S picom)
 # start using default config
-exec_always --no-startup-id picom -b
-#
-# for custom config:
-# exec_always --no-startup-id picom -b --config  <custom_directory>/picom.conf
+# Run picom with a custom stripped down config if running in a VM, otherwise use the default config
+exec_always --no-startup-id sh -c 'if systemd-detect-virt -q; then picom -b --config ~/.config/picom/picom-vm.conf; else picom -b; fi'
 
 #############################################
 # autostart applications/services on login: #
@@ -406,9 +404,6 @@ for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
 for_window [class="Bluetooth-sendto" instance="bluetooth-sendto"] floating enable
 for_window [class="Pamac-manager"] floating enable
 for_window [window_role="About"] floating enable
-
-# set border of floating window
-for_window [class="urxvt"] border pixel 1
 
 # set size of floating window
 #for_window [window_role="(?i)GtkFileChooserDialog"] resize set 640 480 #to set size of file choose dialog
