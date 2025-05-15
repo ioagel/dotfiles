@@ -2,8 +2,8 @@
 # power-profiles-daemon helper script
 # Supports both polybar and i3blocks output formats
 # Usage:
-#   ./power-profile            # i3blocks format (default)
-#   ./power-profile --polybar  # polybar format
+#   ./power-profile             # Polybar format (default)
+#   ./power-profile --i3blocks  # i3blocks format
 
 # Get current power profile
 current_profile=$(/usr/bin/powerprofilesctl get)
@@ -15,9 +15,9 @@ POWERSAVER_COLOR="$THEME_EFFICIENT"
 UNKNOWN_COLOR="$THEME_ALERT"
 
 # Check if we are running in polybar mode
-FORMAT_TYPE="i3blocks"
-if [[ "$1" == "--polybar" ]]; then
-    FORMAT_TYPE="polybar"
+FORMAT_TYPE="polybar"
+if [[ "$1" == "--i3blocks" ]]; then
+    FORMAT_TYPE="i3blocks"
 fi
 
 # Function to format output based on environment

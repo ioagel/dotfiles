@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# Default to i3blocks mode
-POLYBAR_MODE=false
-if [[ "$1" == "--polybar" ]]; then
-    POLYBAR_MODE=true
+# Default to polybar mode
+POLYBAR_MODE=true
+if [[ "$1" == "--i3blocks" ]]; then
+    POLYBAR_MODE=false
 fi
 
 # Has 1 space at the end of the string

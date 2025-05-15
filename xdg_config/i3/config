@@ -1,17 +1,5 @@
-# This file is a modified version based on default i3-config-wizard config
-# source is available here:
-# https://raw.githubusercontent.com/endeavouros-team/endeavouros-i3wm-setup/master/.config/i3/config
-# Maintainer: joekamprad [joekamprad@endeavouros.com]
-# https://endeavouros.com
-#
-# iconic font icon search: https://fontawesome.com/v4.7/cheatsheet/
-#
-# --> to update this run the following command (will backup existing setup file)
-# wget --backups=1 https://raw.githubusercontent.com/endeavouros-team/endeavouros-i3wm-setup/main/.config/i3/config -P ~/.config/i3/
-#
 # Endeavouros-i3 config file
 # Source for complete framework of our i3 config and theming here: https://github.com/endeavouros-team/endeavouros-i3wm-setup
-# EndeavourOS wiki holds some Information also: https://discovery.endeavouros.com/window-tiling-managers/i3-wm/
 # Please see http://i3wm.org/docs/userguide.html for the official i3 reference!
 
 #######################
@@ -59,12 +47,6 @@ gaps outer 3
 bindsym $mod+g gaps inner all set 0; gaps outer all set 0
 bindsym $mod+Shift+g gaps inner all set 6; gaps outer all set 3
 
-# show window title bars (not officially supported with i3gaps)
-#default_border normal
-
-# window title alignment
-#title_align center
-
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
@@ -72,8 +54,6 @@ floating_modifier $mod
 # configuration for workspace behaviour: #
 ##########################################
 
-# Define names for default workspaces for which we configure key bindings later on.
-# We use variables to avoid repeating the names in multiple places.
 set $ws1  "1"
 set $ws2  "2"
 set $ws3  "3"
@@ -86,7 +66,7 @@ set $ws9  "9"
 set $ws10 "10"
 
 # Include the current monitor layout (variables, workspace assignments)
-# This file is managed by the set-monitor-layout script
+# Build by the build scripts: build-i3-config and/or set-monitor-layout
 include ~/.config/i3/config.d/monitor-layout-current.conf
 
 # switch/iterate between workspaces
@@ -133,8 +113,6 @@ bindsym $mod+Shift+0 move  container to workspace $ws10; workspace $ws10
 assign [class="easyeffects"] $ws10
 assign [class="Spotify"] $ws10
 
-# automatic set focus new window if it opens on another workspace than the current:
-#for_window [class=Thunar] focus
 ####################
 
 # resize window (you can also use the mouse for that):
@@ -144,16 +122,16 @@ mode "resize" {
   # Pressing right will grow the window's width.
   # Pressing up will shrink the window's height.
   # Pressing down will grow the window's height.
-  bindsym j resize shrink width 10 px or 10 ppt
-  bindsym k resize grow height 10 px or 10 ppt
-  bindsym l resize shrink height 10 px or 10 ppt
-  bindsym ntilde resize grow width 10 px or 10 ppt
+  bindsym j resize shrink width 5 px or 5 ppt
+  bindsym k resize grow height 5 px or 5 ppt
+  bindsym l resize shrink height 5 px or 5 ppt
+  bindsym ntilde resize grow width 5 px or 5 ppt
 
   # same bindings, but for the arrow keys
-  bindsym Left resize shrink width 10 px or 10 ppt
-  bindsym Down resize grow height 10 px or 10 ppt
-  bindsym Up resize shrink height 10 px or 10 ppt
-  bindsym Right resize grow width 10 px or 10 ppt
+  bindsym Left resize shrink width 5 px or 5 ppt
+  bindsym Down resize grow height 5 px or 5 ppt
+  bindsym Up resize shrink height 5 px or 5 ppt
+  bindsym Right resize grow width 5 px or 5 ppt
 
   # back to normal: Enter or Escape
   bindsym Return mode "default"
@@ -190,9 +168,6 @@ bindsym $mod+Shift+r restart
 
 # keybinding in fancy rofi (automated):
 bindsym $mod+F1 exec ~/.config/i3/scripts/keyhint-2
-# alternative
-# keybinding list in editor:
-bindsym $mod+Shift+F1 exec --no-startup-id gedit ~/.config/i3/keybindings
 
 # Backlight control
 bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
@@ -258,9 +233,7 @@ bindsym $mod+F4 [instance="thunar"] scratchpad show
 bindsym $mod+F5 [instance="obsidian"] scratchpad show
 bindsym $mod+F6 [instance="gnome-pomodoro"] scratchpad show
 
-
-# Multimedia Keys
-
+### Multimedia Keys
 # volume
 bindsym XF86AudioRaiseVolume exec amixer -D pulse sset Master 5%+ && pkill -RTMIN+1 i3blocks
 bindsym XF86AudioLowerVolume exec amixer -D pulse sset Master 5%- && pkill -RTMIN+1 i3blocks
@@ -307,11 +280,11 @@ bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles-menu
 
 bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 
-##############
-# compositor #
-##############
+#############################################
+# autostart applications/services on login: #
+#############################################
 
-# transparency
+# Compositor
 # picom: https://wiki.archlinux.org/title/Picom
 # manpage: https://man.archlinux.org/man/picom.1.en
 # The default configuration is available in /etc/xdg/picom.conf
@@ -320,10 +293,6 @@ bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 # start using default config
 # Run picom with a custom stripped down config if running in a VM, otherwise use the default config
 exec_always --no-startup-id sh -c 'if systemd-detect-virt -q; then picom -b --config ~/.config/picom/picom-vm.conf; else picom -b; fi'
-
-#############################################
-# autostart applications/services on login: #
-#############################################
 
 #get auth work with polkit-gnome in EndeavourOS or lxpolkit for Ubuntu 24.04
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2>/dev/null || lxpolkit
@@ -336,9 +305,6 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 #exec --no-startup-id dex -a -s /etc/xdg/autostart/:~/.config/autostart/
 # The following was used to autostart apps through system
 #exec --no-startup-id dex --autostart --environment i3
-
-# start welcome app
-#exec --no-startup-id sh /usr/share/endeavouros/scripts/welcome --startdelay=3
 
 # num lock activated
 #exec --no-startup-id numlockx on
@@ -361,7 +327,6 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # use xautolock to use autosuspend rules for mobile devices
 # https://wiki.archlinux.org/title/Session_lock#xautolock
 #exec --no-startup-id xautolock -time 60 -locker "systemctl suspend"
-
 
 # xscreensaver
 # https://www.jwz.org/xscreensaver
@@ -408,15 +373,18 @@ for_window [window_role="About"] floating enable
 # set position of floating window
 for_window [class=".*"] move position center
 
-######################################
-# color settings for bar and windows #
-######################################
+##############################
+# color settings for windows #
+##############################
 # Include the themed window client colors configuration
+# Build by the build script: build-i3-config
 include ~/.config/i3/config.d/config-colors.conf
 
-############################################
-# bar settings                             #
-############################################
+##############################
+# bar settings               #
+##############################
+# Either polybar or i3bar with i3blocks
+# Build by the build script: build-i3-config
 include ~/.config/i3/config.d/bar.conf
 
 #####################################
