@@ -59,10 +59,10 @@ NORMAL_TEMP="$THEME_NORMAL"
 HOT_TEMP="$THEME_HOT"
 VERY_HOT_TEMP="$THEME_VERY_HOT"
 
-# Check if we're running in polybar or i3blocks (default: i3blocks)
-FORMAT_TYPE="i3blocks"
-if [[ "$1" == "--polybar" ]]; then
-    FORMAT_TYPE="polybar"
+# Check if we're running in polybar or i3blocks (default: polybar)
+FORMAT_TYPE="polybar"
+if [[ "$1" == "--i3blocks" ]]; then
+    FORMAT_TYPE="i3blocks"
 fi
 
 # Function to output colored temperature based on the environment

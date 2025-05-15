@@ -5,18 +5,16 @@
 #
 # i3blocks blocklet script to monitor bandwidth usage
 
-# Default to i3blocks mode
-POLYBAR_MODE=false
-# Check if --polybar is the first argument, then shift
-if [[ "$1" == "--polybar" ]]; then
-  POLYBAR_MODE=true
-  shift # Remove --polybar from arguments so getopts doesn't see it
+# Default to polybar mode
+POLYBAR_MODE=true
+if [[ "$1" == "--i3blocks" ]]; then
+    POLYBAR_MODE=false
 fi
 
 function default_interface {
-  local found_iface
-  found_iface=$(ip route | awk '/^default via/ {print $5; exit}')
-  echo "$found_iface"
+    local found_iface
+    found_iface=$(ip route | awk '/^default via/ {print $5; exit}')
+    echo "$found_iface"
 }
 
 # Interface setup
@@ -30,8 +28,8 @@ dt="${DT:-3}"
 unit="${UNIT:-MB}"
 
 if [ -z "$iface" ]; then
-  echo "ERROR: Could not determine default interface. Please set IFACE environment variable or ensure 'ip route' provides a default. Exiting." >&2
-  exit 1
+    echo "ERROR: Could not determine default interface. Please set IFACE environment variable or ensure 'ip route' provides a default. Exiting." >&2
+    exit 1
 fi
 
 # Unit and Scalar calculation
@@ -59,40 +57,40 @@ ICON_TEXT_I3BLOCKS="${ICON_TEXT_I3BLOCKS:''}" # the icon is provided by another 
 
 # Determine final printf format string for awk based on POLYBAR_MODE
 if $POLYBAR_MODE; then
-  FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_POLYBAR}%1.0f/%1.0f %s/s\\n"
+    FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_POLYBAR}%1.0f/%1.0f %s/s\\n"
 else
-  FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_I3BLOCKS}%1.0f/%1.0f %s/s\\n"
+    FINAL_AWK_PRINTF_FORMAT="${ICON_TEXT_I3BLOCKS}%1.0f/%1.0f %s/s\\n"
 fi
 
 # Get initial byte counts
 init_line=$(grep "^[ ]*${iface}:" /proc/net/dev)
 if [[ -z "$init_line" ]]; then
-  echo "Error: Interface '$iface' not found in /proc/net/dev at start. (Script line approx: $LINENO)" >&2
-  exit 1
+    echo "Error: Interface '$iface' not found in /proc/net/dev at start. (Script line approx: $LINENO)" >&2
+    exit 1
 fi
 shell_old_received_bytes=$(echo "$init_line" | awk '{print $2}')
 shell_old_sent_bytes=$(echo "$init_line" | awk '{print $10}')
 
 # Main loop
 while true; do
-  current_line=$(grep "^[ ]*${iface}:" /proc/net/dev)
+    current_line=$(grep "^[ ]*${iface}:" /proc/net/dev)
 
-  if [[ -z "$current_line" ]]; then
-    # Interface disappeared or /proc/net/dev is unreadable briefly
-    # Output current ICON_TEXT_TO_USE with error message
-    echo "${ICON_TEXT_TO_USE} Error: IFACE?"
-    sleep "$dt"
-    continue
-  fi
+    if [[ -z "$current_line" ]]; then
+        # Interface disappeared or /proc/net/dev is unreadable briefly
+        # Output current ICON_TEXT_TO_USE with error message
+        echo "${ICON_TEXT_TO_USE} Error: IFACE?"
+        sleep "$dt"
+        continue
+    fi
 
-  output_stats=$(echo "$current_line" | awk \
-    -v old_r_b="$shell_old_received_bytes" \
-    -v old_s_b="$shell_old_sent_bytes" \
-    -v b_per_unit="$shell_awk_bytes_per_unit" \
-    -v interval_dt="$shell_awk_dt" \
-    -v unit_str="${unit}" \
-    -v awk_format_str="$FINAL_AWK_PRINTF_FORMAT" \
-    '
+    output_stats=$(echo "$current_line" | awk \
+        -v old_r_b="$shell_old_received_bytes" \
+        -v old_s_b="$shell_old_sent_bytes" \
+        -v b_per_unit="$shell_awk_bytes_per_unit" \
+        -v interval_dt="$shell_awk_dt" \
+        -v unit_str="${unit}" \
+        -v awk_format_str="$FINAL_AWK_PRINTF_FORMAT" \
+        '
     {
         curr_r_b = $2;
         curr_s_b = $10;
@@ -113,11 +111,11 @@ while true; do
         fflush(stdout);
     }')
 
-  echo "$output_stats"
+    echo "$output_stats"
 
-  # Update shell_old_received_bytes and shell_old_sent_bytes for the next iteration
-  shell_old_received_bytes=$(echo "$current_line" | awk '{print $2}')
-  shell_old_sent_bytes=$(echo "$current_line" | awk '{print $10}')
+    # Update shell_old_received_bytes and shell_old_sent_bytes for the next iteration
+    shell_old_received_bytes=$(echo "$current_line" | awk '{print $2}')
+    shell_old_sent_bytes=$(echo "$current_line" | awk '{print $10}')
 
-  sleep "${dt}"
+    sleep "${dt}"
 done
