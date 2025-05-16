@@ -24,9 +24,8 @@ sudo pacman -S ttf-cascadia-mono-nerd ttf-cascadia-code-nerd ttf-font-awesome tt
 sudo pacman -S thunar yazi
 
 # --- Browsers, Editors, IDEs ---
-sudo pacman -S obsidian nvim
-yay -S google-chrome neovim-remote visual-studio-code-bin cursor-extracted
-# (Optional: firefox brave-bin idea-community-edition pycharm-community-edition)
+sudo pacman -S obsidian nvim firefox
+yay -S google-chrome neovim-remote visual-studio-code-bin cursor-extracted brave-bin
 
 # --- Utilities ---
 sudo pacman -S \

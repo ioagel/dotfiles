@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+CHANGE_INTERVAL=600 # default to 10 minutes
+
+# Help function
+show_help() {
+    echo "Usage: wallpaper-changer [OPTIONS]"
+    echo "Changes wallpaper randomly at specified intervals"
+    echo ""
+    echo "Options:"
+    echo "  -d DIRECTORY   Wallpaper directory (required)"
+    echo "  -t SECONDS     Change interval in seconds (default: $CHANGE_INTERVAL)"
+    echo "  -h             Display this help message and exit"
+    echo ""
+    echo "Example: wallpaper-changer -d ~/Pictures/Wallpapers -t 300"
+    exit 0
+}
+
+# Parse command-line arguments
+while getopts "d:t:h" opt; do
+    case $opt in
+    d) WALLPAPER_DIR="$OPTARG" ;;
+    t) CHANGE_INTERVAL="$OPTARG" ;;
+    h) show_help ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        show_help
+        ;;
+    esac
+done
+
+if [ -z "$WALLPAPER_DIR" ]; then
+    echo "Error: Wallpaper directory (-d) is required." >&2
+    show_help
+fi
+
+# Verify wallpaper directory exists
+if [ ! -d "$WALLPAPER_DIR" ]; then
+    echo "Error: Wallpaper directory does not exist: $WALLPAPER_DIR" >&2
+    exit 1
+fi
+
+# Kill other running instances of this script (except this process)
+SCRIPT_NAME="$(basename "$0")"
+MY_PID=$$
+
+pgrep -f "$SCRIPT_NAME" | grep -vw "$MY_PID" | while read -r pid; do
+    if [ "$pid" != "$PPID" ]; then
+        kill "$pid"
+    fi
+done
+
+echo "Starting wallpaper changer:"
+echo "  Directory: $WALLPAPER_DIR"
+echo "  Interval: $CHANGE_INTERVAL seconds"
+
+while true; do
+    # Redirect stderr to /dev/null to suppress GTK warnings
+    nitrogen --random --set-zoom-fill "$WALLPAPER_DIR" 2>/dev/null
+    sleep "$CHANGE_INTERVAL"
+done
