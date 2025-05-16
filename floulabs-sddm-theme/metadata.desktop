@@ -1,0 +1,15 @@
+[SddmGreeterTheme]
+Name=FlouLabs
+Description=FlouLabs SDDM theme. \nThe original theme is EndeavourOS simple SDDM theme.
+Type=sddm-theme
+Original Author=Gabriel Ibáñez
+Author=Ioannis Angelakopoulos
+Copyright=(c) 2025, Ioannis Angelakopoulos
+Screenshot=Previews/pirate_ships.png
+License=GPL
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Theme-Id=floulabs
+Theme-API=2.0

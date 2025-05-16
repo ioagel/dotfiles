@@ -1,4 +1,4 @@
-# Load common path configuration for both shell (e.g. .zshrc) and X (e.g. .xprofile)
+# Load common path configuration for both shell (e.g. .zshrc) and X (e.g. .zprofile)
 
 export GOPATH="$HOME/.golang"
 PATH="$GOPATH/bin:$PATH"
@@ -25,9 +25,13 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # so you can run project-specific scripts, but only in repos you mark as “safe” by creating .git/safe.
 PATH=".git/safe/../../bin:$PATH"
 
-# if shell is zsh, use the -U flag to prevent duplicates
+# Zsh-specific PATH uniqueness
 if [ -n "$ZSH_VERSION" ]; then
-    export -U PATH
+    # This de-duplicates the current PATH string into the 'path' array
+    # and updates the PATH string variable itself to the de-duplicated version.
+    # shellcheck disable=SC2034
+    typeset -U path
+    export PATH # Ensure this (now de-duplicated) PATH is marked for export.
 else
-    export PATH
+    export PATH # For other POSIX shells
 fi

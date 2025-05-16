@@ -29,7 +29,7 @@ alias fast='fastfetch --pipe false'
 alias zel='zellij'
 
 # Pretty print the path
-alias path='echo $PATH | tr -s ":" "\n"'
+alias ppath='echo $PATH | tr -s ":" "\n"'
 
 # Docker related
 alias lzd='lazydocker'

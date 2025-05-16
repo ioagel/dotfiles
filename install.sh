@@ -1,5 +1,37 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091 disable=SC1090
+# -----------------------------------------------------------------------------
+# Dotfiles Installation Script
+#
+# This script automates the setup of your dotfiles and user environment.
+#
+# Features:
+#   - Stows user and system dotfiles using GNU Stow
+#   - Creates required user and system directories
+#   - Sets up and activates themes for Alacritty, i3, xsettingsd, Yazi, and SDDM
+#   - Symlinks VS Code settings for related editors (Cursor, Windsurf)
+#   - Enables and reloads systemd services if present
+#   - Modular: easily add new packages, themes, or services
+#
+# Prerequisites:
+#   - bash
+#   - GNU Stow
+#   - sudo privileges for system-wide changes
+#   - git (for theme repositories)
+#   - Optional: build-* scripts for i3, zellij, dunst, vscode, etc.
+#
+# Usage:
+#   ./install.sh [-t|--theme <theme_name>] [-h|--help]
+#
+# Options:
+#   -t, --theme <theme_name>   Specify the initial theme to activate (default: gruvbox-dark)
+#   -h, --help                 Show this help message
+#
+# Notes:
+#   - Run this script from the root of your dotfiles repository.
+#   - For SDDM theme installation, any existing theme directory will be removed before copying.
+#   - Some steps are skipped if required commands are not found.
+#
+# -----------------------------------------------------------------------------
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -13,6 +45,7 @@ LOCAL_DIR="$HOME/.local"
 export PATH="$LOCAL_DIR/bin:$PATH"
 
 # Common utility functions
+# shellcheck disable=SC1091
 source ./xdg_local/lib/utils.sh
 
 # --- Usage Function ---
@@ -58,20 +91,57 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Create required directories user directories
+user_dirs=(
+    "${CONFIG_DIR}/alacritty"
+    "${CONFIG_DIR}/Code/User"
+    "${CONFIG_DIR}/Cursor/User"
+    "${CONFIG_DIR}/Windsurf/User"
+    "${CONFIG_DIR}/dunst"
+    "${CONFIG_DIR}/i3"
+    "${CONFIG_DIR}/nvim"
+    "${CONFIG_DIR}/picom"
+    "${CONFIG_DIR}/polybar"
+    "${CONFIG_DIR}/rofi"
+    "${CONFIG_DIR}/starship"
+    "${CONFIG_DIR}/themes"
+    "${CONFIG_DIR}/wezterm"
+    "${CONFIG_DIR}/xsettingsd"
+    "${CONFIG_DIR}/yazi"
+    "${CONFIG_DIR}/zellij"
+    "${LOCAL_DIR}/bin"
+    "${LOCAL_DIR}/lib"
+)
+for dir in "${user_dirs[@]}"; do
+    mkdir -p "$dir"
+done
+
+# Create required directories system directories
+system_dirs=(
+    "/etc/sddm.conf.d"
+    "/usr/share/sddm/themes"
+)
+for dir in "${system_dirs[@]}"; do
+    sudo mkdir -p "$dir"
+done
+
 # --- Configuration ---
 # Get the absolute path to the directory where this script resides (e.g., ~/.dotfiles)
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Define packages and their targets. Add more here if needed.
 # Format: "package_directory_name:target_path"
-# Note: 'etc' target is handled separately due to sudo requirement.
 USER_PACKAGES=(
     "home:$HOME"
     "xdg_config:${CONFIG_DIR}"
     "xdg_local:${LOCAL_DIR}"
 )
-SYSTEM_PACKAGE="etc"
-SYSTEM_TARGET="/etc"
+
+# Define system packages and their targets. Add more here if needed.
+# Format: "package_directory_name:target_path"
+SYSTEM_PACKAGES=(
+    "etc:/etc"
+)
 
 # Define systemd services within the system package that need enabling.
 SYSTEMD_SERVICES=(
@@ -105,54 +175,57 @@ for item in "${USER_PACKAGES[@]}"; do
     fi
 done
 
-# --- Stowing System Package ---
-log "Stowing system package (requires sudo)..."
-system_package_path="$DOTFILES_DIR/$SYSTEM_PACKAGE"
+# --- Stowing System Packages ---
+log "Stowing system packages (requires sudo)..."
+for item in "${SYSTEM_PACKAGES[@]}"; do
+    IFS=":" read -r package target <<<"$item"
+    package_path="$DOTFILES_DIR/$package"
 
-if [ -d "$system_package_path" ]; then
-    log "Stowing '$SYSTEM_PACKAGE' to '$SYSTEM_TARGET' using sudo..."
-    if sudo stow -R -t "$SYSTEM_TARGET" "$SYSTEM_PACKAGE"; then
-        log "Successfully stowed '$SYSTEM_PACKAGE'."
-    else
-        error "Failed to stow '$SYSTEM_PACKAGE' with sudo. Check permissions and stow output."
-    fi
-
-    # --- Post-Activation for System Package (systemd) ---
-    if [ ${#SYSTEMD_SERVICES[@]} -gt 0 ]; then
-        log "Performing systemd post-activation steps..."
-        if sudo systemctl daemon-reload; then
-            log "Reloaded systemd daemon."
+    if [ -d "$package_path" ]; then
+        log "Stowing '$package' to '$target' using sudo..."
+        if sudo stow -R -t "$target" "$package"; then
+            log "Successfully stowed '$package'."
         else
-            error "Failed to reload systemd daemon."
+            error "Failed to stow '$package' with sudo. Check permissions and stow output."
         fi
-
-        for service in "${SYSTEMD_SERVICES[@]}"; do
-            service_file_path="$system_package_path/systemd/system/$service" # Check existence in dotfiles
-            if [ -f "$service_file_path" ]; then
-                log "Enabling systemd service '$service'..."
-                # Use --now to enable and start, or just enable if you prefer manual start
-                if sudo systemctl enable "$service"; then
-                    log "Enabled '$service'."
-                else
-                    # Don't exit script, maybe just needs manual intervention
-                    warning "Failed to enable '$service'. It might already be enabled or have issues."
-                fi
-                # Optional: Start the service
-                # log "Starting systemd service '$service'..."
-                # if sudo systemctl start "$service"; then
-                #     log "Started '$service'."
-                # else
-                #     warning "Failed to start '$service'. It might already be running or have issues."
-                # fi
-            else
-                warning "Skipping systemd service '$service': File not found at '$service_file_path'."
-            fi
-        done
     else
-        log "No systemd services defined for post-activation."
+        warning "Skipping package '$package': Directory does not exist at '$package_path'."
     fi
+done
+
+# --- Post-Activation for System Package (systemd) ---
+if [ ${#SYSTEMD_SERVICES[@]} -gt 0 ]; then
+    log "Performing systemd post-activation steps..."
+    if sudo systemctl daemon-reload; then
+        log "Reloaded systemd daemon."
+    else
+        error "Failed to reload systemd daemon."
+    fi
+
+    for service in "${SYSTEMD_SERVICES[@]}"; do
+        service_file_path="$DOTFILES_DIR/etc/systemd/system/$service" # Check existence in dotfiles
+        if [ -f "$service_file_path" ]; then
+            log "Enabling systemd service '$service'..."
+            # Use --now to enable and start, or just enable if you prefer manual start
+            if sudo systemctl enable "$service"; then
+                log "Enabled '$service'."
+            else
+                # Don't exit script, maybe just needs manual intervention
+                warning "Failed to enable '$service'. It might already be enabled or have issues."
+            fi
+            # Optional: Start the service
+            # log "Starting systemd service '$service'..."
+            # if sudo systemctl start "$service"; then
+            #     log "Started '$service'."
+            # else
+            #     warning "Failed to start '$service'. It might already be running or have issues."
+            # fi
+        else
+            warning "Skipping systemd service '$service': File not found at '$service_file_path'."
+        fi
+    done
 else
-    warning "Skipping system package '$SYSTEM_PACKAGE': Directory does not exist at '$system_package_path'."
+    log "No systemd services defined for post-activation."
 fi
 
 # --- Final Build/Activation Steps ---
@@ -241,9 +314,6 @@ ln -sf "${CONFIG_DIR}/yazi/themes/theme-${THEME}.toml" "${CONFIG_DIR}/yazi/theme
 
 # 7. VS Code and related editor settings (Cursor, Windsurf, etc)
 log "Setting up VS Code and related editor settings..."
-# Ensure parent directories exist
-mkdir -p "${CONFIG_DIR}/Cursor/User"
-mkdir -p "${CONFIG_DIR}/Windsurf/User"
 # Create symlinks (overwrite if they exist and are not already correct)
 ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"
 ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Windsurf/User/settings.json"
@@ -271,5 +341,13 @@ if command -v build-dunst-config &>/dev/null; then
 else
     warning "'build-dunst-config' command not found. Skipping."
 fi
+
+# 9. Setup FlouLabs SDDM theme
+log "Setting up FlouLabs SDDM theme (need to logout to activate)"
+if [ -d /usr/share/sddm/themes/floulabs ]; then
+    log "Removing existing FlouLabs SDDM theme directory before copying..."
+    sudo rm -rf /usr/share/sddm/themes/floulabs
+fi
+sudo cp -r floulabs-sddm-theme /usr/share/sddm/themes/floulabs
 
 log "**** Dotfiles installation script finished! ****"
