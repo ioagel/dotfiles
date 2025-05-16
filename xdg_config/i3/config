@@ -6,12 +6,21 @@
 # config starts here: #
 #######################
 
+#### VARIABLES ####
+# set the mod key to the winkey:
+set $mod Mod4
+# Define the default terminal instance name (default terminal is set in .xprofile)
+set $terminal_instance org.wezfurlong.wezterm
+# Define the default file manager command and instance name
+set $file_manager_cmd thunar
+set $file_manager_instance thunar
+# Define default note taking app instance name
+set $note_app_cmd obsidiAn
+set $note_app_instance obsidian
+
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block.
 font pango: CaskaydiaCove Nerd Font 11
-
-# set the mod key to the winkey:
-set $mod Mod4
 
 ############################################
 # monitors setup                           #
@@ -146,7 +155,7 @@ bindsym $mod+r mode "resize"
 
 # start a terminal
 # bindsym $mod+Return exec --no-startup-id ~/.local/bin/alacritty
-bindsym $mod+Return exec --no-startup-id wezterm
+bindsym $mod+Return exec --no-startup-id $TERMINAL
 
 # kill focused window
 bindsym $mod+q kill
@@ -227,10 +236,10 @@ bindsym $mod+Shift+minus move scratchpad
 # If there are multiple scratchpad windows, this command cycles through them.
 bindsym $mod+minus scratchpad show
 # Per app scratchpad
-bindsym $mod+F3 [instance="org.wezfurlong.wezterm"] scratchpad show
-bindsym $mod+F4 [instance="thunar"] scratchpad show
+bindsym $mod+F3 [instance="$terminal_instance"] scratchpad show
+bindsym $mod+F4 [instance="$file_manager_instance"] scratchpad show
 # bindsym $mod+F5 [instance="easyeffects"] scratchpad show
-bindsym $mod+F5 [instance="obsidian"] scratchpad show
+bindsym $mod+F5 [instance="$note_app_instance"] scratchpad show
 bindsym $mod+F6 [instance="gnome-pomodoro"] scratchpad show
 
 ### Multimedia Keys
@@ -255,15 +264,14 @@ bindsym XF86AudioPrev exec playerctl previous
 # bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
-bindsym $mod+w exec --no-startup-id google-chrome-stable
-# bindsym $mod+w exec --no-startup-id brave
-bindsym $mod+n exec --no-startup-id thunar
-bindsym $mod+o exec --no-startup-id obsidian
+bindsym $mod+w exec --no-startup-id $BROWSER
+bindsym $mod+n exec --no-startup-id $file_manager_cmd
+bindsym $mod+o exec --no-startup-id $note_app_cmd
 bindsym $mod+i exec --no-startup-id idea
 bindsym $mod+p exec --no-startup-id pycharm
 
 # terminal file manager
-bindsym $mod+y exec --no-startup-id wezterm start -- yazi
+bindsym $mod+y exec --no-startup-id $TERMINAL start -- yazi
 
 ### Screenshots (flameshot + maim)
 bindsym Print exec --no-startup-id $HOME/.local/bin/screentaker screen "$HOME/Pictures/Screenshots"
