@@ -2,7 +2,7 @@
 # WORK IN PROGRESS
 
 # --- Core Window Manager & Bar ---
-sudo pacman -S i3-wm i3blocks i3lock
+sudo pacman -S i3-wm i3blocks i3lock xss-lock
 
 # --- Terminal Emulators ---
 sudo pacman -S wezterm

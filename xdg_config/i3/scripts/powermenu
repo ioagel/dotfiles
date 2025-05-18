@@ -15,34 +15,34 @@ ROFI_PROMPT_TEXT="Action"
 enable_confirmation=false
 # Check if the script is called with --confirm
 if [[ "$1" == "--confirm" ]]; then
-  enable_confirmation=true
+    enable_confirmation=true
 fi
 
 # Check whether a command exists
 function command_exists() {
-  command -v "$1" &> /dev/null 2>&1
+    command -v "$1" &>/dev/null 2>&1
 }
 
 # Ensure rofi and systemctl are available
 if ! command_exists rofi; then
-  echo "Error: rofi command not found." >&2
-  # Optionally, send a notification for i3 use:
-  command_exists notify-send && notify-send -u critical "Power Menu Error" "Missing dependencies: rofi"
-  exit 1
+    echo "Error: rofi command not found." >&2
+    # Optionally, send a notification for i3 use:
+    command_exists notify-send && notify-send -u critical "Power Menu Error" "Missing dependencies: rofi"
+    exit 1
 fi
 
 # menu defined as an associative array
-typeset -A menu
+declare -A menu
 
 # Menu with keys/commands
 menu=(
-  [  Shutdown]="$HOME/.config/i3/scripts/i3-safe-exit shutdown"
-  [  Reboot]="$HOME/.config/i3/scripts/i3-safe-exit reboot"
-  [  Suspend]="systemctl suspend"
-  [  Hibernate]="systemctl hibernate"
-  [  Lock]="$HOME/.config/i3/scripts/blur-lock"
-  [  Logout]="$HOME/.config/i3/scripts/i3-safe-exit logout"
-  [  Cancel]=""
+    ["  Shutdown"]="$HOME/.config/i3/scripts/i3-safe-exit shutdown"
+    ["  Reboot"]="$HOME/.config/i3/scripts/i3-safe-exit reboot"
+    ["  Suspend"]="systemctl suspend"
+    ["  Hibernate"]="systemctl hibernate"
+    ["  Lock"]="$HOME/.config/i3/scripts/blur-lock"
+    ["  Logout"]="$HOME/.config/i3/scripts/i3-safe-exit logout"
+    ["  Cancel"]=""
 )
 
 menu_nrows=${#menu[@]}
@@ -59,42 +59,42 @@ selection="$(printf '%s\n' "${!menu[@]}" | sort | rofi "${rofi_options[@]}")"
 
 # Function to ask for confirmation using Rofi
 function ask_confirmation_rofi() {
-  local prompt_message="${1:-Are you sure?}"
-  local confirmed
-  confirmed=$(echo -e "Yes\nNo" | rofi -dmenu -i -lines 2 -p "${prompt_message}" "${ROFI_THEME[@]}")
-  if [[ "${confirmed}" == "Yes" ]]; then
-    return 0 # Yes
-  else
-    return 1 # No or cancelled
-  fi
+    local prompt_message="${1:-Are you sure?}"
+    local confirmed
+    confirmed=$(echo -e "Yes\nNo" | rofi -dmenu -i -lines 2 -p "${prompt_message}" "${ROFI_THEME[@]}")
+    if [[ "${confirmed}" == "Yes" ]]; then
+        return 0 # Yes
+    else
+        return 1 # No or cancelled
+    fi
 }
 
 # Process the selection
 if [[ -n "${selection}" ]]; then
-  command_to_run="${menu[${selection}]}"
+    command_to_run="${menu[${selection}]}"
 
-  # If the command is empty (like for "Cancel"), do nothing
-  if [[ -z "${command_to_run}" ]]; then
-    exit 0
-  fi
-
-  # Check if the selected action requires confirmation
-  action_requires_confirmation=false
-  for action in "${menu_confirm_actions[@]}"; do
-    if [[ "${selection}" == "${action}" ]]; then
-      action_requires_confirmation=true
-      break
+    # If the command is empty (like for "Cancel"), do nothing
+    if [[ -z "${command_to_run}" ]]; then
+        exit 0
     fi
-  done
 
-  if [[ "${enable_confirmation}" = true && "${action_requires_confirmation}" = true ]]; then
-    if ask_confirmation_rofi "${selection}?"; then
-      i3-msg -q "exec --no-startup-id ${command_to_run}"
+    # Check if the selected action requires confirmation
+    action_requires_confirmation=false
+    for action in "${menu_confirm_actions[@]}"; do
+        if [[ "${selection}" == "${action}" ]]; then
+            action_requires_confirmation=true
+            break
+        fi
+    done
+
+    if [[ "${enable_confirmation}" = true && "${action_requires_confirmation}" = true ]]; then
+        if ask_confirmation_rofi "${selection}?"; then
+            i3-msg -q "exec --no-startup-id ${command_to_run}"
+        else
+            exit 0 # User selected No in confirmation
+        fi
     else
-      exit 0 # User selected No in confirmation
+        # No confirmation needed or confirmation is disabled
+        i3-msg -q "exec --no-startup-id ${command_to_run}"
     fi
-  else
-    # No confirmation needed or confirmation is disabled
-    i3-msg -q "exec --no-startup-id ${command_to_run}"
-  fi
 fi
