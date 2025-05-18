@@ -25,6 +25,7 @@ check_command "gsettings"
 check_command "build-i3-config"
 check_command "build-zellij-config"
 check_command "build-vscode-settings"
+check_command "build-rofi-config"
 check_command "i3-msg"
 check_command "jq"
 check_command "notify-send" "Please install: libnotify"
@@ -128,6 +129,12 @@ update_dunst_theme() {
     echo "#### Done: build-dunst-config"
 }
 
+update_rofi_theme() {
+    echo "#### Running: build-rofi-config"
+    build-rofi-config
+    echo "#### Done: build-rofi-config"
+}
+
 # --- Main Logic ---
 
 ## Determine Target Theme and Mode
@@ -166,6 +173,7 @@ update_yazi_theme "${THEME}"
 update_vscode_settings "${THEME}"
 update_neovim_themes
 update_dunst_theme
+update_rofi_theme
 update_i3_theme "${THEME}"
 
 # THEME_DISPLAY_NAME is defined in the active-theme.sh file

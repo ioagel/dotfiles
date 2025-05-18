@@ -2,11 +2,11 @@
 
 ### Gracefull shutdown of all apps
 if pgrep -x "1password" >/dev/null; then
-  # Close 1Password gracefully
-  pkill -SIGINT 1password
+    # Close 1Password gracefully
+    pkill -SIGINT 1password
 
-  # Give it a moment to close properly
-  sleep 1
+    # Give it a moment to close properly
+    sleep 1
 fi
 
 # Check which action to perform
@@ -14,13 +14,13 @@ ACTION="${1:-logout}"
 
 case "$ACTION" in
 shutdown)
-  systemctl poweroff
-  ;;
+    systemctl poweroff
+    ;;
 reboot)
-  systemctl reboot
-  ;;
+    systemctl reboot
+    ;;
 logout | *)
-  # Default is logout
-  i3-msg exit
-  ;;
+    # Default is logout
+    i3-msg exit
+    ;;
 esac

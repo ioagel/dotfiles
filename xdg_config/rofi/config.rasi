@@ -1,0 +1,18 @@
+@import "base.rasi"
+
+ configuration {
+  font:            "CaskaydiaCove Nerd Font 14";
+  show-icons:      false;
+  scroll-method:   0;
+  disable-history: false;
+  sidebar-mode:    false;
+ }
+
+window {
+    width:            1000px;
+    border-radius:      7px; // the same as in picom.conf corner radius
+}
+
+element {
+  padding:           2px 0px 2px 10px;
+}

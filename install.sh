@@ -144,10 +144,7 @@ SYSTEM_PACKAGES=(
 )
 
 # Define systemd services within the system package that need enabling.
-SYSTEMD_SERVICES=(
-    "lock-screen-before-sleep@ioangel.service"
-    # Add other service filenames here if you add more under etc/systemd/system/
-)
+SYSTEMD_SERVICES=()
 
 # --- Pre-checks ---
 log "Checking dependencies..."
@@ -196,42 +193,13 @@ done
 # --- Post-Activation for System Package (systemd) ---
 if [ ${#SYSTEMD_SERVICES[@]} -gt 0 ]; then
     log "Performing systemd post-activation steps..."
-    if sudo systemctl daemon-reload; then
-        log "Reloaded systemd daemon."
-    else
-        error "Failed to reload systemd daemon."
-    fi
-
-    for service in "${SYSTEMD_SERVICES[@]}"; do
-        service_file_path="$DOTFILES_DIR/etc/systemd/system/$service" # Check existence in dotfiles
-        if [ -f "$service_file_path" ]; then
-            log "Enabling systemd service '$service'..."
-            # Use --now to enable and start, or just enable if you prefer manual start
-            if sudo systemctl enable "$service"; then
-                log "Enabled '$service'."
-            else
-                # Don't exit script, maybe just needs manual intervention
-                warning "Failed to enable '$service'. It might already be enabled or have issues."
-            fi
-            # Optional: Start the service
-            # log "Starting systemd service '$service'..."
-            # if sudo systemctl start "$service"; then
-            #     log "Started '$service'."
-            # else
-            #     warning "Failed to start '$service'. It might already be running or have issues."
-            # fi
-        else
-            warning "Skipping systemd service '$service': File not found at '$service_file_path'."
-        fi
-    done
-else
-    log "No systemd services defined for post-activation."
+    $DOTFILES_DIR/_systemd.sh "${SYSTEMD_SERVICES[@]}"
 fi
 
 # --- Final Build/Activation Steps ---
 log "Running final build/activation steps..."
 
-# 1. Setup Alacritty Themes
+# Setup Alacritty Themes
 alacritty_themes_dir="${CONFIG_DIR}/alacritty/themes"
 alacritty_themes_repo="https://github.com/alacritty/alacritty-theme.git" # Ensure .git suffix for clone
 log "Checking Alacritty themes at '$alacritty_themes_dir'..."
@@ -250,7 +218,7 @@ else
     fi
 fi
 
-# 2. Setup the active theme
+# Setup the active theme
 if [ -f "${CONFIG_DIR}/themes/${THEME}/theme.sh" ]; then
     ln -sf "${CONFIG_DIR}/themes/${THEME}/theme.sh" "${CONFIG_DIR}/themes/active-theme.sh"
     source "${CONFIG_DIR}/themes/active-theme.sh" # probably not needed, the individual scripts source the theme file
@@ -265,7 +233,7 @@ else
 fi
 log "Active theme set to ${THEME}."
 
-# 3. Zellij Config Build
+# Zellij Config Build
 if command -v build-zellij-config &>/dev/null; then
     log "Running build-zellij-config..."
     if build-zellij-config -q -t "$THEME"; then
@@ -277,7 +245,7 @@ else
     warning "'build-zellij-config' command not found. Skipping."
 fi
 
-# 4. i3 Config Build
+# i3 Config Build
 if command -v build-i3-config &>/dev/null; then
     log "Running build-i3-config..."
     if build-i3-config -q -t "$THEME"; then
@@ -289,14 +257,14 @@ else
     warning "'build-i3-config' command not found. Skipping."
 fi
 
-# 5. xsettingsd Config (GTK Apps) - Default to dark theme
+# xsettingsd Config (GTK Apps) - Default to dark theme
 log "Setting up xsettingsd..."
 if ! command -v xsettingsd &>/dev/null; then
     warning "'xsettingsd' command not found. Install it to be able to auto-switch themes in GTK apps."
 fi
 ln -sf "${CONFIG_DIR}/xsettingsd/themes/${THEME}.conf" "${CONFIG_DIR}/xsettingsd/xsettingsd.conf"
 
-# 6. Yazi Setup
+# Yazi Setup
 log "Setting up yazi..."
 if ! command -v yazi &>/dev/null; then
     warning "'yazi' command not found. Please install yazi first and run manually: ya pack -u"
@@ -312,7 +280,7 @@ fi
 # TODO: Fix this when zellij supports light themes of yazi
 ln -sf "${CONFIG_DIR}/yazi/themes/theme-${THEME}.toml" "${CONFIG_DIR}/yazi/theme.toml"
 
-# 7. VS Code and related editor settings (Cursor, Windsurf, etc)
+# VS Code and related editor settings (Cursor, Windsurf, etc)
 log "Setting up VS Code and related editor settings..."
 # Create symlinks (overwrite if they exist and are not already correct)
 ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"
@@ -329,7 +297,7 @@ else
     warning "'build-vscode-settings' command not found. Skipping."
 fi
 
-# 8. Dunst Config Build
+# Dunst Config Build
 log "Building dunst config..."
 if command -v build-dunst-config &>/dev/null; then
     log "Running build-dunst-config..."
@@ -342,7 +310,20 @@ else
     warning "'build-dunst-config' command not found. Skipping."
 fi
 
-# 9. Setup FlouLabs SDDM theme
+# Rofi Config Build
+log "Building rofi config..."
+if command -v build-rofi-config &>/dev/null; then
+    log "Running build-rofi-config..."
+    if build-rofi-config; then
+        log "Successfully ran build-rofi-config."
+    else
+        warning "build-rofi-config command failed."
+    fi
+else
+    warning "'build-rofi-config' command not found. Skipping."
+fi
+
+# Setup FlouLabs SDDM theme
 log "Setting up FlouLabs SDDM theme (need to logout to activate)"
 if [ -d /usr/share/sddm/themes/floulabs ]; then
     log "Removing existing FlouLabs SDDM theme directory before copying..."

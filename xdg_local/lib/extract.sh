@@ -96,6 +96,8 @@ clean_config_file() {
     fi
 
     # 1. Remove lines starting with # (and any leading whitespace before #)
-    # 2. Remove empty lines
-    sed -e 's/^[[:space:]]*#.*//' -e '/^[[:space:]]*$/d' "$1"
+    # 2. Remove lines starting with // (and any leading whitespace before //)
+    # 3. Remove lines starting with ; (and any leading whitespace before ;)
+    # 4. Remove empty lines
+    sed -e 's/^[[:space:]]*#.*//' -e 's%^[[:space:]]*//.*%%' -e 's/^[[:space:]]*;.*//' -e '/^[[:space:]]*$/d' "$1"
 }
