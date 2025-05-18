@@ -5,8 +5,7 @@
 sudo pacman -S i3-wm i3blocks i3lock xss-lock
 
 # --- Terminal Emulators ---
-sudo pacman -S wezterm
-# (Optional: alacritty xfce4-terminal)
+sudo pacman -S wezterm alacritty
 
 # --- Compositor & Status Bar ---
 sudo pacman -S picom polybar
@@ -33,7 +32,7 @@ sudo pacman -S \
     nitrogen xorg-xset numlockx conky redshift-gtk network-manager-applet solaar 1password \
     synology-drive easyeffects imagemagick scrot flameshot jq wget python python-pipx \
     dunst bat maim xdotool xorg-xrandr docker pciutils usbutils the_silver_searcher ripgrep \
-    gsettings-desktop-schemas gettext sops fastfetch
+    gsettings-desktop-schemas gettext sops fastfetch xcape
 
 yay -S caffeine-ng
 
