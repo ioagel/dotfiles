@@ -5,10 +5,6 @@
 # If no theme is found, it runs bat without injecting a --theme argument.
 # If the user has provided a --theme argument, it runs bat with the provided theme.
 
-# Source extract functions
-# shellcheck disable=SC1090
-source ~/.local/lib/extract.sh
-
 # Set system path to ensure bat found is not overridden by this wrapper script
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
@@ -42,8 +38,9 @@ if [ "$user_provided_theme_option" -eq 0 ]; then
         # 2. If not in env, try to extract from active-theme.sh
         ACTIVE_THEME_CONFIG_FILE="$HOME/.config/themes/active-theme.sh"
         if [ -f "$ACTIVE_THEME_CONFIG_FILE" ]; then
-            raw_line=$(grep -m 1 'BAT_THEME=' "$ACTIVE_THEME_CONFIG_FILE")
-            determined_bat_theme=$(get_raw_variable_value "$raw_line")
+            # shellcheck source=/dev/null
+            source "$ACTIVE_THEME_CONFIG_FILE"
+            determined_bat_theme="${BAT_THEME}"
         fi
     fi
 
