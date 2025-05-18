@@ -24,3 +24,24 @@ check_command() {
         error "Required command '$command_name' not found. $msg"
     fi
 }
+
+# Helper function to check if the system is a laptop
+is_laptop() {
+    # Method 1: Check DMI Chassis Type
+    if [ -f /sys/class/dmi/id/chassis_type ]; then
+        local chassis_type
+        chassis_type=$(cat /sys/class/dmi/id/chassis_type)
+        case "$chassis_type" in
+        8 | 9 | 10 | 11 | 14) return 0 ;; # True, it's a laptop type
+        esac
+    fi
+
+    # Method 2: Check for battery (fallback or alternative)
+    for supply in /sys/class/power_supply/BAT*; do
+        if [ -d "$supply" ]; then
+            return 0 # True, battery found
+        fi
+    done
+
+    return 1 # False, not identified as a laptop
+}
