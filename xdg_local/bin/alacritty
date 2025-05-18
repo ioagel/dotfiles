@@ -5,10 +5,6 @@
 # If no theme is found, it runs alacritty without injecting a --config-file argument.
 # If the user has provided a --config-file argument, it runs alacritty with the provided config file.
 
-# Source extract functions
-# shellcheck disable=SC1090
-source ~/.local/lib/extract.sh
-
 # Set system path to ensure alacritty found is not overridden by this wrapper script
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
@@ -31,9 +27,9 @@ if [ "$user_provided_config_option" -eq 0 ]; then
     alacritty_theme_name_from_file=""
 
     if [ -f "$ACTIVE_THEME_SOURCE_FILE" ]; then
-        # Attempt to extract ALACRITTY_THEME="theme_name"
-        raw_line=$(grep -m 1 'ALACRITTY_THEME=' "$ACTIVE_THEME_SOURCE_FILE")
-        alacritty_theme_name_from_file=$(get_raw_variable_value "$raw_line")
+        # shellcheck source=/dev/null
+        source "$ACTIVE_THEME_SOURCE_FILE"
+        alacritty_theme_name_from_file="${ALACRITTY_THEME}"
     fi
 
     # If a theme name was extracted, construct the path and check for its existence
