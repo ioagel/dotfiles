@@ -415,9 +415,10 @@ exec --no-startup-id greenclip daemon
 bindsym $mod+c exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard
 
 # make CapsLock behave like Ctrl and make short-pressed Ctrl behave like Escape
-exec_always --no-startup-id ~/.config/i3/scripts/keyboard_keys_overrides
+exec --no-startup-id ~/.config/i3/scripts/setup-keyboard
 
-bindsym $mod+F2 exec --no-startup-id ~/.config/i3/scripts/keyboard_changer
+# Using ALT+SHIFT to change keyboard layout set in ~/.config/i3/scripts/keyboard_keys_overrides
+# bindsym $mod+F2 exec --no-startup-id ~/.config/i3/scripts/keyboard_changer
 
 # i3-gnome-pomodoro settings
 bindsym $mod+F9  exec --no-startup-id i3-gnome-pomodoro start
