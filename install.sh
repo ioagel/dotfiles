@@ -5,17 +5,15 @@
 # This script automates the setup of your dotfiles and user environment.
 #
 # Features:
-#   - Stows user and system dotfiles using GNU Stow
-#   - Creates required user and system directories
+#   - Stows user dotfiles using GNU Stow
+#   - Creates required user directories
 #   - Sets up and activates themes for Alacritty, i3, xsettingsd, Yazi, and SDDM
 #   - Symlinks VS Code settings for related editors (Cursor, Windsurf)
-#   - Enables and reloads systemd services if present
 #   - Modular: easily add new packages, themes, or services
 #
 # Prerequisites:
 #   - bash
 #   - GNU Stow
-#   - sudo privileges for system-wide changes
 #   - git (for theme repositories)
 #   - Optional: build-* scripts for i3, zellij, dunst, vscode, etc.
 #
@@ -93,37 +91,15 @@ done
 
 # Create required directories user directories
 user_dirs=(
-    "${CONFIG_DIR}/alacritty"
     "${CONFIG_DIR}/Code/User"
     "${CONFIG_DIR}/Cursor/User"
     "${CONFIG_DIR}/Windsurf/User"
-    "${CONFIG_DIR}/dunst"
     "${CONFIG_DIR}/easyeffects/output"
-    "${CONFIG_DIR}/i3"
-    "${CONFIG_DIR}/nvim"
-    "${CONFIG_DIR}/picom"
-    "${CONFIG_DIR}/polybar"
-    "${CONFIG_DIR}/rofi"
-    "${CONFIG_DIR}/starship"
-    "${CONFIG_DIR}/themes"
-    "${CONFIG_DIR}/wezterm"
-    "${CONFIG_DIR}/xsettingsd"
-    "${CONFIG_DIR}/yazi"
-    "${CONFIG_DIR}/zellij"
     "${LOCAL_DIR}/bin"
     "${LOCAL_DIR}/lib"
 )
 for dir in "${user_dirs[@]}"; do
     mkdir -p "$dir"
-done
-
-# Create required directories system directories
-system_dirs=(
-    "/etc/sddm.conf.d"
-    "/usr/share/sddm/themes"
-)
-for dir in "${system_dirs[@]}"; do
-    sudo mkdir -p "$dir"
 done
 
 # --- Configuration ---
@@ -138,19 +114,9 @@ USER_PACKAGES=(
     "xdg_local:${LOCAL_DIR}"
 )
 
-# Define system packages and their targets. Add more here if needed.
-# Format: "package_directory_name:target_path"
-SYSTEM_PACKAGES=(
-    "etc:/etc"
-)
-
-# Define systemd services within the system package that need enabling.
-SYSTEMD_SERVICES=()
-
 # --- Pre-checks ---
 log "Checking dependencies..."
 check_command "stow"
-check_command "sudo"
 log "Dependencies met."
 
 # --- Stowing User Packages ---
@@ -173,32 +139,59 @@ for item in "${USER_PACKAGES[@]}"; do
     fi
 done
 
-# --- Stowing System Packages ---
-log "Stowing system packages (requires sudo)..."
-for item in "${SYSTEM_PACKAGES[@]}"; do
-    IFS=":" read -r package target <<<"$item"
-    package_path="$DOTFILES_DIR/$package"
-
-    if [ -d "$package_path" ]; then
-        log "Stowing '$package' to '$target' using sudo..."
-        if sudo stow -R -t "$target" "$package"; then
-            log "Successfully stowed '$package'."
-        else
-            error "Failed to stow '$package' with sudo. Check permissions and stow output."
-        fi
-    else
-        warning "Skipping package '$package': Directory does not exist at '$package_path'."
-    fi
-done
-
-# --- Post-Activation for System Package (systemd) ---
-if [ ${#SYSTEMD_SERVICES[@]} -gt 0 ]; then
-    log "Performing systemd post-activation steps..."
-    $DOTFILES_DIR/_systemd.sh "${SYSTEMD_SERVICES[@]}"
-fi
-
 # --- Final Build/Activation Steps ---
 log "Running final build/activation steps..."
+
+log "Setting up default shell to zsh."
+if ! command -v zsh &>/dev/null; then
+    error "zsh command not found. Please install zsh first."
+elif [ "$SHELL" != "$(command -v zsh)" ]; then
+    chsh -s "$(command -v zsh)"
+    log "Default shell set to zsh."
+else
+    log "Default shell already set to zsh."
+fi
+
+# Installing oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    log "Installing oh-my-zsh..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    log "oh-my-zsh installed."
+else
+    log "oh-my-zsh already installed."
+fi
+
+# Installing zsh-autosuggestions
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
+    log "Installing zsh-autosuggestions..."
+    git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
+else
+    log "zsh-autosuggestions already installed"
+fi
+
+# Installing zsh-syntax-highlighting
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
+    log "Installing zsh-syntax-highlighting..."
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
+else
+    log "zsh-syntax-highlighting already installed"
+fi
+
+# Installing fast-syntax-highlighting
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/fast-syntax-highlighting" ]; then
+    log "Installing fast-syntax-highlighting..."
+    git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting"
+else
+    log "fast-syntax-highlighting already installed"
+fi
+
+# Installing zsh-history-substring-search
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search" ]; then
+    log "Installing zsh-history-substring-search..."
+    git clone https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search"
+else
+    log "zsh-history-substring-search already installed"
+fi
 
 # Setup Alacritty Themes
 alacritty_themes_dir="${CONFIG_DIR}/alacritty/themes"
@@ -323,13 +316,5 @@ if command -v build-rofi-config &>/dev/null; then
 else
     warning "'build-rofi-config' command not found. Skipping."
 fi
-
-# Setup FlouLabs SDDM theme
-log "Setting up FlouLabs SDDM theme (need to logout to activate)"
-if [ -d /usr/share/sddm/themes/floulabs ]; then
-    log "Removing existing FlouLabs SDDM theme directory before copying..."
-    sudo rm -rf /usr/share/sddm/themes/floulabs
-fi
-sudo cp -r floulabs-sddm-theme /usr/share/sddm/themes/floulabs
 
 log "**** Dotfiles installation script finished! ****"
