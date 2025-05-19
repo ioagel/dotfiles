@@ -17,7 +17,8 @@ sudo pacman -S rofi
 yay -S yaru-gtk-theme yaru-icon-theme
 
 # --- Fonts ---
-sudo pacman -S ttf-cascadia-mono-nerd ttf-cascadia-code-nerd ttf-font-awesome ttf-jetbrains-mono-nerd
+sudo pacman -S ttf-cascadia-mono-nerd ttf-cascadia-code-nerd ttf-font-awesome ttf-jetbrains-mono-nerd \
+    noto-fonts noto-fonts-emoji noto-fonts-extra
 
 # --- File Managers ---
 sudo pacman -S thunar yazi
@@ -32,7 +33,8 @@ sudo pacman -S \
     nitrogen xorg-xset numlockx conky redshift-gtk network-manager-applet solaar 1password \
     synology-drive easyeffects imagemagick scrot flameshot jq wget python python-pipx \
     dunst bat maim xdotool xorg-xrandr docker pciutils usbutils the_silver_searcher ripgrep \
-    gsettings-desktop-schemas gettext sops fastfetch xcape
+    gsettings-desktop-schemas gettext sops fastfetch xcape gnome-calculator gnome-calendar \
+    xclip mpv gnome-text-editor xdg-desktop-portal-gtk
 
 yay -S caffeine-ng
 
@@ -43,7 +45,7 @@ sudo pacman -S power-profiles-daemon
 sudo pacman -S iproute2 inetutils wireless_tools
 
 # --- Zsh & Shell Environment ---
-sudo pacman -S zsh git fzf starship zoxide findutils grep sed coreutils
+sudo pacman -S zsh git fzf starship zoxide findutils grep sed coreutils eza
 yay -S oh-my-zsh zsh-syntax-highlighting zsh-autosuggestions mise zellij lazydocker lazygit fd 1password-cli kubectx kubens
 
 # --- AUR/Optional/Recommended ---

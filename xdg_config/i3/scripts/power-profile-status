@@ -44,7 +44,7 @@ case "$current_profile" in
     output_profile "" "$BALANCED_COLOR" " balanced"
     ;;
 "power-saver")
-    output_profile "" "$POWERSAVER_COLOR" "power saver"
+    output_profile "" "$POWERSAVER_COLOR" "powersave"
     ;;
 *)
     output_profile "?" "$UNKNOWN_COLOR" "unknown"

@@ -98,6 +98,7 @@ user_dirs=(
     "${CONFIG_DIR}/Cursor/User"
     "${CONFIG_DIR}/Windsurf/User"
     "${CONFIG_DIR}/dunst"
+    "${CONFIG_DIR}/easyeffects/output"
     "${CONFIG_DIR}/i3"
     "${CONFIG_DIR}/nvim"
     "${CONFIG_DIR}/picom"
