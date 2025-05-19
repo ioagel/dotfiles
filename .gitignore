@@ -1,5 +1,6 @@
 .vscode/
 .idea/
+.ansible/
 **/alacritty/themes/
 **/zellij/config.kdl
 **/i3/config.d/bar.conf
@@ -14,3 +15,4 @@
 **/polybar/profile_layouts/active_layout.ini
 **/rofi/base.rasi
 .item_expirations.txt
+rsync-exclude.txt

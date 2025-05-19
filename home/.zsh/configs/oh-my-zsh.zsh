@@ -15,6 +15,7 @@ plugins=(
     vi-mode
     zsh-syntax-highlighting
     zsh-autosuggestions
+    fast-syntax-highlighting
     history-substring-search
     extract
     archlinux

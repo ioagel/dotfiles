@@ -1,0 +1,80 @@
+---
+- name: System setup for Arch Linux
+  hosts: localhost
+  become: true
+  vars_files:
+    - vars/packages.yml
+  vars:
+    current_user: "{{ lookup('env', 'USER') }}"
+    dotfiles_dir: "{{ lookup('env', 'HOME') }}/.dotfiles"
+    sddm_theme_dir: "/usr/share/sddm/themes/floulabs"
+    sddm_conf_dir: "/etc/sddm.conf.d"
+
+  tasks:
+    - name: Allow the ansible user to run sudo without a password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/11-no-passwd
+        line: "{{ current_user }} ALL=(ALL:ALL) NOPASSWD: ALL"
+        create: true
+        mode: "0600"
+        validate: "visudo -cf %s"
+
+    - name: Install system packages
+      community.general.pacman:
+        name: "{{ pacman_packages }}"
+        state: present
+        update_cache: true
+
+    - name: Ensure yay is installed (for AUR)
+      become: false
+      block:
+        - name: Check if yay is installed
+          ansible.builtin.command: yay --version
+          register: yay_check
+          ignore_errors: true
+          changed_when: false
+        - name: Install yay from AUR if not present
+          when: yay_check.rc != 0
+          changed_when: true
+          ansible.builtin.shell: |
+            rm -rf /tmp/yay
+            cd /tmp
+            git clone https://aur.archlinux.org/yay.git
+            cd yay
+            makepkg -si --noconfirm
+
+    - name: Install AUR packages
+      kewlfft.aur.aur:
+        name: "{{ aur_packages }}"
+        use: yay
+        state: present
+      become: false
+
+    - name: Copy SDDM theme
+      ansible.builtin.copy:
+        src: "{{ dotfiles_dir }}/system/sddm-theme/floulabs/"
+        dest: "{{ sddm_theme_dir }}/"
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create SDDM config directory if it doesn't exist
+      ansible.builtin.file:
+        path: "{{ sddm_conf_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Copy SDDM config
+      ansible.builtin.copy:
+        src: "{{ dotfiles_dir }}/system/sddm-theme/90-floulabs.conf"
+        dest: "{{ sddm_conf_dir }}/90-floulabs.conf"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Enable and start SDDM
+      ansible.builtin.systemd:
+        name: sddm
+        enabled: true
