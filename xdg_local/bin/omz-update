@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+# shellcheck source=/dev/null
+source ~/.local/lib/utils.sh
+
+log "Updating oh-my-zsh..."
+if [ ! -d ~/.oh-my-zsh ]; then
+    error "oh-my-zsh not found. Please install oh-my-zsh first."
+fi
+
+# Update Oh My Zsh core using oh-my-zsh's update command
+log "Updating oh-my-zsh core..."
+source ~/.oh-my-zsh/oh-my-zsh.sh
+omz update
+echo
+
+log "Updating oh-my-zsh plugins..."
+pushd ~/.oh-my-zsh/custom/plugins &>/dev/null || exit
+for plugin in *; do
+    if [[ -d "$plugin" ]] && [[ "$plugin" != "example" ]]; then
+        log "Updating $plugin..."
+        pushd "$plugin" &>/dev/null || exit
+        git pull
+        popd &>/dev/null || exit
+    fi
+done
+popd &>/dev/null || exit
