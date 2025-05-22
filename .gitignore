@@ -1,4 +1,4 @@
-.vscode/
+/.vscode/
 .idea/
 .ansible/
 **/alacritty/themes/

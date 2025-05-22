@@ -1,0 +1,5 @@
+{
+  "enable-crash-reporter": false,
+  // Need to set this in wm like i3, else it will force you to use 'basic'
+  "password-store": "gnome-libsecret"
+}
