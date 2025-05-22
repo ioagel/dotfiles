@@ -91,6 +91,9 @@ done
 
 # Create required directories user directories
 user_dirs=(
+    "${HOME}/.vscode"
+    "${HOME}/.cursor"
+    "${HOME}/.windsurf"
     "${CONFIG_DIR}/Code/User"
     "${CONFIG_DIR}/Cursor/User"
     "${CONFIG_DIR}/Windsurf/User"
@@ -279,6 +282,8 @@ log "Setting up VS Code and related editor settings..."
 # Create symlinks (overwrite if they exist and are not already correct)
 ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"
 ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Windsurf/User/settings.json"
+ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.cursor/argv.json"
+ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.windsurf/argv.json"
 # Build the VS Code settings
 if command -v build-vscode-settings &>/dev/null; then
     log "Running build-vscode-settings..."

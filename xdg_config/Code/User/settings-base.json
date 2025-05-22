@@ -26,6 +26,8 @@
   "editor.cursorSurroundingLines": 8,
   "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
   "editor.linkedEditing": true,
+  "telemetry.enableCrashReporter": false,
+  "telemetry.telemetryLevel": "off",
   "git.confirmSync": false,
   "git.autofetch": true,
   "git.openRepositoryInParentFolders": "always",
