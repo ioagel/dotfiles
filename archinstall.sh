@@ -434,6 +434,54 @@ create_partitions() {
     success "Partitions created and mounted successfully"
 }
 
+# Function to detect CPU vendor
+detect_cpu_vendor() {
+    if grep -q "vendor_id.*AMD" /proc/cpuinfo; then
+        echo "amd"
+    elif grep -q "vendor_id.*Intel" /proc/cpuinfo; then
+        echo "intel"
+    else
+        echo "vm"
+    fi
+}
+
+# Function to perform basic system installation
+install_base_system() {
+    info "Starting basic system installation..."
+
+    # Sync package database
+    info "Syncing package database..."
+    pacman -Syy
+
+    # Setup reflector
+    info "Setting up reflector..."
+    reflector --protocol http --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+
+    # Detect CPU vendor and set microcode package
+    CPU_VENDOR=$(detect_cpu_vendor)
+    case $CPU_VENDOR in
+    "amd")
+        MICROCODE="amd-ucode"
+        ;;
+    "intel")
+        MICROCODE="intel-ucode"
+        ;;
+    *)
+        MICROCODE=""
+        ;;
+    esac
+
+    # Install base system
+    info "Installing base system..."
+    pacstrap /mnt base base-devel linux linux-headers linux-lts linux-lts-headers linux-firmware $MICROCODE btrfs-progs grub efibootmgr neovim networkmanager gvfs exfatprogs dosfstools e2fsprogs man-db man-pages texinfo openssh git reflector wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft mkinitcpio
+
+    # Generate fstab
+    info "Generating fstab..."
+    genfstab -U /mnt >>/mnt/etc/fstab
+
+    success "Basic system installation completed"
+}
+
 # Main script execution starts here
 # (We will add more functions and calls below)
 
@@ -464,3 +512,4 @@ download_dotfiles
 configure_encryption   # Call the encryption configuration function
 select_partition_disks # Select disks for partitioning
 create_partitions      # Create the partitions
+install_base_system    # Install the base system
