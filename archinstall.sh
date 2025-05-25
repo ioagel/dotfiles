@@ -7,6 +7,21 @@ set -eo pipefail
 TIMEZONE="Europe/Athens"
 KEYMAP="us"
 
+# Function to clean up any existing LUKS containers and mounts
+cleanup() {
+    info "Cleaning up any existing LUKS containers and mounts..."
+
+    # Unmount any mounted filesystems
+    umount -R /mnt 2>/dev/null || true
+
+    # Close any open LUKS containers
+    for mapper in /dev/mapper/crypt*; do
+        if [ -e "$mapper" ]; then
+            cryptsetup close "${mapper##*/}" 2>/dev/null || true
+        fi
+    done
+}
+
 while getopts ":d:" OPT; do
     case ${OPT} in
     d) TARGET_DISK="${OPTARG}" ;;
@@ -237,17 +252,6 @@ prepare_disk() {
         fi
     done
 
-    # Close any open LUKS containers
-    info "Closing any open LUKS containers..."
-    for mapper in /dev/mapper/crypt*; do
-        if [ -e "$mapper" ]; then
-            cryptsetup close "${mapper##*/}" 2>/dev/null || true
-        fi
-    done
-
-    # Force close any remaining LUKS containers
-    dmsetup remove_all --force 2>/dev/null || true
-
     # Clear any existing partition table and create new GPT
     info "Creating new GPT partition table..."
     sgdisk --zap-all "$disk"
@@ -284,6 +288,76 @@ get_root_partition_size() {
     fi
 }
 
+# Function to create and mount Btrfs subvolumes
+setup_btrfs_subvolumes() {
+    local root_partition=$1
+    local mount_point=$2
+    local mount_opts
+    info "Setting up Btrfs subvolumes..."
+
+    mount_opts="noatime,ssd,compress=zstd,space_cache=v2,discard=async"
+
+    # Mount the root partition
+    mount -o "$mount_opts" "$root_partition" "$mount_point"
+
+    # Create subvolumes
+    btrfs subvolume create "$mount_point/@"
+    btrfs subvolume create "$mount_point/@home"
+    btrfs subvolume create "$mount_point/@cache"
+    btrfs subvolume create "$mount_point/@tmp"
+    btrfs subvolume create "$mount_point/@log"
+    btrfs subvolume create "$mount_point/@images"
+    btrfs subvolume create "$mount_point/@docker"
+    btrfs subvolume create "$mount_point/@snapshots"
+
+    # Unmount the root partition
+    umount "$mount_point"
+
+    # Mount the root subvolume
+    mount -o "$mount_opts,subvol=@" "$root_partition" "$mount_point"
+
+    # Create mount points for subvolumes
+    mkdir -p "$mount_point"/{home,var/cache,var/tmp,var/log,var/lib/libvirt/images,var/lib/docker,.snapshots}
+
+    # Mount all other subvolumes with proper options
+    mount -o "$mount_opts,subvol=@home" "$root_partition" "$mount_point/home"
+    mount -o "$mount_opts,subvol=@cache" "$root_partition" "$mount_point/var/cache"
+    mount -o "$mount_opts,subvol=@tmp" "$root_partition" "$mount_point/var/tmp"
+    mount -o "$mount_opts,subvol=@log" "$root_partition" "$mount_point/var/log"
+    mount -o "$mount_opts,subvol=@images" "$root_partition" "$mount_point/var/lib/libvirt/images"
+    mount -o "$mount_opts,subvol=@docker" "$root_partition" "$mount_point/var/lib/docker"
+    mount -o "$mount_opts,subvol=@snapshots" "$root_partition" "$mount_point/.snapshots"
+
+    # Set proper permissions for /var/tmp
+    chmod 1777 "$mount_point/var/tmp"
+
+    success "Btrfs subvolumes created and mounted successfully"
+}
+
+# Function to mount EFI and boot partitions
+mount_efi_boot() {
+    local efi_partition=$1
+    local boot_partition=$2
+    local mount_point=$3
+    info "Mounting EFI and boot partitions..."
+
+    # Create mount points
+    mkdir -p "$mount_point/efi"
+    if [ -n "$boot_partition" ]; then
+        mkdir -p "$mount_point/boot"
+    fi
+
+    # Mount EFI partition
+    mount "$efi_partition" "$mount_point/efi"
+
+    # Mount boot partition if it exists
+    if [ -n "$boot_partition" ]; then
+        mount "$boot_partition" "$mount_point/boot"
+    fi
+
+    success "EFI and boot partitions mounted successfully"
+}
+
 # Function to create partitions
 create_partitions() {
     info "Creating partitions..."
@@ -306,6 +380,9 @@ create_partitions() {
         info "Creating encrypted partition on $ROOT_DISK"
         parted "$ROOT_DISK" mkpart primary btrfs 1MiB "$ROOT_SIZE"
 
+        # Force kernel to reread partition table
+        partprobe "$ROOT_DISK"
+
         # Set up encryption
         info "Setting up encryption..."
         # Wipe any existing filesystem signatures
@@ -319,6 +396,12 @@ create_partitions() {
         mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
         mkfs.ext4 -F -L boot "${EFI_BOOT_DISK}2"
         mkfs.btrfs -f -L root /dev/mapper/cryptroot
+
+        # Create and mount Btrfs subvolumes
+        setup_btrfs_subvolumes "/dev/mapper/cryptroot" "/mnt"
+
+        # Mount EFI and boot partitions
+        mount_efi_boot "${EFI_BOOT_DISK}1" "${EFI_BOOT_DISK}2" "/mnt"
     else
         # Prepare single disk
         prepare_disk "$EFI_BOOT_DISK"
@@ -333,13 +416,22 @@ create_partitions() {
 
         parted "$EFI_BOOT_DISK" mkpart primary btrfs 1024MiB "$ROOT_SIZE"
 
+        # Force kernel to reread partition table
+        partprobe "$EFI_BOOT_DISK"
+
         # Format partitions with force flag
         info "Formatting partitions..."
         mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
         mkfs.btrfs -f -L root "${EFI_BOOT_DISK}2"
+
+        # Create and mount Btrfs subvolumes
+        setup_btrfs_subvolumes "${EFI_BOOT_DISK}2" "/mnt"
+
+        # Mount EFI partition
+        mount_efi_boot "${EFI_BOOT_DISK}1" "" "/mnt"
     fi
 
-    success "Partitions created successfully"
+    success "Partitions created and mounted successfully"
 }
 
 # Main script execution starts here
@@ -352,6 +444,9 @@ clear
 check_root
 check_uefi # Call the UEFI check function
 check_and_install_deps
+
+# Clean up any existing state
+cleanup
 
 info "Initial checks passed. Starting Arch Linux installation..."
 
