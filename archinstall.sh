@@ -540,7 +540,8 @@ run_ansible_playbook() {
     arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \
         ansible-galaxy install -r requirements.yml && \
         ansible-playbook -i inventory/localhost.yml playbooks/01-base.yml -e hostname=$SYSTEM_HOSTNAME && \
-        ansible-playbook -i inventory/localhost.yml playbooks/02-users.yml -e \"user_full_name='$USER_FULL_NAME'\" -e user_password='$USER_PASSWORD'"
+        ansible-playbook -i inventory/localhost.yml playbooks/02-users.yml -e \"user_full_name='$USER_FULL_NAME'\" -e user_password='$USER_PASSWORD' && \
+        ansible-playbook -i inventory/localhost.yml playbooks/03-packages.yml"
 
     success "Ansible playbooks completed"
 }

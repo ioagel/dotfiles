@@ -16,6 +16,7 @@
       - "rfkill" # wireless devices
       - "lp" # printer access
       - "adm" # system monitoring
+      - "input" # input devices
     shell: "/bin/bash"
     # These variables will be passed from the installation script
     user_full_name: "{{ user_full_name }}"

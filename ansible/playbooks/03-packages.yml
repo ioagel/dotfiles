@@ -1,0 +1,322 @@
+---
+- name: Install additional packages
+  hosts: localhost
+  become: true
+  vars:
+    pacman_packages:
+      - lshw
+      - bind
+      - ntfs-3g
+      - plocate
+      - smartmontools
+      - bash-completion
+      - stow
+      - tldr
+      - step-cli
+      - mkcert
+      - borg
+      - zip
+      - unzip
+      - 7zip
+      - i3-wm
+      - i3blocks
+      - i3lock
+      - xss-lock
+      - wezterm
+      - alacritty
+      - picom
+      - polybar
+      - rofi
+      - dunst
+      - pango
+      - ttf-cascadia-mono-nerd
+      - ttf-cascadia-code-nerd
+      - ttf-font-awesome
+      - ttf-jetbrains-mono-nerd
+      - noto-fonts
+      - noto-fonts-emoji
+      - noto-fonts-extra
+      - lxappearance
+      - thunar
+      - thunar-archive-plugin
+      - thunar-media-tags-plugin
+      - thunar-volman
+      - nautilus
+      - seahorse
+      - seahorse-nautilus
+      - sushi
+      - nautilus-share
+      - nautilus-image-converter
+      - yazi
+      - poppler
+      - ueberzugpp
+      - obsidian
+      - firefox
+      - arandr
+      - libnotify
+      - xorg-xkill
+      - xsettingsd
+      - polkit-gnome
+      - nitrogen
+      - feh
+      - xorg-xset
+      - numlockx
+      - openvpn
+      - network-manager-applet
+      - networkmanager-openvpn
+      - nm-connection-editor
+      - wireguard-tools
+      - solaar
+      - easyeffects
+      - calf
+      - lsp-plugins-lv2
+      - zam-plugins-lv2
+      - mda.lv2
+      - alsa-utils
+      - playerctl
+      - pavucontrol
+      - pipewire
+      - pipewire-alsa
+      - pipewire-jack
+      - pipewire-pulse
+      - gst-plugin-pipewire
+      - libpulse
+      - wireplumber
+      - sof-firmware
+      - imagemagick
+      - scrot
+      - flameshot
+      - jq
+      - python-pipx
+      - python-pip
+      - python-i3ipc
+      - bat
+      - maim
+      - xdotool
+      - xorg-xrandr
+      - docker
+      - docker-buildx
+      - pigz
+      - the_silver_searcher
+      - ripgrep
+      - gsettings-desktop-schemas
+      - sops
+      - fastfetch
+      - xcape
+      - gnome-calculator
+      - gnome-calendar
+      - gnome-text-editor
+      - gnome-boxes
+      - gnome-keyring
+      - hunspell
+      - hunspell-en_us
+      - hunspell-el
+      - geary
+      - xclip
+      - mpv
+      - xdg-desktop-portal
+      - xdg-desktop-portal-gtk
+      - xdg-utils
+      - xdg-user-dirs
+      - power-profiles-daemon
+      - wireless_tools
+      - iwd
+      - bluez
+      - bluez-utils
+      - blueman
+      - zsh
+      - zsh-completions
+      - fzf
+      - starship
+      - zoxide
+      - eza
+      - mise
+      - fd
+      - zellij
+      - lazygit
+      - cups
+      - cups-filters
+      - cups-pdf
+      - system-config-printer
+      - hplip
+      - virtualbox
+      - virtualbox-host-dkms
+      - virtualbox-guest-iso
+      - btop
+      - htop
+      - nvtop
+      - tree
+      - gum
+      - figlet
+      - sddm
+      - qt5-quickcontrols2
+      - qt5-graphicaleffects
+      - qt5-svg
+      - brightnessctl
+      - gtk4
+      - libadwaita
+      - fuse2
+      - flatpak
+      - imv
+      - ffmpegthumbnailer
+      - loupe
+      - xorg-xbacklight
+      - redshift
+      - avahi
+      - pacman-contrib
+      - libreoffice-fresh
+      - libreoffice-fresh-el
+
+    aur_packages:
+      - yaru-gtk-theme
+      - yaru-icon-theme
+      - google-chrome
+      - brave-bin
+      - neovim-remote
+      - visual-studio-code-bin
+      - cursor-extracted
+      - windsurf
+      - caffeine-ng
+      - lazydocker-bin
+      - 1password
+      - 1password-cli
+      - rofi-greenclip
+      - xkblayout-state-git
+      - synology-drive
+      - checkupdates-with-aur
+      - nautilus-open-any-terminal
+      - resvg
+      - vagrant
+
+  tasks:
+    - name: Enable Color in pacman.conf
+      ansible.builtin.lineinfile:
+        path: /etc/pacman.conf
+        regexp: "^#Color$"
+        line: "Color"
+
+    - name: Enable VerbosePkgLists in pacman.conf
+      ansible.builtin.lineinfile:
+        path: /etc/pacman.conf
+        regexp: "^#VerbosePkgLists$"
+        line: "VerbosePkgLists"
+
+    - name: "Uncomment multilib"
+      ansible.builtin.lineinfile:
+        path: /etc/pacman.conf
+        state: present
+        line: "[multilib]"
+        regexp: "^#\\[multilib\\]"
+        insertafter: "^#\\[multilib\\]"
+
+    - name: "Uncomment multilib (cont)"
+      ansible.builtin.lineinfile:
+        path: /etc/pacman.conf
+        state: present
+        line: "Include = /etc/pacman.d/mirrorlist"
+        insertafter: "^\\[multilib\\]"
+        regexp: "Include = /etc/pacman.d/mirrorlist"
+
+    - name: Add ILoveCandy to pacman.conf
+      ansible.builtin.lineinfile:
+        path: /etc/pacman.conf
+        regexp: "^#NoProgressBar$"
+        line: "ILoveCandy"
+
+    - name: Run reflector to generate initial mirrorlist
+      ansible.builtin.command:
+        cmd: reflector --protocol https --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+      args:
+        creates: /etc/pacman.d/mirrorlist
+
+    - name: Install additional packages
+      community.general.pacman:
+        name: "{{ pacman_packages }}"
+        state: present
+        update_cache: true
+
+    - name: Enable and start services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        daemon_reload: true
+        enabled: true
+      loop:
+        - NetworkManager
+        - sshd
+        - fstrim.timer
+        - reflector.timer
+        - docker
+        - bluetooth
+        - cups
+        - sddm
+        - avahi-daemon
+        - systemd-timesyncd
+        - power-profiles-daemon
+        - paccache.timer
+
+    - name: Add user to groups
+      ansible.builtin.user:
+        name: ioangel
+        groups: "{{ item }}"
+        append: true
+      loop:
+        - docker
+        - vboxusers
+
+    - name: Detect virtualization platform
+      ansible.builtin.command:
+        cmd: systemd-detect-virt -v
+      register: virt_platform
+      changed_when: false
+
+    - name: Install guest utilities based on platform
+      community.general.pacman:
+        name: "{{ item.name }}"
+        state: present
+      when: virt_platform.stdout == item.when
+      loop:
+        - { name: virtualbox-guest-utils, when: "oracle" }
+        - { name: qemu-guest-agent, when: "kvm" }
+        - { name: open-vm-tools, when: "vmware" }
+        - { name: hyperv, when: "microsoft" }
+
+    - name: Enable guest service based on platform
+      ansible.builtin.systemd_service:
+        name: "{{ item.name }}"
+        daemon_reload: true
+        enabled: true
+      when: virt_platform.stdout == item.when
+      loop:
+        - { name: vboxservice.service, when: "oracle" }
+        - { name: qemu-guest-agent.service, when: "kvm" }
+        - { name: vmtoolsd.service, when: "vmware" }
+        - { name: hv_fcopy_daemon.service, when: "microsoft" }
+        - { name: hv_kvp_daemon.service, when: "microsoft" }
+        - { name: hv_vss_daemon.service, when: "microsoft" }
+
+    - name: Ensure yay is installed (for AUR)
+      become: true
+      become_user: ioangel
+      block:
+        - name: Check if yay is installed
+          ansible.builtin.command: yay --version
+          register: yay_check
+          ignore_errors: true
+          changed_when: false
+        - name: Install yay from AUR if not present
+          when: yay_check.rc != 0
+          changed_when: true
+          ansible.builtin.shell: |
+            rm -rf /tmp/yay
+            cd /tmp
+            git clone https://aur.archlinux.org/yay.git
+            cd yay
+            makepkg -si --noconfirm
+
+    - name: Install AUR packages
+      become: true
+      become_user: ioangel
+      kewlfft.aur.aur:
+        name: "{{ aur_packages }}"
+        use: yay
+        state: present
