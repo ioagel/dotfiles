@@ -97,9 +97,9 @@ check_and_install_deps() {
 
 download_dotfiles() {
     # Check if dotfiles directory exists
-    if [ ! -d "$HOME/dotfiles" ]; then
+    if [ ! -d "$HOME/.dotfiles" ]; then
         info "Downloading dotfiles..."
-        git clone https://github.com/ioagel/dotfiles.git "$HOME/dotfiles"
+        git clone https://github.com/ioagel/dotfiles.git "$HOME/.dotfiles"
         success "Dotfiles downloaded successfully."
     fi
 }
@@ -473,13 +473,76 @@ install_base_system() {
 
     # Install base system
     info "Installing base system..."
-    pacstrap /mnt base base-devel linux linux-headers linux-lts linux-lts-headers linux-firmware $MICROCODE btrfs-progs grub efibootmgr neovim networkmanager gvfs exfatprogs dosfstools e2fsprogs man-db man-pages texinfo openssh git reflector wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft mkinitcpio
+    pacstrap /mnt base base-devel linux linux-headers linux-lts linux-lts-headers \
+        linux-firmware $MICROCODE btrfs-progs grub efibootmgr neovim networkmanager gvfs \
+        exfatprogs dosfstools e2fsprogs man-db man-pages texinfo openssh git reflector \
+        wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft mkinitcpio ansible \
+        rsync python-passlib
 
     # Generate fstab
     info "Generating fstab..."
     genfstab -U /mnt >>/mnt/etc/fstab
 
     success "Basic system installation completed"
+}
+
+# Function to collect system configuration
+collect_system_config() {
+    info "Collecting system configuration..."
+
+    # Get hostname
+    while true; do
+        SYSTEM_HOSTNAME=$(gum input --placeholder "Enter system hostname")
+        if [ -n "$SYSTEM_HOSTNAME" ]; then
+            break
+        fi
+        warning "Hostname cannot be empty. Please try again."
+    done
+
+    # Get user full name
+    while true; do
+        USER_FULL_NAME=$(gum input --placeholder "Enter your full name (e.g., 'John Smith')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        if [ -n "$USER_FULL_NAME" ]; then
+            break
+        fi
+        warning "Full name cannot be empty. Please try again."
+    done
+
+    # Get user password
+    while true; do
+        USER_PASSWORD=$(gum input --password --placeholder "Enter user password")
+        if [ -n "$USER_PASSWORD" ]; then
+            info "Please confirm the password:"
+            local confirm_password
+            confirm_password=$(gum input --password --placeholder "Confirm password")
+
+            if [ "$USER_PASSWORD" == "$confirm_password" ]; then
+                break
+            else
+                warning "Passwords do not match. Please try again."
+            fi
+        else
+            warning "Password cannot be empty. Please try again."
+        fi
+    done
+
+    success "System configuration collected"
+}
+
+# Function to run Ansible playbook in chroot
+run_ansible_playbook() {
+    info "Running Ansible playbooks in chroot..."
+
+    # Copy dotfiles to chroot using rsync
+    rsync -a --delete "$HOME/.dotfiles/" /mnt/root/.dotfiles/
+
+    # Run ansible-playbooks in chroot with variables
+    arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \
+        ansible-galaxy install -r requirements.yml && \
+        ansible-playbook -i inventory/localhost.yml playbooks/01-base.yml -e hostname=$SYSTEM_HOSTNAME && \
+        ansible-playbook -i inventory/localhost.yml playbooks/02-users.yml -e \"user_full_name='$USER_FULL_NAME'\" -e user_password='$USER_PASSWORD'"
+
+    success "Ansible playbooks completed"
 }
 
 # Main script execution starts here
@@ -504,12 +567,12 @@ timedatectl set-ntp true
 
 download_dotfiles
 
-# Select the disk to install Arch Linux on if not provided as an argument
-# if [ -z "$TARGET_DISK" ]; then
-#     select_disk
-# fi
+cd "$HOME/.dotfiles"
 
 configure_encryption   # Call the encryption configuration function
 select_partition_disks # Select disks for partitioning
 create_partitions      # Create the partitions
 install_base_system    # Install the base system
+
+collect_system_config # Collect system configuration
+run_ansible_playbook  # Run Ansible playbook in chroot
