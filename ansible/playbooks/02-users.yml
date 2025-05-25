@@ -1,0 +1,53 @@
+---
+- name: Configure users
+  hosts: localhost
+  become: true
+  vars:
+    username: "ioangel"
+    additional_groups:
+      - "wheel" # sudo access
+      - "storage" # removable storage devices
+      - "power" # power management
+      - "audio" # audio devices
+      - "video" # video devices
+      - "sys" # system devices and hardware
+      - "log" # system logs
+      - "network" # network configuration
+      - "rfkill" # wireless devices
+      - "lp" # printer access
+      - "adm" # system monitoring
+    shell: "/bin/bash"
+    # These variables will be passed from the installation script
+    user_full_name: "{{ user_full_name }}"
+    user_password: "{{ user_password }}"
+
+  tasks:
+    - name: Create primary group
+      ansible.builtin.group:
+        name: "{{ username }}"
+        state: present
+
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ username }}"
+        group: "{{ username }}"
+        groups: "{{ additional_groups }}"
+        shell: "{{ shell }}"
+        comment: "{{ user_full_name }}"
+        create_home: true
+        password: "{{ user_password | password_hash('sha512') }}"
+        state: present
+
+    - name: Set up sudoers for wheel group
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/10-wheel
+        content: "%wheel ALL=(ALL) ALL"
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
+
+    - name: Set up passwordless sudo for ioangel
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/11-{{ username }}
+        content: "{{ username }} ALL=(ALL:ALL) NOPASSWD: ALL"
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
