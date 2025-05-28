@@ -64,6 +64,7 @@
     cmd: systemd-detect-virt -v
   register: virt_platform
   changed_when: false
+  failed_when: false # Don't fail on exit code 1 (expected for bare metal)
 
 - name: Install guest utilities based on platform
   community.general.pacman:
@@ -89,6 +90,24 @@
     - { name: hv_fcopy_daemon.service, when: "microsoft" }
     - { name: hv_kvp_daemon.service, when: "microsoft" }
     - { name: hv_vss_daemon.service, when: "microsoft" }
+
+- name: Install GPU packages for bare metal systems
+  community.general.pacman:
+    name: "{{ gpu_packages_baremetal }}"
+    state: present
+  when: virt_platform.stdout == "none"
+
+- name: Install GPU packages for KVM virtual machines
+  community.general.pacman:
+    name: "{{ gpu_packages_vm_kvm }}"
+    state: present
+  when: virt_platform.stdout == "kvm"
+
+- name: Install GPU packages for VirtualBox and VMware virtual machines
+  community.general.pacman:
+    name: "{{ gpu_packages_vm_vmware_compatible }}"
+    state: present
+  when: virt_platform.stdout in ["oracle", "vmware"]
 
 - name: Ensure yay is installed (for AUR)
   become: true

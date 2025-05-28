@@ -18,8 +18,11 @@ timedatectl set-ntp true
 
 ```sh
 lsblk
-# Look at your disks, and adjust (vda is usual in libvirt, in bare metal teh naming will be different)
-# NAME  MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS                              # loop0   7:0    0 846.7M  1 loop /run/archiso/airootfs                    # sr0    11:0    1   1.2G  0 rom  /run/archiso/bootmnt                     # vda   254:0    0    50G  0 disk
+# Look at your disks, and adjust (vda is usual in libvirt, in bare metal the naming will be different)
+# NAME  MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+# loop0   7:0    0 846.7M  1 loop /run/archiso/airootfs
+# sr0    11:0    1   1.2G  0 rom  /run/archiso/bootmnt
+# vda   254:0    0    50G  0 disk
 
 # Create disk partitions with: gdisk
 gdisk /dev/vda
@@ -33,7 +36,8 @@ gdisk /dev/vda
 lsblk
 # NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS                             
 # ...
-# vda    254:0    0    50G  0 disk                                        # ├─vda1 254:1    0     1G  0 part
+# vda    254:0    0    50G  0 disk
+# ├─vda1 254:1    0     1G  0 part
 # ├─vda2 254:1    0     1G  0 part
 # └─vda3 254:2    0    48G  0 part
 ```
@@ -42,18 +46,19 @@ lsblk
 
 ```sh
 # Setup (choose a good rememberable password)
-cryptsetup luksFormat /dev/vda3
+# cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --pbkdf argon2id /dev/vda3
+cryptsetup  luksFormat /dev/vda3
 # Open
-cryptsetup luksOpen /dev/vda3 main # 'main' or choose any other appropriate
+cryptsetup luksOpen /dev/vda3 cryptroot # 'cryptroot' or choose any other appropriate
 # Format (using btrfs)
-mkfs.btrfs /dev/mapper/main
+mkfs.btrfs /dev/mapper/cryptroot
 ```
 
 ### BTRFS Subvolume Setup
 
 ```sh
 # Mount our main partition and cd to it
-mount /dev/mapper/main /mnt
+mount /dev/mapper/cryptroot /mnt
 cd /mnt
 # Create the subvolumes
 btrfs su cr @
@@ -63,6 +68,7 @@ btrfs su cr @tmp
 btrfs su cr @log
 btrfs su cr @images
 btrfs su cr @docker
+btrfs su cr @snapshots
 # List the subvolumes (and verify them)
 btrfs su list /mnt
 # ID 256 gen 9 top level 5 path @
@@ -76,41 +82,54 @@ btrfs su list /mnt
 # Unmount /mnt
 umount /mnt
 # Mount our root '@' subvolume now to /mnt
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/mapper/main /mnt
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/mapper/cryptroot /mnt
 # Created the needed mount points for the rest of the subvolumes
-mkdir -p /mnt/{boot,efi,home,var/cache,var/tmp,var/log,var/lib/libvirt/images,var/lib/docker}
-# Set the proper permissions for '/var/tmp'
-chmod 1777 /mnt/var/tmp
+mkdir -p /mnt/{boot,efi,home,var/cache,var/tmp,var/log,var/lib/libvirt/images,var/lib/docker,.snapshots}
 
 # Mount the subvolumes
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@home /dev/mapper/main /mnt/home
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@cache /dev/mapper/main /mnt/var/cache
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@tmp /dev/mapper/main /mnt/var/tmp
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@log /dev/mapper/main /mnt/var/log
-mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@images /dev/mapper/main /mnt/var/lib/libvirt/images                              mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@docker /dev/mapper/main /mnt/var/lib/docker
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@home /dev/mapper/cryptroot /mnt/home
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@cache /dev/mapper/cryptroot /mnt/var/cache
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@tmp /dev/mapper/cryptroot /mnt/var/tmp
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@log /dev/mapper/cryptroot /mnt/var/log
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@images /dev/mapper/cryptroot /mnt/var/lib/libvirt/images
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@docker /dev/mapper/cryptroot /mnt/var/lib/docker
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots
+
+# Set the proper permissions for '/var/tmp'
+chmod 1777 /mnt/var/tmp
 
 # Format EFI
 mkfs.fat -F32 /dev/vda1 
 # Mount the EFI partition 
 mount /dev/vda1 /mnt/efi
 # Format and mount Boot
-mkfs.ext2 /dev/vda2
+mkfs.ext4 /dev/vda2
 mount /dev/vda2 /mnt/boot
 ```
 
 ## Basic System Install
 
-1. Setup `reflector` for fast mirrors:
+1. Syncronise the Package Database
+
+```sh
+pacman -Syy
+```
+
+2. Setup `reflector` for fast mirrors:
 
 ```sh
 # Greece causes me problems
-reflector -c Germany -a 12 --sort rate --save /etc/pacman.d/mirrorlist
+reflector --verbose --protocol https --latest 10 --sort rate --country 'Greece,Germany,Italy' --save /etc/pacman.d/mirrorlist
 ```
 
-2. Install essential packages into new filesystem and generate fstab:
+3. Install essential packages into new filesystem and generate fstab:
 
 ```sh
-pacstrap -i /mnt base linux linux-headers linux-firmware sudo neovim
+pacstrap /mnt base base-devel linux linux-headers linux-lts linux-lts-headers \
+    linux-firmware $MICROCODE btrfs-progs grub efibootmgr neovim networkmanager gvfs \
+    exfatprogs dosfstools e2fsprogs man-db man-pages texinfo openssh git reflector \
+    wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft mkinitcpio ansible \
+    rsync python-passlib
 genfstab -U -p /mnt >> /mnt/etc/fstab
 ```
 
@@ -128,26 +147,47 @@ arch-chroot /mnt
 ln -sf /usr/share/zoneinfo/Europe/Athens /etc/localtime # choose your timezone
 hwclock --systohc
 timedatectl set-ntp true
-nvim /etc/locale.gen # uncomment your locales, i.e. `en_US.UTF-8` and `el_GR.UTF-8`
+
+# nvim /etc/locale.gen # uncomment your locales, i.e. `en_US.UTF-8` and `el_GR.UTF-8`
+export locale="en_US.UTF-8"
+export locale2="el_GR.UTF-8"
+sed -i "s/^#\(${locale}\)/\1/" /etc/locale.gen
+sed -i "s/^#\(${locale2}\)/\1/" /etc/locale.gen
 locale-gen
-echo "LANG=en_US.UTF-8" > /etc/locale.conf # choose your locale
+echo "LANG=${locale}" > /etc/locale.conf
 ```
 
 3. Setup system hostname:
 
 ```sh
 echo "yourhostname" > /etc/hostname
-nvim /etc/hosts
- 127.0.0.1 localhost
- ::1       localhost
- 127.0.1.1 yourhostname
+echo -e "127.0.1.1  yourhostname.localdomain  yourhostname" >> /etc/hosts
+# nvim /etc/hosts
+# 127.0.0.1 localhost
+# ::1       localhost
+# 127.0.1.1 yourhostname
 ```
 
-4. Add new users and setup passwords:
+4. Set keyboard layout and terminal font
+
+```sh
+echo "KEYMAP=us" >> /etc/vconsole.conf
+echo "FONT=ter-v20n" >> /etc/vconsole.conf
+echo "KEYMAP_TOGGLE=gr" >> /etc/vconsole.conf
+```
+
+5. Set default editor
+
+```sh
+echo "EDITOR=nvim" >> /etc/environment
+echo "VISUAL=nvim" >> /etc/environment
+```
+
+6. Add new users and setup passwords:
 
 ```sh
 # Main user
-useradd -m -G wheel,storage,power,audio,video -s /bin/bash ioangel
+useradd -m -G wheel,storage,power,audio,video -s /bin/bash -c "Your name" ioangel
 # remote_admin user needed to manage machine from remote hosts
 useradd -m -s /bin/bash remote_admin
 passwd root
@@ -155,8 +195,8 @@ passwd ioangel
 # Do not add passwd for remote_admin, can login only through ssh keys
 
 # Add names to created users
-nvim /etc/passwd
- ioangel:x:1000:1000:Ioannis Angelakopoulos:/home/ioangel:/bin/bash        remote_admin:x:1001:1001:Remote Admin:/home/remote_admin:/bin/bash
+#nvim /etc/passwd
+# ioangel:x:1000:1000:Ioannis Angelakopoulos:/home/ioangel:/bin/bash        remote_admin:x:1001:1001:Remote Admin:/home/remote_admin:/bin/bash
 ```
 
 5. Setup `sudo`:
@@ -189,16 +229,11 @@ chattr -VR +C /var/lib/libvirt/images/
 
 ```sh
 # Choose either amd-ucode or intel-ucode, nothing for VMs
-pacman -S base-devel grub btrfs-progs grub-btrfs efibootmgr mtools exfatprogs ntfs-3g openssh git reflector amd-ucode bash-completion man-db man-pages plocate iptables-nft zip unzip htop btop tree dialog net-tools wget rsync openbsd-netcat bind lshw openvpn wireguard-tools stow tldr jq zellij step-cli eza borg networkmanager networkmanager-openvpn dhcpcd resolvconf
+pacman -S base-devel grub btrfs-progs grub-btrfs efibootmgr exfatprogs ntfs-3g openssh git reflector amd-ucode bash-completion man-db man-pages plocate iptables-nft zip unzip htop btop tree wget rsync bind lshw openvpn wireguard-tools stow tldr jq zellij step-cli eza borg networkmanager networkmanager-openvpn
 # lshw: Provides detailed information on the hardware of the machine
-# dialog: A tool to display dialog boxes from shell scripts
-# net-tools:  Configuration tools for Linux networking
-# openbsd-netcat: Netcat program. OpenBSD variant.
 # bind: I use dig utility for DNS resolution from this package
 
-systemctl enable dhcpcd
 systemctl enable NetworkManager
-systemctl enable systemd-resolved
 systemctl enable sshd
 systemctl enable fstrim.timer
 ```
@@ -264,15 +299,15 @@ reflector --country Greece,Germany \
 systemctl enable reflector.timer
 ```
 
-## Setup Booting
+## Setup Booting (everything encrypted including /boot with grub, only passphrase support)
 
 1. Edit the `mkinitcpio` file for encrypt:
 
 - `nvim /etc/mkinitcpio.conf` and search for HOOKS;
 - add `encrypt` (before filesystems hook);
-- add `atkbd` to the MODULES (enables external keyboard at device decryption prompt);
+- add `atkbd` to the MODULES (enables external keyboard at device decryption prompt) - OPTIONAL;
 - add `btrfs` to the MODULES and,
-- recreate the `mkinitcpio -p linux`
+- recreate the `mkinitcpio -P`
 
 2. Setup `grub`
 
@@ -281,4 +316,37 @@ systemctl enable reflector.timer
 - run blkid and obtain the UUID for the main partition: `blkid /dev/vda2` (check the partition name)
 - edit the grub config `nvim /etc/default/grub`:
   - `GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet cryptdevice=UUID=b47e666c-fec3-45c5-a2ed-bdb0abe25ac0:main root=/dev/mapper/main"`
+  - uncomment `GRUB_ENABLE_CRYPTODISK=y`
+- make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
+
+## Setup Booting with /boot unencrypted including grub, including keyfile (EFI and /boot in external USB)
+
+- Create the crypto keyfile
+
+```sh
+cd /efi
+dd bs=512 count=4 if=/dev/random of=crypto_keyfile.bin iflag=fullblock
+cryptsetup luksAddKey /dev/vda3 /efi/crypto_keyfile.bin
+# enter your encryption password when prompted
+# cryptsetup luksDump /dev/vda3
+# You should now see that LUKS Key Slots 0 and 1 are both occupied
+```
+
+- Edit `/etc/mkinitcpio.conf`
+
+```conf
+MODULES=(btrfs crc32c)
+FILES=(/efi/crypto_keyfile.bin)
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block **encrypt** filesystems fsck)
+```
+
+run: `mkinitcpio -P`
+
+- Setup `grub`
+
+- Run: `grub-install --target=x86_64-efi --efi-directory=/efi --removable --bootloader-id=GRUB`
+- run blkid and obtain the UUID for the main partition: `blkid /dev/vda3` (check the partition name)
+- edit the grub config `nvim /etc/default/grub`:
+  - `GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet cryptdevice=UUID=b47e666c-fec3-45c5-a2ed-bdb0abe25ac0:cryptroot root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/crypto_keyfile.bin"`
+  - add **luks** and **btrfs** in: `GRUB_PRELOAD_MODULES="part_gpt part_msdos luks btrfs"`
 - make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
