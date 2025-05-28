@@ -1,0 +1,30 @@
+---
+- name: Create primary group
+  ansible.builtin.group:
+    name: "{{ username }}"
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: "{{ username }}"
+    group: "{{ username }}"
+    groups: "{{ additional_groups }}"
+    shell: "{{ shell }}"
+    comment: "{{ user_full_name }}"
+    create_home: true
+    password: "{{ user_password | password_hash('sha512') }}"
+    state: present
+
+- name: Set up sudoers for wheel group
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/10-wheel
+    content: "%wheel ALL=(ALL) ALL"
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Set up passwordless sudo for user
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/11-{{ username }}
+    content: "{{ username }} ALL=(ALL:ALL) NOPASSWD: ALL"
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s

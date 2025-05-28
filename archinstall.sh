@@ -491,26 +491,17 @@ collect_system_config() {
     info "Collecting system configuration..."
 
     # Get hostname
-    while true; do
-        SYSTEM_HOSTNAME=$(gum input --placeholder "Enter system hostname")
-        if [ -n "$SYSTEM_HOSTNAME" ]; then
-            break
-        fi
-        warning "Hostname cannot be empty. Please try again."
-    done
+    SYSTEM_HOSTNAME=$(gum input --placeholder "Enter system hostname (default: archlinux)")
+
+    # Get username
+    USER_NAME=$(gum input --placeholder "Enter username (default: ioangel)")
 
     # Get user full name
-    while true; do
-        USER_FULL_NAME=$(gum input --placeholder "Enter your full name (e.g., 'John Smith')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-        if [ -n "$USER_FULL_NAME" ]; then
-            break
-        fi
-        warning "Full name cannot be empty. Please try again."
-    done
+    USER_FULL_NAME=$(gum input --placeholder "Enter your full name (default: Ioannis Angelakopoulos)" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
-    # Get user password
+    # Get user password (required)
     while true; do
-        USER_PASSWORD=$(gum input --password --placeholder "Enter user password")
+        USER_PASSWORD=$(gum input --password --placeholder "Enter user password (required)")
         if [ -n "$USER_PASSWORD" ]; then
             info "Please confirm the password:"
             local confirm_password
@@ -531,19 +522,25 @@ collect_system_config() {
 
 # Function to run Ansible playbook in chroot
 run_ansible_playbook() {
-    info "Running Ansible playbooks in chroot..."
+    info "Running Ansible playbook in chroot..."
 
     # Copy dotfiles to chroot using rsync
     rsync -a --delete "$HOME/.dotfiles/" /mnt/root/.dotfiles/
 
-    # Run ansible-playbooks in chroot with variables
+    # Build ansible-playbook command with conditional variables
+    local ansible_cmd="ansible-playbook main.yml -e user_password='$USER_PASSWORD'"
+
+    # Add optional variables only if they are set
+    [ -n "$SYSTEM_HOSTNAME" ] && ansible_cmd="$ansible_cmd -e hostname='$SYSTEM_HOSTNAME'"
+    [ -n "$USER_NAME" ] && ansible_cmd="$ansible_cmd -e username='$USER_NAME'"
+    [ -n "$USER_FULL_NAME" ] && ansible_cmd="$ansible_cmd -e \"user_full_name='$USER_FULL_NAME'\""
+
+    # Run ansible playbook in chroot
     arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \
         ansible-galaxy install -r requirements.yml && \
-        ansible-playbook -i inventory/localhost.yml playbooks/01-base.yml -e hostname=$SYSTEM_HOSTNAME && \
-        ansible-playbook -i inventory/localhost.yml playbooks/02-users.yml -e \"user_full_name='$USER_FULL_NAME'\" -e user_password='$USER_PASSWORD' && \
-        ansible-playbook -i inventory/localhost.yml playbooks/03-packages.yml"
+        $ansible_cmd"
 
-    success "Ansible playbooks completed"
+    success "Ansible playbook completed"
 }
 
 # Main script execution starts here
@@ -570,10 +567,11 @@ download_dotfiles
 
 cd "$HOME/.dotfiles"
 
-configure_encryption   # Call the encryption configuration function
+collect_system_config # Collect system configuration
+configure_encryption  # Call the encryption configuration function
+
 select_partition_disks # Select disks for partitioning
 create_partitions      # Create the partitions
 install_base_system    # Install the base system
 
-collect_system_config # Collect system configuration
-run_ansible_playbook  # Run Ansible playbook in chroot
+run_ansible_playbook # Run Ansible playbook in chroot
