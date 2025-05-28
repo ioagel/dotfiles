@@ -3,11 +3,35 @@
   hosts: localhost
   become: true
   vars:
+    # Provided by archinstall.sh (can be overridden by -e)
     username: "ioangel"
     hostname: "archlinux"
     user_full_name: "Ioannis Angelakopoulos"
-    user_password: "{{ user_password }}"
+    user_password: ""
+    enable_encryption: false
+    encrypted_device: ""
+    encryption_password: ""
+  pre_tasks:
+    - name: Validate required variables
+      ansible.builtin.assert:
+        that:
+          - user_password is defined
+          - user_password | length > 0
+        fail_msg: "user_password is required and cannot be empty"
+        success_msg: "user_password validation passed"
+
+    - name: Validate encryption variables when encryption is enabled
+      ansible.builtin.assert:
+        that:
+          - encrypted_device is defined
+          - encrypted_device | length > 0
+          - encryption_password is defined
+          - encryption_password | length > 0
+        fail_msg: "When enable_encryption is true, both encrypted_device and encryption_password are required and cannot be empty"
+        success_msg: "Encryption variables validation passed"
+      when: enable_encryption
   roles:
     - system
+    - boot
     - users
     - packages

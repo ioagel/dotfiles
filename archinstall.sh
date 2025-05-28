@@ -474,10 +474,10 @@ install_base_system() {
     # Install base system
     info "Installing base system..."
     pacstrap /mnt base base-devel linux linux-headers linux-lts linux-lts-headers \
-        linux-firmware $MICROCODE btrfs-progs grub efibootmgr neovim networkmanager gvfs \
-        exfatprogs dosfstools e2fsprogs man-db man-pages texinfo openssh git reflector \
-        wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft mkinitcpio ansible \
-        rsync python-passlib
+        linux-firmware $MICROCODE btrfs-progs grub grub-btrfs snapper snap-pac efibootmgr \
+        neovim networkmanager gvfs exfatprogs dosfstools e2fsprogs man-db man-pages texinfo \
+        openssh git reflector wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft \
+        mkinitcpio ansible rsync python-passlib
 
     # Generate fstab
     info "Generating fstab..."
@@ -534,6 +534,20 @@ run_ansible_playbook() {
     [ -n "$SYSTEM_HOSTNAME" ] && ansible_cmd="$ansible_cmd -e hostname='$SYSTEM_HOSTNAME'"
     [ -n "$USER_NAME" ] && ansible_cmd="$ansible_cmd -e username='$USER_NAME'"
     [ -n "$USER_FULL_NAME" ] && ansible_cmd="$ansible_cmd -e \"user_full_name='$USER_FULL_NAME'\""
+
+    # Add encryption variables for boot role
+    # We need to use the JSON format for the boolean variables because Ansible
+    # doesn't support boolean values in the command line
+    if [ "$ENABLE_ENCRYPTION" = true ]; then
+        ansible_cmd="$ansible_cmd -e '{\"enable_encryption\": true}'"
+        ansible_cmd="$ansible_cmd -e encrypted_device='${ROOT_DISK}1'"
+        ansible_cmd="$ansible_cmd -e encryption_password='$ENCRYPTION_PASSWORD'"
+    else
+        ansible_cmd="$ansible_cmd -e '{\"enable_encryption\": false}'"
+    fi
+
+    # ansible cmd only for testing, bypassing the gum choices
+    # ansible_cmd="ansible-playbook main.yml -e user_password='thrylos' -e '{\"enable_encryption\": true}'" -e encrypted_device='/dev/vda1' -e encryption_password='thrylos'"
 
     # Run ansible playbook in chroot
     arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \

@@ -14,6 +14,12 @@ pacman_packages:
   - zip
   - unzip
   - 7zip
+  - xorg-server
+  - xorg-xinit
+  - xorg-xauth
+  - xorg-xkill
+  - xorg-xset
+  - mesa
   - i3-wm
   - i3blocks
   - i3lock
@@ -50,12 +56,10 @@ pacman_packages:
   - firefox
   - arandr
   - libnotify
-  - xorg-xkill
   - xsettingsd
   - polkit-gnome
   - nitrogen
   - feh
-  - xorg-xset
   - numlockx
   - openvpn
   - network-manager-applet
@@ -139,7 +143,6 @@ pacman_packages:
   - virtualbox-guest-iso
   - btop
   - htop
-  - nvtop
   - tree
   - gum
   - figlet
@@ -169,6 +172,24 @@ pacman_packages:
   - gvfs-dnssd
   - gvfs-wsdd
 
+# GPU packages for bare metal systems (AMD RX 580 and similar)
+gpu_packages_baremetal:
+  - xf86-video-amdgpu
+  - vulkan-radeon
+  - lib32-mesa
+  - lib32-vulkan-radeon
+  - corectrl
+  - nvtop
+
+# GPU packages for KVM/QEMU virtual machines
+gpu_packages_vm_kvm:
+  - xf86-video-qxl
+
+# GPU packages for VirtualBox and VMware virtual machines
+# Both use the same xf86-video-vmware driver since VirtualBox's VMSVGA emulates VMware SVGA
+gpu_packages_vm_vmware_compatible:
+  - xf86-video-vmware
+
 aur_packages:
   - yaru-gtk-theme
   - yaru-icon-theme
@@ -189,6 +210,7 @@ aur_packages:
   - nautilus-open-any-terminal
   - resvg
   - vagrant
+  - update-grub
 
 services:
   - NetworkManager
@@ -200,6 +222,7 @@ services:
   - cups
   - sddm
   - avahi-daemon
+  - systemd-timesyncd
   - power-profiles-daemon
   - paccache.timer
 

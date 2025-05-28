@@ -1,0 +1,182 @@
+---
+- name: Generate encryption keyfile
+  ansible.builtin.shell: |
+    set -o pipefail
+    dd bs=512 count=4 if=/dev/random of=/efi/crypto_keyfile.bin iflag=fullblock
+    chmod 600 /efi/crypto_keyfile.bin
+  args:
+    executable: /bin/bash
+    creates: /efi/crypto_keyfile.bin
+  when: enable_encryption
+
+- name: Get UUID of encrypted device
+  ansible.builtin.shell: |
+    set -o pipefail
+    blkid -s UUID -o value {{ encrypted_device }}
+  args:
+    executable: /bin/bash
+  register: encrypted_device_uuid
+  when: enable_encryption
+  changed_when: false
+
+- name: Add keyfile to LUKS
+  ansible.builtin.shell: |
+    set -o pipefail
+    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/crypto_keyfile.bin
+  args:
+    executable: /bin/bash
+  when: enable_encryption
+  changed_when: true
+
+- name: Configure mkinitcpio.conf for encryption
+  ansible.builtin.lineinfile:
+    path: /etc/mkinitcpio.conf
+    regexp: "^HOOKS="
+    line: "HOOKS=({{ mkinitcpio_hooks_encrypted }})"
+    backup: true
+  when: enable_encryption
+
+- name: Configure mkinitcpio.conf for non-encryption
+  ansible.builtin.lineinfile:
+    path: /etc/mkinitcpio.conf
+    regexp: "^HOOKS="
+    line: "HOOKS=({{ mkinitcpio_hooks_normal }})"
+    backup: true
+  when: not enable_encryption
+
+- name: Configure mkinitcpio MODULES
+  ansible.builtin.lineinfile:
+    path: /etc/mkinitcpio.conf
+    regexp: "^MODULES="
+    line: "MODULES=({{ mkinitcpio_modules | join(' ') }})"
+    backup: true
+
+- name: Set mkinitcpio FILES for encryption
+  ansible.builtin.set_fact:
+    mkinitcpio_files_final: "{{ mkinitcpio_files + ['/efi/crypto_keyfile.bin'] }}"
+  when: enable_encryption
+
+- name: Set mkinitcpio FILES for non-encryption
+  ansible.builtin.set_fact:
+    mkinitcpio_files_final: "{{ mkinitcpio_files }}"
+  when: not enable_encryption
+
+- name: Configure mkinitcpio FILES
+  ansible.builtin.lineinfile:
+    path: /etc/mkinitcpio.conf
+    regexp: "^FILES="
+    line: "FILES=({{ mkinitcpio_files_final | join(' ') }})"
+    backup: true
+
+- name: Regenerate initramfs
+  ansible.builtin.shell: |
+    set -o pipefail
+    mkinitcpio -P
+  args:
+    executable: /bin/bash
+    chdir: /
+  environment:
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  changed_when: true
+
+- name: Configure GRUB timeout
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_TIMEOUT="
+    line: "GRUB_TIMEOUT={{ grub_timeout }}"
+    backup: true
+
+- name: Configure GRUB default entry
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_DEFAULT="
+    line: "GRUB_DEFAULT={{ grub_default }}"
+    backup: true
+
+- name: Configure GRUB submenu setting
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^#?GRUB_DISABLE_SUBMENU="
+    line: "GRUB_DISABLE_SUBMENU={{ grub_disable_submenu | lower }}"
+    backup: true
+
+- name: Gather hardware facts
+  ansible.builtin.setup:
+    gather_subset:
+      - hardware
+
+# AMD Polaris GPU workarounds for scheduler spam (amdgpu.reset_method=0 amdgpu.runpm=0) on linux 6.12+
+- name: Check for AMD Polaris GPU
+  ansible.builtin.shell: |
+    set -o pipefail
+    lspci -nn | grep -E "1002:(67df|6fdf|6798|6818|6819)" || true
+  register: polaris_gpu_check
+  changed_when: false
+
+- name: Set Polaris GPU detection fact
+  ansible.builtin.set_fact:
+    has_polaris_gpu: "{{ polaris_gpu_check.stdout | length > 0 }}"
+
+- name: Build GRUB command line defaults
+  ansible.builtin.set_fact:
+    grub_cmdline_final: >-
+      {{ grub_cmdline_linux_default }}{{
+      has_polaris_gpu | ternary(' amdgpu.reset_method=0 amdgpu.runpm=0', '') }}
+
+- name: Display detected GPU information
+  ansible.builtin.debug:
+    msg: "AMD Polaris GPU detected: {{ has_polaris_gpu }}"
+  when: has_polaris_gpu
+
+- name: Configure GRUB command line defaults
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_CMDLINE_LINUX_DEFAULT="
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_cmdline_final }}"'
+    backup: true
+
+- name: Configure GRUB preload modules
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_PRELOAD_MODULES="
+    line: 'GRUB_PRELOAD_MODULES="{{ grub_preload_modules }}"'
+    backup: true
+
+- name: Configure GRUB for encryption with UUID
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_CMDLINE_LINUX="
+    line: >-
+      GRUB_CMDLINE_LINUX="cryptdevice=UUID={{ encrypted_device_uuid.stdout }}:cryptroot
+      root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/crypto_keyfile.bin"
+    backup: true
+  when: enable_encryption
+
+- name: Configure GRUB for non-encryption
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^GRUB_CMDLINE_LINUX="
+    line: 'GRUB_CMDLINE_LINUX=""'
+    backup: true
+  when: not enable_encryption
+
+- name: Enable GRUB OS prober
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^#?GRUB_DISABLE_OS_PROBER="
+    line: "GRUB_DISABLE_OS_PROBER=false"
+    backup: true
+
+- name: Install GRUB to EFI (removable for encrypted systems)
+  ansible.builtin.command: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --removable
+  changed_when: true
+  when: enable_encryption
+
+- name: Install GRUB to EFI (standard for non-encrypted systems)
+  ansible.builtin.command: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=arch
+  changed_when: true
+  when: not enable_encryption
+
+- name: Generate GRUB configuration
+  ansible.builtin.command: grub-mkconfig -o /boot/grub/grub.cfg
+  changed_when: true
