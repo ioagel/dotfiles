@@ -1,0 +1,123 @@
+---
+- name: Enable Color in pacman.conf
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    regexp: "^#Color$"
+    line: "Color"
+
+- name: Enable VerbosePkgLists in pacman.conf
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    regexp: "^#VerbosePkgLists$"
+    line: "VerbosePkgLists"
+
+- name: "Uncomment multilib"
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    state: present
+    line: "[multilib]"
+    regexp: "^#\\[multilib\\]"
+    insertafter: "^#\\[multilib\\]"
+
+- name: "Uncomment multilib (cont)"
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    state: present
+    line: "Include = /etc/pacman.d/mirrorlist"
+    insertafter: "^\\[multilib\\]"
+    regexp: "Include = /etc/pacman.d/mirrorlist"
+
+- name: Add ILoveCandy to pacman.conf
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    regexp: "^#NoProgressBar$"
+    line: "ILoveCandy"
+
+- name: Run reflector to generate initial mirrorlist
+  ansible.builtin.command:
+    cmd: reflector --protocol https --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+  args:
+    creates: /etc/pacman.d/mirrorlist
+
+- name: Install additional packages
+  community.general.pacman:
+    name: "{{ pacman_packages }}"
+    state: present
+    update_cache: true
+
+- name: Enable and start services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    daemon_reload: true
+    enabled: true
+  loop: "{{ services }}"
+
+- name: Add user to groups
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: "{{ item }}"
+    append: true
+  loop: "{{ user_groups }}"
+
+- name: Detect virtualization platform
+  ansible.builtin.command:
+    cmd: systemd-detect-virt -v
+  register: virt_platform
+  changed_when: false
+
+- name: Install guest utilities based on platform
+  community.general.pacman:
+    name: "{{ item.name }}"
+    state: present
+  when: virt_platform.stdout == item.when
+  loop:
+    - { name: virtualbox-guest-utils, when: "oracle" }
+    - { name: qemu-guest-agent, when: "kvm" }
+    - { name: open-vm-tools, when: "vmware" }
+    - { name: hyperv, when: "microsoft" }
+
+- name: Enable guest service based on platform
+  ansible.builtin.systemd_service:
+    name: "{{ item.name }}"
+    daemon_reload: true
+    enabled: true
+  when: virt_platform.stdout == item.when
+  loop:
+    - { name: vboxservice.service, when: "oracle" }
+    - { name: qemu-guest-agent.service, when: "kvm" }
+    - { name: vmtoolsd.service, when: "vmware" }
+    - { name: hv_fcopy_daemon.service, when: "microsoft" }
+    - { name: hv_kvp_daemon.service, when: "microsoft" }
+    - { name: hv_vss_daemon.service, when: "microsoft" }
+
+- name: Ensure yay is installed (for AUR)
+  become: true
+  become_user: "{{ username }}"
+  block:
+    - name: Check if yay is installed
+      ansible.builtin.command: yay --version
+      register: yay_check
+      ignore_errors: true
+      changed_when: false
+    - name: Install yay from AUR if not present
+      when: yay_check.rc != 0
+      changed_when: true
+      retries: 3 # retry 3 times because sometimes it strangely fails
+      delay: 10
+      register: yay_install_result
+      until: yay_install_result.rc == 0
+      ansible.builtin.shell: |
+        set -e
+        rm -rf /tmp/yay
+        cd /tmp
+        git clone https://aur.archlinux.org/yay.git
+        cd yay
+        makepkg -si --noconfirm
+
+- name: Install AUR packages
+  become: true
+  become_user: "{{ username }}"
+  kewlfft.aur.aur:
+    name: "{{ aur_packages }}"
+    use: yay
+    state: present

@@ -1,0 +1,16 @@
+---
+# Username is now defined in the main playbook as a shared variable
+additional_groups:
+  - "wheel" # sudo access
+  - "storage" # removable storage devices
+  - "power" # power management
+  - "audio" # audio devices
+  - "video" # video devices
+  - "sys" # system devices and hardware
+  - "log" # system logs
+  - "network" # network configuration
+  - "rfkill" # wireless devices
+  - "lp" # printer access
+  - "adm" # system monitoring
+  - "input" # input devices
+shell: "/bin/bash"

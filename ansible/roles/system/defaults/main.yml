@@ -1,0 +1,7 @@
+---
+timezone: "Europe/Athens"
+locales:
+  - "en_US.UTF-8"
+  - "el_GR.UTF-8"
+default_locale: "en_US.UTF-8"
+console_font: "ter-v20n"

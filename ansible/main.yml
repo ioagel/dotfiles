@@ -1,0 +1,13 @@
+---
+- name: Configure Arch Linux system
+  hosts: localhost
+  become: true
+  vars:
+    username: "ioangel"
+    hostname: "archlinux"
+    user_full_name: "Ioannis Angelakopoulos"
+    user_password: "{{ user_password }}"
+  roles:
+    - system
+    - users
+    - packages

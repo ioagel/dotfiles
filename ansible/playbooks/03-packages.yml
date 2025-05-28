@@ -306,7 +306,12 @@
         - name: Install yay from AUR if not present
           when: yay_check.rc != 0
           changed_when: true
+          retries: 3 # retry 3 times because sometimes it strangely fails
+          delay: 10
+          register: yay_install_result
+          until: yay_install_result.rc == 0
           ansible.builtin.shell: |
+            set -e
             rm -rf /tmp/yay
             cd /tmp
             git clone https://aur.archlinux.org/yay.git

@@ -1,0 +1,112 @@
+---
+- name: Set timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+
+- name: Sync the hardware clock with the system time
+  ansible.builtin.command: hwclock --systohc
+  changed_when: false
+
+- name: Enable NTP
+  ansible.builtin.command: timedatectl set-ntp true
+  changed_when: false
+
+- name: Enable locales
+  ansible.builtin.replace:
+    path: /etc/locale.gen
+    regexp: "^#{{ item }} UTF-8"
+    replace: "{{ item }} UTF-8"
+  loop: "{{ locales }}"
+
+- name: Generate locale
+  ansible.builtin.command: locale-gen
+  changed_when: false
+
+- name: Create locale.conf and set default locale
+  ansible.builtin.copy:
+    dest: /etc/locale.conf
+    content: "LANG={{ default_locale }}"
+    mode: "0644"
+
+- name: Create vconsole.conf
+  ansible.builtin.copy:
+    dest: /etc/vconsole.conf
+    content: |
+      KEYMAP=us
+      KEYMAP_TOGGLE=gr
+      FONT={{ console_font }}
+    mode: "0644"
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Create hostname file
+  ansible.builtin.copy:
+    dest: /etc/hostname
+    content: "{{ hostname }}"
+    mode: "0644"
+
+- name: Add hostname to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^127.0.1.1"
+    line: "127.0.1.1 {{ hostname }}.localdomain {{ hostname }}"
+    state: present
+
+- name: Disable Copy On Write for libvirt images
+  ansible.builtin.shell: |
+    set -o pipefail
+    if ! lsattr -d /var/lib/libvirt/images | grep -q 'C'; then
+      chattr -R +C /var/lib/libvirt/images
+      echo "CoW disabled"
+    else
+      echo "CoW already disabled"
+    fi
+  args:
+    executable: /bin/bash
+  register: cow_result
+  changed_when: "'CoW already disabled' not in cow_result.stdout"
+
+- name: Set default editor
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^EDITOR="
+    line: "EDITOR=nvim"
+    state: present
+
+- name: Set default visual editor
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^VISUAL="
+    line: "VISUAL=nvim"
+    state: present
+
+- name: Use F1-F12 without Fn key
+  ansible.builtin.copy:
+    src: hid_apple.conf
+    dest: /etc/modprobe.d/hid_apple.conf
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Enable nested virtualization for AMD processors
+  ansible.builtin.copy:
+    src: kvm_amd.conf
+    dest: /etc/modprobe.d/kvm_amd.conf
+    mode: "0644"
+    owner: root
+    group: root
+  when: ansible_processor | select('match', '.*AMD.*') | list | length > 0
+
+- name: Enable nested virtualization for Intel processors
+  ansible.builtin.copy:
+    src: kvm_intel.conf
+    dest: /etc/modprobe.d/kvm_intel.conf
+    mode: "0644"
+    owner: root
+    group: root
+  when: ansible_processor | select('match', '.*Intel.*') | list | length > 0
