@@ -78,3 +78,10 @@
     mode: "0644"
     owner: root
     group: root
+
+- name: Set vm.swappiness to 10
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "10"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-vm.conf
