@@ -1,0 +1,80 @@
+---
+#### KVM/QEMU and libvirt ####
+# KVM/QEMU and libvirt packages
+kvm_packages:
+  - qemu-full # Full QEMU with all features
+  - libvirt # Virtualization API
+  - virt-install # Command line VM installation tool
+  - virt-manager # GUI for managing VMs
+  - virt-viewer # VNC/SPICE client for VMs
+  - edk2-ovmf # UEFI firmware for VMs
+  - swtpm # Software TPM emulator
+  - qemu-img # QEMU disk image utility
+  - guestfs-tools # Guest filesystem tools
+  - libosinfo # Operating system information database
+  - dnsmasq # DHCP/DNS for libvirt virtual networks (still needed)
+
+# Optional packages (can be removed if not needed)
+kvm_optional_packages:
+  - bridge-utils # Manual bridge management (NetworkManager handles this)
+  - openbsd-netcat # Network debugging utilities
+  - dmidecode # Hardware information for VMs
+
+kvm_aur_packages:
+  - virtio-win
+
+# Whether to install optional packages (set to false if using NetworkManager)
+install_optional_packages: false
+
+# Modular libvirt daemon services (new approach)
+libvirt_modular_services:
+  - virtqemud.service
+  - virtinterfaced.service
+  - virtnetworkd.service
+  - virtnodedevd.service
+  - virtnwfilterd.service
+  - virtsecretd.service
+  - virtstoraged.service
+
+# Socket services for modular daemons (all three types per driver)
+libvirt_socket_services:
+  - virtqemud.socket
+  - virtqemud-ro.socket
+  - virtqemud-admin.socket
+  - virtinterfaced.socket
+  - virtinterfaced-ro.socket
+  - virtinterfaced-admin.socket
+  - virtnetworkd.socket
+  - virtnetworkd-ro.socket
+  - virtnetworkd-admin.socket
+  - virtnodedevd.socket
+  - virtnodedevd-ro.socket
+  - virtnodedevd-admin.socket
+  - virtnwfilterd.socket
+  - virtnwfilterd-ro.socket
+  - virtnwfilterd-admin.socket
+  - virtsecretd.socket
+  - virtsecretd-ro.socket
+  - virtsecretd-admin.socket
+  - virtstoraged.socket
+  - virtstoraged-ro.socket
+  - virtstoraged-admin.socket
+
+# Groups to add user to for KVM access
+kvm_user_groups:
+  - libvirt
+  - kvm
+
+#### VirtualBox ####
+# Whether to install VirtualBox (alternative to KVM)
+install_virtualbox: true
+
+# VirtualBox packages
+virtualbox_packages:
+  - virtualbox
+  - virtualbox-host-dkms
+  - virtualbox-guest-iso
+
+# VirtualBox user groups
+virtualbox_user_groups:
+  - vboxusers

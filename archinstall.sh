@@ -547,7 +547,7 @@ run_ansible_playbook() {
     fi
 
     # ansible cmd only for testing, bypassing the gum choices
-    # ansible_cmd="ansible-playbook main.yml -e user_password='thrylos' -e '{\"enable_encryption\": true}'" -e encrypted_device='/dev/vda1' -e encryption_password='thrylos'"
+    # ansible_cmd="ansible-playbook main.yml -e user_password='thrylos' -e '{\"enable_encryption\": true}' -e encrypted_device='/dev/vda1' -e encryption_password='thrylos'"
 
     # Run ansible playbook in chroot
     arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \
