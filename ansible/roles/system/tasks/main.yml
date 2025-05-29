@@ -57,20 +57,6 @@
     line: "127.0.1.1 {{ hostname }}.localdomain {{ hostname }}"
     state: present
 
-- name: Disable Copy On Write for libvirt images
-  ansible.builtin.shell: |
-    set -o pipefail
-    if ! lsattr -d /var/lib/libvirt/images | grep -q 'C'; then
-      chattr -R +C /var/lib/libvirt/images
-      echo "CoW disabled"
-    else
-      echo "CoW already disabled"
-    fi
-  args:
-    executable: /bin/bash
-  register: cow_result
-  changed_when: "'CoW already disabled' not in cow_result.stdout"
-
 - name: Set default editor
   ansible.builtin.lineinfile:
     path: /etc/environment
@@ -92,21 +78,3 @@
     mode: "0644"
     owner: root
     group: root
-
-- name: Enable nested virtualization for AMD processors
-  ansible.builtin.copy:
-    src: kvm_amd.conf
-    dest: /etc/modprobe.d/kvm_amd.conf
-    mode: "0644"
-    owner: root
-    group: root
-  when: ansible_processor | select('match', '.*AMD.*') | list | length > 0
-
-- name: Enable nested virtualization for Intel processors
-  ansible.builtin.copy:
-    src: kvm_intel.conf
-    dest: /etc/modprobe.d/kvm_intel.conf
-    mode: "0644"
-    owner: root
-    group: root
-  when: ansible_processor | select('match', '.*Intel.*') | list | length > 0

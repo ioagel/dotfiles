@@ -138,9 +138,6 @@ pacman_packages:
   - cups-pdf
   - system-config-printer
   - hplip
-  - virtualbox
-  - virtualbox-host-dkms
-  - virtualbox-guest-iso
   - btop
   - htop
   - tree
@@ -228,4 +225,3 @@ services:
 
 user_groups:
   - docker
-  - vboxusers

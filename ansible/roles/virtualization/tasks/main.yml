@@ -1,0 +1,159 @@
+---
+#### KVM/QEMU and libvirt ####
+- name: Check if system supports KVM virtualization
+  ansible.builtin.command:
+    cmd: grep -E "(vmx|svm)" /proc/cpuinfo
+  register: kvm_support
+  changed_when: false
+  failed_when: false
+
+- name: Fail if KVM is not supported
+  ansible.builtin.fail:
+    msg: "This system does not support KVM virtualization (no vmx/svm in /proc/cpuinfo)"
+  when: kvm_support.rc != 0
+
+- name: Disable Copy On Write (btrfs) for libvirt images
+  ansible.builtin.shell: |
+    set -o pipefail
+    if ! lsattr -d /var/lib/libvirt/images | grep -q 'C'; then
+      chattr -R +C /var/lib/libvirt/images
+      echo "CoW disabled"
+    else
+      echo "CoW already disabled"
+    fi
+  args:
+    executable: /bin/bash
+  register: cow_result
+  changed_when: "'CoW already disabled' not in cow_result.stdout"
+
+- name: Install KVM and libvirt packages
+  community.general.pacman:
+    name: "{{ kvm_packages }}"
+    state: present
+    update_cache: true
+
+- name: Install optional KVM packages
+  community.general.pacman:
+    name: "{{ kvm_optional_packages }}"
+    state: present
+  when: install_optional_packages
+
+- name: Install AUR packages for KVM
+  kewlfft.aur.aur:
+    name: "{{ kvm_aur_packages }}"
+    state: present
+    use: yay
+  become: true
+  become_user: "{{ username }}"
+
+- name: Add user to KVM groups
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: "{{ item }}"
+    append: true
+  loop: "{{ kvm_user_groups }}"
+
+- name: Enable libvirt socket services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    daemon_reload: true
+    enabled: true
+  loop: "{{ libvirt_socket_services }}"
+
+- name: Enable libvirt modular services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    daemon_reload: true
+    enabled: true
+  loop: "{{ libvirt_modular_services }}"
+
+- name: Ensure libvirt group exists
+  ansible.builtin.group:
+    name: libvirt
+    state: present
+
+- name: Set LIBVIRT_DEFAULT_URI system-wide
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^LIBVIRT_DEFAULT_URI="
+    line: "LIBVIRT_DEFAULT_URI=qemu:///system"
+    state: present
+
+- name: Remove existing ACLs on libvirt images directory
+  ansible.builtin.command:
+    cmd: setfacl -R -b /var/lib/libvirt/images
+  changed_when: false
+  failed_when: false
+
+- name: Grant user recursive access to libvirt images directory
+  ansible.builtin.command:
+    cmd: "setfacl -R -m u:{{ username }}:rwX /var/lib/libvirt/images"
+  register: setfacl_recursive
+  changed_when: setfacl_recursive.rc == 0
+
+- name: Set default ACL for new files/directories in libvirt images
+  ansible.builtin.command:
+    cmd: "setfacl -m d:u:{{ username }}:rwx /var/lib/libvirt/images"
+  register: setfacl_default
+  changed_when: setfacl_default.rc == 0
+
+- name: Enable nested virtualization for AMD processors
+  ansible.builtin.copy:
+    src: kvm_amd.conf
+    dest: /etc/modprobe.d/kvm_amd.conf
+    mode: "0644"
+    owner: root
+    group: root
+  when: ansible_processor | select('match', '.*AMD.*') | list | length > 0
+
+- name: Enable nested virtualization for Intel processors
+  ansible.builtin.copy:
+    src: kvm_intel.conf
+    dest: /etc/modprobe.d/kvm_intel.conf
+    mode: "0644"
+    owner: root
+    group: root
+  when: ansible_processor | select('match', '.*Intel.*') | list | length > 0
+
+#### VirtualBox ####
+- name: Install VirtualBox packages
+  community.general.pacman:
+    name: "{{ virtualbox_packages }}"
+    state: present
+  when: install_virtualbox
+
+- name: Install VirtualBox Extension Pack
+  kewlfft.aur.aur:
+    name: virtualbox-ext-oracle
+    state: present
+    use: yay
+  become: true
+  become_user: "{{ username }}"
+  when: install_virtualbox
+
+- name: Add user to VirtualBox groups
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: "{{ item }}"
+    append: true
+  loop: "{{ virtualbox_user_groups }}"
+  when: install_virtualbox
+
+- name: Create VirtualBox configuration directory
+  ansible.builtin.file:
+    path: /etc/vbox
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when: install_virtualbox
+
+- name: Configure VirtualBox host-only networks
+  ansible.builtin.copy:
+    dest: /etc/vbox/networks.conf
+    content: |
+      * 192.168.30.0/24
+    mode: "0644"
+    owner: root
+    group: root
+  when: install_virtualbox
