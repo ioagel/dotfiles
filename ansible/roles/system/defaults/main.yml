@@ -5,3 +5,6 @@ locales:
   - "el_GR.UTF-8"
 default_locale: "en_US.UTF-8"
 console_font: "ter-v20n"
+
+# Btrfs swap subvolume mount options
+swap_mount_options: "noatime,subvol=@swap"

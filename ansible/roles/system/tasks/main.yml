@@ -79,9 +79,104 @@
     owner: root
     group: root
 
-- name: Set vm.swappiness to 10
+- name: Set adaptive vm.swappiness
   ansible.posix.sysctl:
     name: vm.swappiness
-    value: "10"
+    value: "{% if ansible_memtotal_mb >= 16384 %}15{% elif ansible_memtotal_mb >= 8192 %}10{% else %}5{% endif %}"
     state: present
     sysctl_file: /etc/sysctl.d/99-vm.conf
+
+# High memory systems (8GB+): Use zram
+- name: Configure zram for high memory systems
+  when: ansible_memtotal_mb >= 8192
+  block:
+    - name: Install zram-generator
+      community.general.pacman:
+        name: zram-generator
+        state: present
+
+    - name: Configure zram-generator
+      ansible.builtin.copy:
+        dest: /etc/systemd/zram-generator.conf
+        content: |
+          [zram0]
+          zram-size = {% if ansible_memtotal_mb >= 32768 %}ram / 8{% elif ansible_memtotal_mb >= 16384 %}ram / 4{% else %}ram / 2{% endif %}
+
+          compression-algorithm = zstd
+          swap-priority = 100
+          fs-type = swap
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Enable zram-generator for next boot
+      ansible.builtin.systemd:
+        name: systemd-zram-setup@zram0.service
+        enabled: true
+
+# Low memory systems (<8GB): Use Btrfs swap file
+- name: Configure swap file for low memory systems
+  when: ansible_memtotal_mb < 8192
+  block:
+    - name: Get Btrfs root filesystem UUID
+      ansible.builtin.command:
+        cmd: findmnt -n -o UUID /
+      register: btrfs_root_uuid
+      changed_when: false
+
+    - name: Get Btrfs root device path
+      ansible.builtin.command:
+        cmd: findmnt -n -o SOURCE /
+      register: btrfs_source
+      changed_when: false
+
+    - name: Extract base device path (remove subvolume notation)
+      ansible.builtin.set_fact:
+        btrfs_device: "{{ btrfs_source.stdout.split('[')[0] }}"
+
+    - name: Check if @swap subvolume already exists
+      ansible.builtin.command:
+        cmd: btrfs subvolume list /
+      register: existing_subvolumes
+      changed_when: false
+
+    - name: Create @swap subvolume (if missing)
+      ansible.builtin.shell: |
+        set -e
+        mount -o subvolid=5 {{ btrfs_device }} /mnt
+        btrfs subvolume create /mnt/@swap
+        umount /mnt
+      args:
+        creates: /mnt/@swap
+      when: existing_subvolumes.stdout.find('@swap') == -1
+
+    - name: Create /swap mount point
+      ansible.builtin.file:
+        path: /swap
+        state: directory
+        mode: "0755"
+
+    - name: Add @swap subvolume mount to fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "UUID={{ btrfs_root_uuid.stdout }} /swap btrfs {{ swap_mount_options }} 0 0"
+        state: present
+
+    - name: Mount @swap subvolume
+      ansible.posix.mount:
+        path: /swap
+        src: "UUID={{ btrfs_root_uuid.stdout }}"
+        fstype: btrfs
+        opts: "{{ swap_mount_options }}"
+        state: mounted
+
+    - name: Create swap file with Btrfs native command
+      ansible.builtin.command:
+        cmd: btrfs filesystem mkswapfile --size {{ ansible_memtotal_mb | int }}m --uuid clear /swap/swapfile
+        creates: /swap/swapfile
+
+    - name: Add swap file to fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "/swap/swapfile none swap defaults 0 0"
+        state: present
