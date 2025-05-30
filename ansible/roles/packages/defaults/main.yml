@@ -208,6 +208,7 @@ aur_packages:
   - resvg
   - vagrant
   - update-grub
+  - btrfs-desktop-notification
 
 services:
   - NetworkManager
