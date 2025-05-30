@@ -49,9 +49,8 @@
 - name: Add user to KVM groups
   ansible.builtin.user:
     name: "{{ username }}"
-    groups: "{{ item }}"
+    groups: "{{ kvm_user_groups }}"
     append: true
-  loop: "{{ kvm_user_groups }}"
 
 - name: Enable libvirt socket services
   ansible.builtin.systemd_service:
@@ -134,9 +133,8 @@
 - name: Add user to VirtualBox groups
   ansible.builtin.user:
     name: "{{ username }}"
-    groups: "{{ item }}"
+    groups: "{{ virtualbox_user_groups }}"
     append: true
-  loop: "{{ virtualbox_user_groups }}"
   when: install_virtualbox
 
 - name: Create VirtualBox configuration directory

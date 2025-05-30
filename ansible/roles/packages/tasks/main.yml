@@ -55,9 +55,8 @@
 - name: Add user to groups
   ansible.builtin.user:
     name: "{{ username }}"
-    groups: "{{ item }}"
+    groups: "{{ user_groups }}"
     append: true
-  loop: "{{ user_groups }}"
 
 - name: Detect virtualization platform
   ansible.builtin.command:
