@@ -24,7 +24,6 @@ This role configures the boot system for Arch Linux, including GRUB bootloader a
 - `grub_default`: Default GRUB entry (default: `0`) - First entry in main menu
 - `grub_disable_submenu`: Disable GRUB submenus (default: `true`) - Shows all kernels in main menu with regular `linux` kernel appearing first, `linux-lts` second
 - `grub_cmdline_linux_default`: Default kernel parameters (default: `"nowatchdog loglevel=3 quiet pcie_port_pm=off pcie_aspm.policy=performance"`) - Includes stability and hardware compatibility fixes for desktop/workstation use
-- `grub_preload_modules`: GRUB modules to preload (default: `"part_gpt part_msdos btrfs"`) - Same modules used for both encrypted and non-encrypted systems since `/boot` partition is unencrypted
 
 ### mkinitcpio Variables
 

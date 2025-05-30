@@ -9,6 +9,26 @@
     creates: /efi/crypto_keyfile.bin
   when: enable_encryption
 
+- name: Check if keyfile is already added to LUKS
+  ansible.builtin.shell: |
+    set -o pipefail
+    cryptsetup luksOpen --key-file /efi/crypto_keyfile.bin --test-passphrase {{ encrypted_device }}
+  args:
+    executable: /bin/bash
+  register: keyfile_test
+  failed_when: false
+  changed_when: false
+  when: enable_encryption
+
+- name: Add keyfile to LUKS
+  ansible.builtin.shell: |
+    set -o pipefail
+    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/crypto_keyfile.bin
+  args:
+    executable: /bin/bash
+  when: enable_encryption and keyfile_test.rc != 0
+  changed_when: true
+
 - name: Get UUID of encrypted device
   ansible.builtin.shell: |
     set -o pipefail
@@ -18,15 +38,6 @@
   register: encrypted_device_uuid
   when: enable_encryption
   changed_when: false
-
-- name: Add keyfile to LUKS
-  ansible.builtin.shell: |
-    set -o pipefail
-    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/crypto_keyfile.bin
-  args:
-    executable: /bin/bash
-  when: enable_encryption
-  changed_when: true
 
 - name: Configure mkinitcpio.conf for encryption
   ansible.builtin.lineinfile:
@@ -133,13 +144,6 @@
     path: /etc/default/grub
     regexp: "^GRUB_CMDLINE_LINUX_DEFAULT="
     line: 'GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_cmdline_final }}"'
-    backup: true
-
-- name: Configure GRUB preload modules
-  ansible.builtin.lineinfile:
-    path: /etc/default/grub
-    regexp: "^GRUB_PRELOAD_MODULES="
-    line: 'GRUB_PRELOAD_MODULES="{{ grub_preload_modules }}"'
     backup: true
 
 - name: Configure GRUB for encryption with UUID
