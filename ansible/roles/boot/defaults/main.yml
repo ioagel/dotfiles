@@ -9,8 +9,7 @@ grub_timeout: 5
 grub_default: 2 # Third entry (regular linux kernel when submenus are disabled)
 grub_disable_submenu: true # Show all kernels in main menu, regular linux appears third
 # PCIe power management disabled to fix Intel I225-V Ethernet disconnection issues
-grub_cmdline_linux_default: "nowatchdog loglevel=3 quiet pcie_port_pm=off pcie_aspm.policy=performance"
-grub_preload_modules: "part_gpt part_msdos btrfs"
+grub_cmdline_linux_default: "nowatchdog loglevel=3 pcie_port_pm=off pcie_aspm.policy=performance"
 
 # mkinitcpio configuration
 mkinitcpio_modules: ["btrfs", "crc32c"]

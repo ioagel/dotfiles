@@ -313,11 +313,11 @@ systemctl enable reflector.timer
 
 - Run: `grub-install --target=x86_64-efi --efi-directory=/efi --boot-directory=/boot --bootloader-id=arch`
 - Run: `grub-mkconfig -o /boot/grub/grub.cfg`
-- run blkid and obtain the UUID for the main partition: `blkid /dev/vda2` (check the partition name)
-- edit the grub config `nvim /etc/default/grub`:
+- run blkid and obtain the UUID for the main partition: `blkid /dev/vda2` (check the partition name)
+- edit the grub config `nvim /etc/default/grub`:
   - `GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet cryptdevice=UUID=b47e666c-fec3-45c5-a2ed-bdb0abe25ac0:main root=/dev/mapper/main"`
   - uncomment `GRUB_ENABLE_CRYPTODISK=y`
-- make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
+- make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
 
 ## Setup Booting with /boot unencrypted including grub, including keyfile (EFI and /boot in external USB)
 
@@ -345,8 +345,7 @@ run: `mkinitcpio -P`
 - Setup `grub`
 
 - Run: `grub-install --target=x86_64-efi --efi-directory=/efi --removable --bootloader-id=GRUB`
-- run blkid and obtain the UUID for the main partition: `blkid /dev/vda3` (check the partition name)
-- edit the grub config `nvim /etc/default/grub`:
+- run blkid and obtain the UUID for the main partition: `blkid /dev/vda3` (check the partition name)
+- edit the grub config `nvim /etc/default/grub`:
   - `GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet cryptdevice=UUID=b47e666c-fec3-45c5-a2ed-bdb0abe25ac0:cryptroot root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/crypto_keyfile.bin"`
-  - add **luks** and **btrfs** in: `GRUB_PRELOAD_MODULES="part_gpt part_msdos luks btrfs"`
-- make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
+- make the grub config with `grub-mkconfig -o /boot/grub/grub.cfg`
