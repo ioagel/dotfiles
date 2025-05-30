@@ -32,7 +32,7 @@
       when: enable_encryption
   roles:
     - system
-    - boot
     - users
     - packages
     - virtualization
+    - boot
