@@ -456,3 +456,6 @@ exec --no-startup-id caffeine
 
 # Start Easyeffects for EQing Presonus speakers
 exec --no-startup-id easyeffects --hide-window
+
+# Start btrfs desktop notifier
+exec --no-startup-id btrfs-desktop-notification
