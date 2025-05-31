@@ -215,6 +215,12 @@ else
     fi
 fi
 
+# Setup bat
+if command -v bat &>/dev/null; then
+    log "Setting up bat..."
+    bat cache --build
+fi
+
 # Setup the active theme
 if [ -f "${CONFIG_DIR}/themes/${THEME}/theme.sh" ]; then
     ln -sf "${CONFIG_DIR}/themes/${THEME}/theme.sh" "${CONFIG_DIR}/themes/active-theme.sh"
