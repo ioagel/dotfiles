@@ -173,7 +173,7 @@ pacman_packages:
   - gvfs-dnssd
   - gvfs-wsdd
 
-# GPU packages for bare metal systems (AMD RX 580 and similar)
+# GPU packages for bare metal systems (have only AMD GPUs)
 gpu_packages_baremetal:
   - xf86-video-amdgpu
   - vulkan-radeon
