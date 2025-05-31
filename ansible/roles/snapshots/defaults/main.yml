@@ -1,0 +1,26 @@
+---
+## Snapper configuration variables
+# For root filesystem
+snapper_config_name: "root"
+snapper_subvolume: "/"
+
+# For home filesystem
+snapper_config_name_home: "home"
+snapper_subvolume_home: "/home"
+
+snapper_allow_users: "{{ username }}"
+
+## Timeline snapshot limits from archwiki
+# https://wiki.archlinux.org/title/Snapper#Set_snapshot_limits
+snapper_timeline_min_age: "1800" # 30 minutes
+snapper_timeline_limit_hourly: "5"
+snapper_timeline_limit_daily: "7"
+snapper_timeline_limit_weekly: "0"
+snapper_timeline_limit_monthly: "0"
+snapper_timeline_limit_yearly: "0"
+
+## Snapshot related systemd services
+snapshots_systemd_services:
+  - snapper-timeline.timer
+  - snapper-cleanup.timer
+  - grub-btrfsd.service

@@ -1,0 +1,49 @@
+---
+- name: Create improved snapshot management script
+  ansible.builtin.copy:
+    src: snap-manager
+    dest: /usr/local/bin/snap-manager
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create snap-manager alias for user
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/.bashrc
+    line: 'alias sm="snap-manager"'
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+    create: true
+
+- name: Create snapshot info alias for user
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/.bashrc
+    line: 'alias snapshots="snap-manager list --config all"'
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+
+- name: Create snapshot creation alias for user
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/.bashrc
+    line: 'alias snap="snap-manager create"'
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+
+- name: Create home snapshot alias for user
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/.bashrc
+    line: 'alias snap-home="snap-manager create --config home"'
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+
+- name: Create enhanced grub-snapshot-boot script
+  ansible.builtin.copy:
+    src: grub-snapshot-boot
+    dest: /usr/local/bin/grub-snapshot-boot
+    owner: root
+    group: root
+    mode: "0755"

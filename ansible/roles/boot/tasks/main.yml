@@ -171,6 +171,39 @@
     line: "GRUB_DISABLE_OS_PROBER=false"
     backup: true
 
+- name: Remove rootflags auto-generation from GRUB script for rollback compatibility
+  ansible.builtin.lineinfile:
+    path: /etc/grub.d/10_linux
+    regexp: '^\s*GRUB_CMDLINE_LINUX="rootflags=subvol=\$\{rootsubvol\} \$\{GRUB_CMDLINE_LINUX\}"'
+    line: '	    GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX}"'
+    backup: true
+
+- name: Create pacman hooks directory
+  ansible.builtin.file:
+    path: /etc/pacman.d/hooks
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create ALPM hook to maintain GRUB rollback compatibility after grub updates
+  ansible.builtin.copy:
+    dest: /etc/pacman.d/hooks/fix-grub-rollback.hook
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Trigger]
+      Operation = Install
+      Operation = Upgrade
+      Type = Package
+      Target = grub
+
+      [Action]
+      Description = Fixing GRUB rollback compatibility after grub update
+      When = PostTransaction
+      Exec = /bin/sh -c 'sed -i "s/rootflags=subvol=\${rootsubvol} //" /etc/grub.d/10_linux && grub-mkconfig -o /boot/grub/grub.cfg'
+
 - name: Install GRUB to EFI (removable for encrypted systems)
   ansible.builtin.command: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --removable
   changed_when: true

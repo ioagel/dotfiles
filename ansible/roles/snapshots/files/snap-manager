@@ -1,0 +1,341 @@
+#!/usr/bin/env bash
+# Enhanced snapshot management script with dual config support
+
+set -euo pipefail
+
+# Configuration
+ROOT_CONFIG="root"
+HOME_CONFIG="home"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+usage() {
+  echo "Usage: $0 {create|delete|list|rollback|cleanup} [options]"
+  echo ""
+  echo "Commands:"
+  echo "  create [description] [--config root|home]  - Create a manual snapshot"
+  echo "  delete <number> [--config root|home]       - Delete a specific snapshot"
+  echo "  list [--config root|home|all]              - List snapshots"
+  echo "  rollback <number> [--config root|home]     - Rollback to a specific snapshot"
+  echo "  cleanup [--config root|home|all]           - Clean up old snapshots"
+  echo ""
+  echo "Options:"
+  echo "  --config root|home|all   - Specify which config to use (default: root)"
+  echo ""
+  echo "Examples:"
+  echo "  $0 create \"Before system update\""
+  echo "  $0 list --config all"
+  echo "  $0 rollback 42 --config root"
+  echo "  $0 cleanup --config home"
+  echo ""
+  exit 1
+}
+
+log_info() {
+  echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+  echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+  echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+log_error() {
+  echo -e "${RED}[ERROR]${NC} $1" >&2
+}
+
+parse_config() {
+  local config_arg=""
+  for arg in "$@"; do
+    if [[ "$arg" == "--config" ]]; then
+      config_arg="next"
+    elif [[ "$config_arg" == "next" ]]; then
+      echo "$arg"
+      return
+    fi
+  done
+  echo "root" # default
+}
+
+validate_config() {
+  local config="$1"
+  case "$config" in
+  root | home | all)
+    return 0
+    ;;
+  *)
+    log_error "Invalid config: $config. Must be 'root', 'home', or 'all'"
+    exit 1
+    ;;
+  esac
+}
+
+check_config_exists() {
+  local config="$1"
+  if [[ "$config" != "all" ]] && ! snapper -c "$config" list >/dev/null 2>&1; then
+    log_error "Snapper config '$config' not found or not accessible"
+    exit 1
+  fi
+}
+
+validate_snapshot_number() {
+  local config="$1"
+  local num="$2"
+
+  if ! [[ "$num" =~ ^[0-9]+$ ]]; then
+    log_error "Snapshot number must be a positive integer"
+    exit 1
+  fi
+
+  # Capture the snapper output to avoid pipefail issues
+  local snapshot_list
+  snapshot_list=$(snapper -c "$config" list 2>/dev/null) || {
+    log_error "Failed to list snapshots for config '$config'"
+    exit 1
+  }
+
+  # Updated pattern to match the table format with │ characters
+  # Look for the number at the start of a line, followed by space and │
+  if ! echo "$snapshot_list" | grep -q "^$num │"; then
+    log_error "Snapshot $num does not exist in config '$config'"
+    log_info "Available snapshots:"
+    echo "$snapshot_list"
+    exit 1
+  fi
+}
+
+create_snapshot() {
+  local desc="${1:-Manual snapshot $(date '+%Y-%m-%d %H:%M:%S')}"
+  local config
+  config=$(parse_config "$@")
+
+  validate_config "$config"
+  check_config_exists "$config"
+
+  if [[ "$config" == "all" ]]; then
+    log_info "Creating snapshots for all configs..."
+    for cfg in "$ROOT_CONFIG" "$HOME_CONFIG"; do
+      if snapper -c "$cfg" list >/dev/null 2>&1; then
+        log_info "Creating snapshot for $cfg config..."
+        snapper -c "$cfg" create --description "$desc" --cleanup-algorithm number
+        log_success "Snapshot created for $cfg: $desc"
+      else
+        log_warning "Config $cfg not found, skipping"
+      fi
+    done
+  else
+    log_info "Creating snapshot for $config config..."
+    snapper -c "$config" create --description "$desc" --cleanup-algorithm number
+    log_success "Snapshot created for $config: $desc"
+  fi
+}
+
+delete_snapshot() {
+  local num="$1"
+  local config
+  config=$(parse_config "$@")
+
+  validate_config "$config"
+  [[ "$config" == "all" ]] && {
+    log_error "Cannot delete from 'all' configs. Specify root or home"
+    exit 1
+  }
+  check_config_exists "$config"
+  validate_snapshot_number "$config" "$num"
+
+  # Show snapshot details before deletion
+  log_info "Snapshot details:"
+  local snapshot_list
+  snapshot_list=$(snapper -c "$config" list 2>/dev/null)
+  echo "$snapshot_list" | head -1 # header
+  echo "$snapshot_list" | grep "^$num │"
+
+  echo ""
+  log_warning "This will permanently delete snapshot $num from config '$config'"
+  read -p "Continue? (y/N): " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    snapper -c "$config" delete "$num"
+    log_success "Snapshot $num deleted from $config"
+  else
+    log_info "Deletion cancelled"
+  fi
+}
+
+list_snapshots() {
+  local config
+  config=$(parse_config "$@")
+
+  validate_config "$config"
+
+  if [[ "$config" == "all" ]]; then
+    for cfg in "$ROOT_CONFIG" "$HOME_CONFIG"; do
+      if snapper -c "$cfg" list >/dev/null 2>&1; then
+        echo -e "\n${BLUE}=== $cfg config ===${NC}"
+        snapper -c "$cfg" list
+      else
+        echo -e "\n${YELLOW}=== $cfg config (not found) ===${NC}"
+      fi
+    done
+  else
+    check_config_exists "$config"
+    echo -e "${BLUE}=== $config config ===${NC}"
+    snapper -c "$config" list
+  fi
+}
+
+create_safety_snapshot() {
+  local config="$1"
+  local desc
+  desc="Safety snapshot before rollback $(date '+%Y-%m-%d %H:%M:%S')"
+
+  log_info "Creating safety snapshot before rollback..."
+  local safety_num
+  safety_num=$(snapper -c "$config" create --description "$desc" --cleanup-algorithm number --print-number)
+  log_success "Safety snapshot $safety_num created"
+  echo "$safety_num"
+}
+
+rollback_snapshot() {
+  local num="$1"
+  local config
+  config=$(parse_config "$@")
+
+  validate_config "$config"
+  [[ "$config" == "all" ]] && {
+    log_error "Cannot rollback 'all' configs. Specify root or home"
+    exit 1
+  }
+  check_config_exists "$config"
+  validate_snapshot_number "$config" "$num"
+
+  # Show snapshot details
+  log_info "Rollback target snapshot details:"
+  local snapshot_list
+  snapshot_list=$(snapper -c "$config" list 2>/dev/null)
+  echo "$snapshot_list" | head -1 # header
+  echo "$snapshot_list" | grep "^$num │"
+
+  echo ""
+  log_warning "This will rollback your $config filesystem to snapshot $num"
+  log_warning "All changes made after this snapshot will be lost!"
+
+  if [[ "$config" == "root" ]]; then
+    log_warning "You will need to reboot after rollback to see the changes"
+  fi
+
+  echo ""
+  read -p "Do you want to create a safety snapshot before rollback? (Y/n): " -n 1 -r
+  echo
+
+  local safety_num=""
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    safety_num=$(create_safety_snapshot "$config")
+    echo ""
+  fi
+
+  log_warning "Proceeding with rollback to snapshot $num"
+  read -p "Are you absolutely sure? (y/N): " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    log_info "Performing rollback..."
+
+    # Use proper rollback command with ambit for BTRFS layouts with separate snapshots subvolume
+    sudo snapper --ambit classic -c "$config" rollback "$num"
+
+    log_success "Rollback completed successfully!"
+
+    if [[ -n "$safety_num" ]]; then
+      log_info "Safety snapshot $safety_num was created before rollback"
+    fi
+
+    if [[ "$config" == "root" ]]; then
+      log_warning "Please reboot your system to complete the rollback"
+    else
+      log_info "Home directory rollback is complete"
+    fi
+  else
+    log_info "Rollback cancelled"
+    if [[ -n "$safety_num" ]]; then
+      log_info "Safety snapshot $safety_num was created but rollback was cancelled"
+    fi
+  fi
+}
+
+cleanup_snapshots() {
+  local config
+  config=$(parse_config "$@")
+
+  validate_config "$config"
+
+  if [[ "$config" == "all" ]]; then
+    log_info "Cleaning up snapshots for all configs..."
+    for cfg in "$ROOT_CONFIG" "$HOME_CONFIG"; do
+      if snapper -c "$cfg" list >/dev/null 2>&1; then
+        log_info "Cleaning up $cfg config..."
+        snapper -c "$cfg" cleanup number
+        # Only run timeline cleanup for root (home has TIMELINE_CREATE="no")
+        if [[ "$cfg" == "root" ]]; then
+          snapper -c "$cfg" cleanup timeline
+        fi
+        log_success "Cleanup completed for $cfg"
+      else
+        log_warning "Config $cfg not found, skipping"
+      fi
+    done
+  else
+    check_config_exists "$config"
+    log_info "Cleaning up $config config..."
+    snapper -c "$config" cleanup number
+    # Only run timeline cleanup for root (home has TIMELINE_CREATE="no")
+    if [[ "$config" == "root" ]]; then
+      snapper -c "$config" cleanup timeline
+    fi
+    log_success "Cleanup completed for $config"
+  fi
+}
+
+# Parse command line arguments
+case "${1:-}" in
+create)
+  shift
+  create_snapshot "$@"
+  ;;
+delete)
+  if [ -z "${2:-}" ]; then
+    log_error "Please specify snapshot number"
+    exit 1
+  fi
+  shift
+  delete_snapshot "$@"
+  ;;
+list)
+  shift
+  list_snapshots "$@"
+  ;;
+rollback)
+  if [ -z "${2:-}" ]; then
+    log_error "Please specify snapshot number"
+    exit 1
+  fi
+  shift
+  rollback_snapshot "$@"
+  ;;
+cleanup)
+  shift
+  cleanup_snapshots "$@"
+  ;;
+*)
+  usage
+  ;;
+esac
