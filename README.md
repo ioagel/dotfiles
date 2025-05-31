@@ -84,12 +84,12 @@ The **`setup-secrets.sh`** script (optional) will:
   cd ~/.dotfiles
 
   # Prevent copying of symlinks and ignored files
-  find . -type l > rsync-exclude.txt
-  sed -i 's|^\./||' rsync-exclude.txt
+  find . -type l > .rsync-exclude.txt
+  sed -i 's|^\./||' .rsync-exclude.txt
 
   # Then add all the files generated from templates
 
-  rsync -a --delete --exclude-from=rsync-exclude.txt ~/.dotfiles dest/
+  rsync -a --delete --exclude-from=.rsync-exclude.txt ~/.dotfiles dest/
   ```
 
 - `yazi` light theme is not applied inside `zellij`, even if the last one and the terminal `wezterm` use a light theme.

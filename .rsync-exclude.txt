@@ -1,0 +1,17 @@
+# create with command inside this dir:
+#   find . -type l > .rsync-exclude.txt
+#   sed -i 's|^\./||' .rsync-exclude.txt
+#
+# Used to test dotfiles by rsyncing them to test arch install
+
+xdg_config/alacritty/themes
+xdg_config/dunst/dunstrc
+xdg_config/i3/config.d/monitor-layout-current.conf
+xdg_config/i3/config.d/bar.conf
+xdg_config/i3/config.d/config-colors.conf
+xdg_config/polybar/profile_layouts/active_layout.ini
+xdg_config/rofi/base.rasi
+xdg_config/themes/active-theme.sh
+xdg_config/xsettingsd/xsettingsd.conf
+xdg_config/yazi/theme.toml
+xdg_config/zellij/config.kdl
