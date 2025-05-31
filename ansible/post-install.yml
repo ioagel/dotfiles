@@ -9,4 +9,5 @@
 
   roles:
     # Snapshots role - completes configuration that requires systemd
-    - snapshots
+    - role: snapshots
+      tags: ["snapshots"]

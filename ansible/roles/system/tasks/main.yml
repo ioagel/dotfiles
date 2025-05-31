@@ -180,3 +180,25 @@
         path: /etc/fstab
         line: "/swap/swapfile none swap defaults 0 0"
         state: present
+
+- name: Install cleanup-after-snapshot script
+  ansible.builtin.copy:
+    src: cleanup-after-snapshot
+    dest: /usr/local/bin/cleanup-after-snapshot
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Install cleanup-after-snapshot service
+  ansible.builtin.copy:
+    src: cleanup-after-snapshot.service
+    dest: /etc/systemd/system/cleanup-after-snapshot.service
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Enable cleanup-after-snapshot service
+  ansible.builtin.systemd:
+    name: cleanup-after-snapshot.service
+    enabled: true
+    daemon_reload: true

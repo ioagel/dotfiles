@@ -1,0 +1,34 @@
+#!/bin/bash
+# System script for cleaning up after btrfs snapshot adoption
+# This handles common issues with stale lock files after rollbacks
+
+echo "🔄 Cleaning up after snapshot adoption..."
+
+# Clean up pacman lock
+if [ -f "/var/lib/pacman/db.lck" ]; then
+  if ! pgrep pacman >/dev/null; then
+    echo "🗑️  Removing stale pacman lock file..."
+    rm -f /var/lib/pacman/db.lck
+  else
+    echo "⚠️  Pacman is running, not removing lock file"
+  fi
+fi
+
+# Clean up other common lock files that might be stale after rollbacks
+lock_files=(
+  "/var/cache/pacman/pkg/ALPM_DB_LOCK"
+  "/tmp/.X0-lock"
+)
+
+for lock_file in "${lock_files[@]}"; do
+  if [ -f "$lock_file" ]; then
+    echo "🗑️  Removing stale lock file: $lock_file"
+    rm -f "$lock_file"
+  fi
+done
+
+# Refresh pacman databases
+echo "🔄 Refreshing pacman databases..."
+pacman -Sy
+
+echo "✅ Cleanup completed!"
