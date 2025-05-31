@@ -1,0 +1,93 @@
+---
+- name: Check if snapper config already exists
+  ansible.builtin.stat:
+    path: /etc/snapper/configs/{{ snapper_config_name }}
+  register: snapper_config_stat
+
+- name: Prepare for snapper config creation (unmount existing snapshots)
+  ansible.builtin.command:
+    cmd: umount /.snapshots
+  when: not snapper_config_stat.stat.exists
+  failed_when: false
+  changed_when: false
+
+- name: Prepare for snapper config creation (remove snapshots directory)
+  ansible.builtin.file:
+    path: /.snapshots
+    state: absent
+  when: not snapper_config_stat.stat.exists
+
+- name: Create snapper config for root filesystem
+  ansible.builtin.command:
+    cmd: snapper -c {{ snapper_config_name }} create-config {{ snapper_subvolume }}
+    creates: /etc/snapper/configs/{{ snapper_config_name }}
+  register: snapper_config_created
+
+- name: Setup snapshots subvolume after config creation
+  when: snapper_config_created.changed # noqa: no-handler
+  notify:
+    - Create initial snapshot
+  block:
+    - name: Delete snapper-created snapshots subvolume
+      ansible.builtin.command:
+        cmd: btrfs subvolume delete /.snapshots
+      changed_when: true
+
+    - name: Recreate snapshots directory
+      ansible.builtin.file:
+        path: /.snapshots
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Remount snapshots subvolume
+      ansible.builtin.command:
+        cmd: mount -a
+      changed_when: false
+
+- name: Configure snapper settings from template
+  ansible.builtin.template:
+    src: snapper-root.conf.j2
+    dest: /etc/snapper/configs/{{ snapper_config_name }}
+    owner: root
+    group: root
+    mode: "0640"
+    backup: true
+  notify:
+    - Restart snapper-timeline
+    - Restart snapper-cleanup
+
+- name: Create snapper config for home filesystem
+  ansible.builtin.command:
+    cmd: snapper -c {{ snapper_config_name_home }} create-config {{ snapper_subvolume_home }}
+    creates: /etc/snapper/configs/{{ snapper_config_name_home }}
+
+- name: Configure home snapper settings from template
+  ansible.builtin.template:
+    src: snapper-home.conf.j2
+    dest: /etc/snapper/configs/{{ snapper_config_name_home }}
+    owner: root
+    group: root
+    mode: "0640"
+    backup: true
+  notify:
+    - Restart snapper-timeline
+    - Restart snapper-cleanup
+
+- name: Exclude snapshots from updatedb indexing
+  ansible.builtin.lineinfile:
+    path: /etc/updatedb.conf
+    regexp: "^PRUNENAMES = "
+    line: 'PRUNENAMES = ".git .hg .svn .snapshots"'
+    backup: true
+
+- name: Enable snapshot related systemd services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: "{{ snapshots_systemd_services }}"
+
+- name: Include management scripts
+  ansible.builtin.include_tasks: management.yml

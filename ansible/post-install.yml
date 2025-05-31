@@ -1,0 +1,12 @@
+---
+- name: Post-Install Configuration
+  hosts: localhost
+  become: true
+  connection: local
+
+  vars:
+    username: "{{ ansible_env.SUDO_USER }}"
+
+  roles:
+    # Snapshots role - completes configuration that requires systemd
+    - snapshots

@@ -19,7 +19,7 @@ This repository uses a hybrid approach for configuration management:
 
 - `ansible` for system packages setup and configuration
 - [GNU Stow](https://www.gnu.org/software/stow/) for user dotfiles
-- `1Password` and `1Password cli` for sensitive data (needed by `install_sec.sh`)
+- `1Password` and `1Password cli` for sensitive data (needed by `setup-secrets.sh`)
 
 ## Installation
 
@@ -36,19 +36,14 @@ This repository includes an automated installation process.
    ```
 
 2. **Review the scripts (Optional but Recommended):**
-   Take a look at [`install.sh`](./install.sh) and [`ansible/system-play.yml`](./ansible/system-play.yml).
+   Take a look at [`setup-dotfiles.sh`](./setup-dotfiles.sh) and [`ansible/system-play.yml`](./ansible/system-play.yml).
 
 3. **Run the installation process:**
 
-   ```sh
-   # Step 1: Install and setup system packages and configurations
-   ansible-playbook ansible/system-play.yml -K
-
-   # Step 2: Setup user-level dotfiles
-   ./install.sh
-
-   # Optional: Setup sensitive data (requires 1Password)
-   ./install_sec.sh
+   ```bash
+   ./post-install.sh  # On first boot of the new system
+   ./setup-dotfiles.sh
+   ./setup-secrets.sh  # Optional: Configure sensitive files from 1Password
    ```
 
 4. After the scripts finish **reboot**.
@@ -62,15 +57,14 @@ The **Ansible playbook** (`ansible/system-play.yml`) will:
 - Configure system-level settings that require root privileges
 - Enable necessary system services
 
-The **`install.sh`** script will:
+The **`setup-dotfiles.sh`** script will:
 
-- Check for dependencies (`stow`)
-- Use `stow` to create symlinks for the user packages to their appropriate directories
-- Install and configure ZSH plugins
-- Set up Alacritty themes and configure theme-related settings
-- Build and configure various applications (i3, zellij, VS Code, etc.)
+- Install user dotfiles using [GNU Stow](https://www.gnu.org/software/stow/)
+- Set up terminal shell (zsh with oh-my-zsh and plugins)
+- Configure and apply themes (initial theme can be specified with `-t` option)
+- Create necessary directories and symlinks
 
-The **`install_sec.sh`** script (optional) will:
+The **`setup-secrets.sh`** script (optional) will:
 
 - Check for the 1Password CLI (`op`)
 - Fetch sensitive configuration files from your 1Password vault

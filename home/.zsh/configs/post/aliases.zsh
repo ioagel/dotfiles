@@ -54,3 +54,9 @@ alias i3e='$EDITOR ~/.config/i3/config'
 
 # zsh config
 alias soz='source ~/.zshrc'
+
+# Snapshots (using snap-manager custom script which wraps snapper)
+alias sm="snap-manager"
+alias snapshots="snap-manager list --config all"
+alias snap="snap-manager create" # default config: root
+alias snap-home="snap-manager create --config home"

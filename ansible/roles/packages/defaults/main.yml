@@ -1,5 +1,9 @@
 ---
 pacman_packages:
+  - ruby
+  - go
+  - nodejs
+  - npm
   - lshw
   - bind
   - ntfs-3g
@@ -209,6 +213,7 @@ aur_packages:
   - vagrant
   - update-grub
   - btrfs-desktop-notification
+  - btrfs-assistant
 
 services:
   - NetworkManager

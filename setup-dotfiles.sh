@@ -18,7 +18,7 @@
 #   - Optional: build-* scripts for i3, zellij, dunst, vscode, etc.
 #
 # Usage:
-#   ./install.sh [-t|--theme <theme_name>] [-h|--help]
+#   ./setup-dotfiles.sh [-t|--theme <theme_name>] [-h|--help]
 #
 # Options:
 #   -t, --theme <theme_name>   Specify the initial theme to activate (default: gruvbox-dark)

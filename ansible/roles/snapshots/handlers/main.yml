@@ -1,0 +1,15 @@
+---
+- name: Restart snapper-timeline
+  ansible.builtin.systemd_service:
+    name: snapper-timeline.timer
+    state: restarted
+
+- name: Restart snapper-cleanup
+  ansible.builtin.systemd_service:
+    name: snapper-cleanup.timer
+    state: restarted
+
+- name: Create initial snapshot
+  ansible.builtin.command:
+    cmd: snapper -c {{ snapper_config_name }} create --description "Initial system setup"
+  changed_when: true

@@ -288,17 +288,17 @@ get_root_partition_size() {
     fi
 }
 
-# Function to create and mount Btrfs subvolumes
+# Function to setup btrfs subvolumes
 setup_btrfs_subvolumes() {
     local root_partition=$1
     local mount_point=$2
     local mount_opts
-    info "Setting up Btrfs subvolumes..."
+    info "Creating Btrfs subvolumes..."
 
     mount_opts="noatime,ssd,compress=zstd,space_cache=v2,discard=async"
 
-    # Mount the root partition
-    mount -o "$mount_opts" "$root_partition" "$mount_point"
+    # Mount the root partition temporarily to create subvolumes
+    mount "$root_partition" "$mount_point"
 
     # Create subvolumes
     btrfs subvolume create "$mount_point/@"
@@ -306,24 +306,32 @@ setup_btrfs_subvolumes() {
     btrfs subvolume create "$mount_point/@cache"
     btrfs subvolume create "$mount_point/@tmp"
     btrfs subvolume create "$mount_point/@log"
+    btrfs subvolume create "$mount_point/@spool"
     btrfs subvolume create "$mount_point/@images"
     btrfs subvolume create "$mount_point/@docker"
     btrfs subvolume create "$mount_point/@snapshots"
 
+    # Set the @ subvolume as default for rollback compatibility
+    # Get the subvolume ID of @ and set it as default
+    local root_subvol_id
+    root_subvol_id=$(btrfs subvolume list "$mount_point" | grep -E '\s@$' | awk '{print $2}')
+    btrfs subvolume set-default "$root_subvol_id" "$mount_point"
+
     # Unmount the root partition
     umount "$mount_point"
 
-    # Mount the root subvolume
-    mount -o "$mount_opts,subvol=@" "$root_partition" "$mount_point"
+    # Mount the root subvolume (@ is now default, so no subvol= needed)
+    mount -o "$mount_opts" "$root_partition" "$mount_point"
 
     # Create mount points for subvolumes
-    mkdir -p "$mount_point"/{home,var/cache,var/tmp,var/log,var/lib/libvirt/images,var/lib/docker,.snapshots}
+    mkdir -p "$mount_point"/{home,var/cache,var/tmp,var/log,var/spool,var/lib/libvirt/images,var/lib/docker,.snapshots}
 
     # Mount all other subvolumes with proper options
     mount -o "$mount_opts,subvol=@home" "$root_partition" "$mount_point/home"
     mount -o "$mount_opts,subvol=@cache" "$root_partition" "$mount_point/var/cache"
     mount -o "$mount_opts,subvol=@tmp" "$root_partition" "$mount_point/var/tmp"
     mount -o "$mount_opts,subvol=@log" "$root_partition" "$mount_point/var/log"
+    mount -o "$mount_opts,subvol=@spool" "$root_partition" "$mount_point/var/spool"
     mount -o "$mount_opts,subvol=@images" "$root_partition" "$mount_point/var/lib/libvirt/images"
     mount -o "$mount_opts,subvol=@docker" "$root_partition" "$mount_point/var/lib/docker"
     mount -o "$mount_opts,subvol=@snapshots" "$root_partition" "$mount_point/.snapshots"
@@ -477,11 +485,18 @@ install_base_system() {
         linux-firmware $MICROCODE btrfs-progs grub grub-btrfs snapper snap-pac efibootmgr \
         neovim networkmanager gvfs exfatprogs dosfstools e2fsprogs man-db man-pages texinfo \
         openssh git reflector wget cryptsetup wpa_supplicant terminus-font sudo iptables-nft \
-        mkinitcpio ansible rsync python-passlib
+        mkinitcpio ansible rsync python-passlib inotify-tools
 
     # Generate fstab
     info "Generating fstab..."
     genfstab -U /mnt >>/mnt/etc/fstab
+
+    # Edit fstab to remove subvol=/@ from root filesystem for rollback compatibility
+    # Even though we mounted without subvol=/@, genfstab still detects and adds it
+    info "Editing fstab for rollback compatibility..."
+    sed -i '/[[:space:]]\/[[:space:]]/s/,subvol=\/@//g' /mnt/etc/fstab
+    sed -i '/[[:space:]]\/[[:space:]]/s/subvol=\/@,//g' /mnt/etc/fstab
+    sed -i '/[[:space:]]\/[[:space:]]/s/subvol=\/@[[:space:]]/ /g' /mnt/etc/fstab
 
     success "Basic system installation completed"
 }
@@ -528,7 +543,7 @@ run_ansible_playbook() {
     rsync -a --delete "$HOME/.dotfiles/" /mnt/root/.dotfiles/
 
     # Build ansible-playbook command with conditional variables
-    local ansible_cmd="ansible-playbook main.yml -e user_password='$USER_PASSWORD'"
+    local ansible_cmd="ansible-playbook install.yml -e user_password='$USER_PASSWORD'"
 
     # Add optional variables only if they are set
     [ -n "$SYSTEM_HOSTNAME" ] && ansible_cmd="$ansible_cmd -e hostname='$SYSTEM_HOSTNAME'"
@@ -547,7 +562,7 @@ run_ansible_playbook() {
     fi
 
     # ansible cmd only for testing, bypassing the gum choices
-    # ansible_cmd="ansible-playbook main.yml -e user_password='thrylos' -e '{\"enable_encryption\": true}' -e encrypted_device='/dev/vda1' -e encryption_password='thrylos'"
+    # ansible_cmd="ansible-playbook install.yml -e user_password='thrylos' -e '{\"enable_encryption\": true}' -e encrypted_device='/dev/vda1' -e encryption_password='thrylos'"
 
     # Run ansible playbook in chroot
     arch-chroot /mnt bash -c "cd /root/.dotfiles/ansible && \
