@@ -33,6 +33,13 @@
     regexp: "^#NoProgressBar$"
     line: "ILoveCandy"
 
+- name: Disable debug packages in makepkg.conf
+  ansible.builtin.lineinfile:
+    path: /etc/makepkg.conf
+    regexp: '^OPTIONS=\((.*) debug\b(.*)\)$'
+    line: 'OPTIONS=(\1 !debug\2)'
+    backrefs: true
+
 - name: Run reflector to generate initial mirrorlist
   ansible.builtin.command:
     cmd: reflector --protocol https --latest 10 --sort rate --save /etc/pacman.d/mirrorlist

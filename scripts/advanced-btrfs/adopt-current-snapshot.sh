@@ -163,6 +163,10 @@ info "Cleaning up..."
 sudo umount "$MOUNT_POINT"
 sudo rmdir "$MOUNT_POINT"
 
+# Create flag file for post-reboot cleanup
+info "Setting up post-reboot cleanup..."
+sudo touch /efi/snapshot-adopted
+
 success "Snapshot $SNAPSHOT_NUM successfully adopted!"
 success "Snapshot is now the default subvolume and writable"
 warn "REBOOT NOW and select the main GRUB entry (not snapshot entries)"
@@ -170,5 +174,6 @@ warn "REBOOT NOW and select the main GRUB entry (not snapshot entries)"
 echo
 echo "After reboot:"
 echo "  - You'll be running snapshot $SNAPSHOT_NUM as your main system"
+echo "  - Stale locks will be automatically cleaned up"
 echo "  - Use './snapshot-to-root.sh' to clean up the structure (optional)"
 echo "  - Normal snapper functionality will be restored"

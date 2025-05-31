@@ -1,0 +1,14 @@
+[Unit]
+Description=Cleanup after btrfs snapshot adoption
+After=multi-user.target
+ConditionPathExists=/efi/snapshot-adopted
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cleanup-after-snapshot
+ExecStartPost=/bin/rm -f /efi/snapshot-adopted
+User=root
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

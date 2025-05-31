@@ -259,8 +259,12 @@ rollback_snapshot() {
       log_info "Safety snapshot $safety_num was created before rollback"
     fi
 
+    # Create flag file for post-reboot cleanup for root rollbacks
     if [[ "$config" == "root" ]]; then
+      log_info "Setting up post-reboot cleanup..."
+      sudo touch /efi/snapshot-adopted
       log_warning "Please reboot your system to complete the rollback"
+      log_info "Stale locks will be automatically cleaned up after reboot"
     else
       log_info "Home directory rollback is complete"
     fi

@@ -19,6 +19,7 @@
           - user_password | length > 0
         fail_msg: "user_password is required and cannot be empty"
         success_msg: "user_password validation passed"
+      tags: ["users"]
 
     - name: Validate encryption variables when encryption is enabled
       ansible.builtin.assert:
@@ -30,9 +31,15 @@
         fail_msg: "When enable_encryption is true, both encrypted_device and encryption_password are required and cannot be empty"
         success_msg: "Encryption variables validation passed"
       when: enable_encryption
+      tags: ["boot"]
   roles:
-    - system
-    - users
-    - packages
-    - virtualization
-    - boot
+    - role: system
+      tags: ["system"]
+    - role: users
+      tags: ["users"]
+    - role: packages
+      tags: ["packages"]
+    - role: virtualization
+      tags: ["virtualization"]
+    - role: boot
+      tags: ["boot"]
