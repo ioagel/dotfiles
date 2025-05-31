@@ -158,7 +158,7 @@ fi
 # Installing oh-my-zsh
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     log "Installing oh-my-zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
     log "oh-my-zsh installed."
 else
     log "oh-my-zsh already installed."
