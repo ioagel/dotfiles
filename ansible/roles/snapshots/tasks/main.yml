@@ -91,3 +91,7 @@
 
 - name: Include management scripts
   ansible.builtin.include_tasks: management.yml
+
+- name: Include boot backup configuration
+  ansible.builtin.include_tasks: boot_backup.yml
+  when: enable_boot_backup

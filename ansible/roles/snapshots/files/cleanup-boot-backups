@@ -1,0 +1,126 @@
+#!/bin/bash
+set -euo pipefail
+
+# Configuration
+BACKUP_DIR="/.bootbackup"
+KEEP_COUNT=10  # Default, can be overridden by argument
+DRY_RUN=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --keep-count=*)
+            KEEP_COUNT="${1#*=}"
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--keep-count=N] [--dry-run]"
+            echo "  --keep-count=N  Keep N most recent backup sets (default: 10)"
+            echo "  --dry-run       Show what would be deleted without actually deleting"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# Only proceed if KEEP_COUNT is greater than 0
+if [ "$KEEP_COUNT" -le 0 ]; then
+    exit 0
+fi
+
+# Clean up old boot backups
+echo "Cleaning up old boot backups in $BACKUP_DIR, keeping $KEEP_COUNT most recent backup sets"
+
+# Create a temporary directory for our work
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+# Find all backup directories and group them by base timestamp (without pre/post suffix)
+find "$BACKUP_DIR" -maxdepth 1 -type d \( -name "*_pre_boot" -o -name "*_post_boot" -o -name "*_pre_efi" -o -name "*_post_efi" \) -printf '%T@ %f\n' | \
+    while read -r mtime dir; do
+        # Extract just the base timestamp part (without the _pre/_post suffix)
+        base_timestamp=$(echo "$dir" | grep -oE '[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}\.[0-9]{2}\.[0-9]{2}')
+        if [ -n "$base_timestamp" ]; then
+            # Store the most recent mtime for each base timestamp
+            if [ ! -f "$tmpdir/$base_timestamp" ] || [ "$mtime" '>' "$(cat "$tmpdir/$base_timestamp" 2>/dev/null)" ]; then
+                echo "$mtime" > "$tmpdir/$base_timestamp"
+            fi
+        fi
+done
+
+# Get list of all timestamps, excluding 'to_delete' directory
+mapfile -t all_timestamps < <(for f in "$tmpdir"/*; do
+    if [ "${f##*/}" != "to_delete" ]; then
+        echo "${f##*/}"
+    fi
+done)
+
+# Check if we have enough backups to delete
+if [ "${#all_timestamps[@]}" -le "$KEEP_COUNT" ]; then
+    echo "No backups to delete - only ${#all_timestamps[@]} backup sets found, keeping all"
+    exit 0
+fi
+
+# Convert timestamps to sortable format (YYYYMMDDHHMMSS) and sort
+for ts in "${all_timestamps[@]}"; do
+    # Convert timestamp from YYYY_MM_DD_HH.MM.SS to YYYYMMDDHHMMSS for proper sorting
+    sortable_ts=$(echo "$ts" | sed 's/_//g' | sed 's/\.//g')
+    echo "$sortable_ts $ts"
+done | sort -n | head -n -"$KEEP_COUNT" | awk '{print $2}' > "$tmpdir/to_delete"
+
+# Show what we're keeping
+echo "The following backup sets will be kept:"
+for ts in "${all_timestamps[@]}"; do
+    if ! grep -qFx "$ts" "$tmpdir/to_delete"; then
+        echo "  $ts"
+        if [ "$DRY_RUN" = true ]; then
+            # Show all related backup directories for this timestamp
+            shopt -s nullglob
+            for dir in "$BACKUP_DIR/${ts}_"*; do
+                if [ -d "$dir" ]; then
+                    echo "    - $dir"
+                fi
+            done
+            shopt -u nullglob
+        fi
+    fi
+done
+
+# Process deletions
+if [ -s "$tmpdir/to_delete" ]; then
+    echo -e "\nThe following backup sets will be deleted:"
+    while IFS= read -r timestamp || [ -n "$timestamp" ]; do
+        [ -z "$timestamp" ] && continue
+        echo "  $timestamp"
+        # Delete all related backup directories for this timestamp
+        shopt -s nullglob
+        for dir in "$BACKUP_DIR/${timestamp}_"*; do
+            if [ -d "$dir" ]; then
+                if [ "$DRY_RUN" = true ]; then
+                    echo "    [DRY RUN] Would delete: $dir"
+                else
+                    echo "    Deleting: $dir"
+                    rm -rf "$dir"
+                fi
+            fi
+        done
+        shopt -u nullglob
+done < "$tmpdir/to_delete"
+else
+    echo -e "\nNo backups to delete."
+fi
+
+if [ "$DRY_RUN" = true ]; then
+    echo -e "\nDry run complete - no changes were made"
+else
+    echo -e "\nCleanup complete"
+fi
+
+exit 0

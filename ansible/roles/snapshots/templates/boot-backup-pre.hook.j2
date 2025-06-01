@@ -1,0 +1,17 @@
+[Trigger]
+Operation = Upgrade
+Operation = Install
+Operation = Remove
+Type = Path
+Target = usr/lib/modules/*/vmlinuz
+Target = usr/bin/grub-install
+Target = etc/default/grub
+Target = boot/grub/*
+Target = usr/bin/mkinitcpio
+Target = etc/mkinitcpio.conf
+
+[Action]
+Depends = rsync
+Description = Backing up /boot and /efi before package operations
+When = PreTransaction
+Exec = /usr/bin/bash -c 'ts=$(date +%Y_%m_%d_%H.%M.%S)_pre; mkdir -p /.bootbackup; rsync -a --mkpath --delete /boot/ "/.bootbackup/${ts}_boot/" && rsync -a --mkpath --delete /efi/ "/.bootbackup/${ts}_efi/"'
