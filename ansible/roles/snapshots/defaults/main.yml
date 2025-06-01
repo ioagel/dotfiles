@@ -24,3 +24,10 @@ snapshots_systemd_services:
   - snapper-timeline.timer
   - snapper-cleanup.timer
   - grub-btrfsd.service
+
+## Boot backup configuration
+# Enable boot backup functionality
+enable_boot_backup: true
+
+# Number of boot backups to keep (0 to keep all)
+boot_backup_keep_count: 10

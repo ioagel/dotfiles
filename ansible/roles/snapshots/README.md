@@ -37,6 +37,15 @@ Without these fixes, rollbacks would fail because kernel command line parameters
 
 ## Components
 
+### Boot Backup
+
+- **Automatic Backups**: Creates timestamped backups of `/boot` and `/efi` before and after package operations
+- **Intelligent Cleanup**: Automatically keeps only the most recent N backups (configurable, default: 10)
+- **Scheduled Cleanup**: Daily systemd timer ensures backups don't accumulate
+- **Easy Restoration**: Simple command-line interface to list and restore backups
+- **Package Triggers**: Automatically runs when kernel, GRUB, or initramfs-related packages are modified
+- **Dual-Phase Backups**: Creates both pre and post-transaction backups for maximum safety
+
 ### Snapper
 
 - **Root config**: Full-featured with timeline snapshots (hourly, daily, monthly, yearly)
@@ -79,6 +88,13 @@ Without these fixes, rollbacks would fail because kernel command line parameters
 - `snapper_timeline_limit_weekly`: Number of weekly snapshots to keep (default: "0")
 - `snapper_timeline_limit_monthly`: Number of monthly snapshots to keep (default: "0")
 - `snapper_timeline_limit_yearly`: Number of yearly snapshots to keep (default: "0")
+
+### Boot Backup Configuration
+
+- `enable_boot_backup`: Enable/disable boot backup functionality (default: `true`)
+- `boot_backup_keep_count`: Number of boot backups to keep (0 to keep all, default: `10` pairs of pre/post backups)
+
+**Note**: The actual number of backups will be up to twice this number since both pre and post transaction backups are kept.
 
 ### System Services
 
@@ -150,6 +166,26 @@ grub-snapshot-boot status
 ```
 
 ## How to Use
+
+### Managing Boot Backups
+
+#### Listing Available Backups
+
+```bash
+# List all available boot backups
+restore-boot-backup list
+# or use the alias: rbb list
+```
+
+#### Restoring a Backup
+
+```bash
+# Restore a specific backup (run as root)
+sudo restore-boot-backup restore 1
+# or use the alias: sudo rbb restore 1
+```
+
+Backups are stored in `/.bootbackup/` with timestamps in the format `YYYY_MM_DD_HH.MM.SS_[pre|post]_[boot|efi]`.
 
 ### Creating Snapshots
 

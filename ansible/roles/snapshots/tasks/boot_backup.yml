@@ -1,0 +1,88 @@
+---
+# Boot backup configuration
+- name: Ensure rsync is installed
+  ansible.builtin.package:
+    name: rsync
+    state: present
+
+- name: Create boot backup directory
+  ansible.builtin.file:
+    path: /.bootbackup
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Install pre-transaction boot backup pacman hook
+  ansible.builtin.template:
+    src: boot-backup-pre.hook.j2
+    dest: /etc/pacman.d/hooks/99-boot-backup-pre.hook
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install post-transaction boot backup pacman hook
+  ansible.builtin.template:
+    src: boot-backup-post.hook.j2
+    dest: /etc/pacman.d/hooks/99-boot-backup-post.hook
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install restore-boot-backup script
+  ansible.builtin.copy:
+    src: restore-boot-backup
+    dest: /usr/local/bin/restore-boot-backup
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create rbb wrapper script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/rbb
+    content: |
+      #!/bin/sh
+      if [ "$(id -u)" -ne 0 ]; then
+          echo "This script must be run as root" >&2
+          exec sudo "$0" "$@"
+      fi
+      exec /usr/local/bin/restore-boot-backup "$@"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install cleanup-boot-backups script
+  ansible.builtin.copy:
+    src: cleanup-boot-backups
+    dest: /usr/local/bin/cleanup-boot-backups
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install boot backup cleanup service
+  ansible.builtin.template:
+    src: boot-backup-cleanup.service.j2
+    dest: /etc/systemd/system/boot-backup-cleanup.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install boot backup cleanup timer
+  ansible.builtin.template:
+    src: boot-backup-cleanup.timer.j2
+    dest: /etc/systemd/system/boot-backup-cleanup.timer
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start boot backup cleanup timer
+  ansible.builtin.systemd_service:
+    name: boot-backup-cleanup.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Run initial cleanup of old boot backups
+  ansible.builtin.command: /usr/local/bin/cleanup-boot-backups --keep-count={{ boot_backup_keep_count }}
+  changed_when: false
+  when: boot_backup_keep_count | int > 0

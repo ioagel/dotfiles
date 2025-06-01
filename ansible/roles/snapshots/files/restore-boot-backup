@@ -1,0 +1,412 @@
+#!/bin/bash -e
+set -o pipefail
+
+# Configuration
+BACKUP_DIR="/.bootbackup"
+LOG_FILE="/var/log/boot-backup.log"
+LOCK_FILE="/var/lock/restore-boot-backup.lock"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Default values
+DRY_RUN=false
+LOG_LEVEL=1  # 0=quiet, 1=normal, 2=verbose
+
+# Logging functions
+log() {
+    local level="$1"
+    local message="$2"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Log to file if LOG_FILE is writable
+    if [ -w "$(dirname "$LOG_FILE")" ]; then
+        echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
+    fi
+
+    # Print to stderr for errors, stdout for others
+    case "$level" in
+        "ERROR") echo -e "${RED}[$level]${NC} $message" >&2 ;;
+        "WARN")  [ "$LOG_LEVEL" -ge 1 ] && echo -e "${YELLOW}[$level]${NC} $message" ;;
+        "INFO")  [ "$LOG_LEVEL" -ge 1 ] && echo -e "${BLUE}[$level]${NC} $message" ;;
+        "DEBUG") [ "$LOG_LEVEL" -ge 2 ] && echo -e "${GREEN}[$level]${NC} $message" ;;
+    esac
+}
+
+# Cleanup function for traps
+cleanup() {
+    local exit_code=$?
+
+    # Remove lock file if we created it
+    if [ -f "$LOCK_FILE" ] && [ -n "${LOCK_FD:-}" ]; then
+        flock -u "$LOCK_FD"
+        rm -f "$LOCK_FILE"
+    fi
+
+    log "INFO" "Script completed with exit code $exit_code"
+    exit $exit_code
+}
+
+# Setup traps
+trap cleanup EXIT
+
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+    log "ERROR" "This script must be run as root"
+    exit 1
+fi
+
+# Acquire lock
+exec {LOCK_FD}>"$LOCK_FILE"
+if ! flock -n "$LOCK_FD"; then
+    log "ERROR" "Another instance of this script is already running"
+    exit 1
+fi
+
+# Create lock file
+echo "$$"> "$LOCK_FILE"
+
+# Function to list available backups
+list_backups() {
+    log "INFO" "Available backups in $BACKUP_DIR:"
+    if [[ ! -d "$BACKUP_DIR" ]]; then
+        log "ERROR" "Backup directory not found: $BACKUP_DIR"
+        return 1
+    fi
+
+    local count=1
+    local timestamps=()
+    local found_backups=false
+
+    # Find all backup directories and group them by timestamp and type
+    while IFS= read -r -d $'\0' dir; do
+        local base_name
+        base_name=$(basename "$dir")
+
+        # Extract timestamp and type (pre/post)
+        if [[ "$base_name" =~ ^([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}.[0-9]{2}.[0-9]{2})_(pre|post)_(boot|efi)$ ]]; then
+            local timestamp="${BASH_REMATCH[1]}"
+            local type="${BASH_REMATCH[2]}"
+            local key="${timestamp}_${type}"
+
+            # shellcheck disable=SC2076
+            if ! [[ " ${timestamps[*]} " =~ " $key " ]]; then
+                timestamps+=("$key")
+            fi
+        fi
+    done < <(find "$BACKUP_DIR" -maxdepth 1 -type d \( -name "*_pre_*" -o -name "*_post_*" \) -print0)
+
+    # If no backups found, show message and return
+    if [[ ${#timestamps[@]} -eq 0 ]]; then
+        log "WARN" "No backups found in $BACKUP_DIR"
+        return 1
+    fi
+
+    # Sort timestamps in reverse chronological order
+    mapfile -t sorted_timestamps < <(printf "%s\n" "${timestamps[@]}" | sort -r)
+
+    # Display each backup set
+    for ts_key in "${sorted_timestamps[@]}"; do
+        local ts="${ts_key%_*}"  # Remove _pre/_post suffix
+        local type="${ts_key##*_}"  # Get just pre/post
+        local boot_dir="$BACKUP_DIR/${ts}_${type}_boot"
+        local efi_dir="$BACKUP_DIR/${ts}_${type}_efi"
+        local boot_size efi_size
+
+        if [[ -d "$boot_dir" ]]; then
+            boot_size=$(du -sh "$boot_dir" 2>/dev/null | cut -f1 || echo "unknown")
+            found_backups=true
+        else
+            boot_size="missing"
+        fi
+
+        if [[ -d "$efi_dir" ]]; then
+            efi_size=$(du -sh "$efi_dir" 2>/dev/null | cut -f1 || echo "unknown")
+            found_backups=true
+        else
+            efi_size="missing"
+        fi
+
+        printf "%3d) %-30s %-5s %8s %8s\n" "$count" "$ts" "($type)" "$boot_size" "$efi_size"
+        ((count++))
+    done
+
+    if [[ "$found_backups" != "true" ]]; then
+        log "WARN" "No valid backups found in $BACKUP_DIR"
+        return 1
+    fi
+
+    return 0
+}
+
+# Function to verify backup integrity
+verify_backup() {
+    local backup_path="$1"
+
+    if [[ ! -d "$backup_path" ]]; then
+        log "ERROR" "Backup directory does not exist: $backup_path"
+        return 1
+    fi
+
+    if [ ! -d "$backup_path" ] || [ -z "$(ls -A "$backup_path" 2>/dev/null)" ]; then
+        log "ERROR" "Backup directory is empty: $backup_path"
+        return 1
+    fi
+
+    return 0
+}
+
+# Function to check if a mount point is mounted and writable
+check_mount_point() {
+    local mount_point="$1"
+
+    if ! findmnt -M "$mount_point" >/dev/null 2>&1; then
+        log "ERROR" "$mount_point is not mounted"
+        return 1
+    fi
+
+    if [ ! -w "$mount_point" ]; then
+        log "ERROR" "$mount_point is not writable"
+        return 1
+    fi
+
+    return 0
+}
+
+# Function to restore from a backup
+restore_backup() {
+    local timestamp_type="$1"
+    local timestamp="${timestamp_type% *}"  # Get timestamp part
+    local type="${timestamp_type#* }"        # Get type part (pre/post)
+    local boot_backup="$BACKUP_DIR/${timestamp}_${type}_boot"
+    local efi_backup="$BACKUP_DIR/${timestamp}_${type}_efi"
+    local rsync_opts=(-a -v)
+
+    log "INFO" "Starting restore from backup: $timestamp ($type)"
+
+    # Verify boot backup exists
+    if [ ! -d "$boot_backup" ]; then
+        log "ERROR" "Boot backup directory not found: $boot_backup"
+        return 1
+    fi
+
+    # Check mount points
+    if ! check_mount_point "/boot"; then
+        return 1
+    fi
+
+    if [ -d "$efi_backup" ] && ! check_mount_point "/efi"; then
+        return 1
+    fi
+
+    log "INFO" "Will restore from backup taken at: $timestamp ($type)"
+    log "INFO" "  - Boot: $boot_backup -> /boot"
+    if [ -d "$efi_backup" ]; then
+        log "INFO" "  - EFI:  $efi_backup -> /efi"
+    fi
+
+    # Add dry-run flag if enabled
+    if [ "$DRY_RUN" = true ]; then
+        rsync_opts+=(--dry-run)
+        log "INFO" "DRY RUN: No changes will be made"
+    fi
+
+    # Restore boot
+    log "INFO" "Restoring boot from $boot_backup to /boot"
+    if ! rsync "${rsync_opts[@]}" --delete "$boot_backup/" "/boot/"; then
+        log "ERROR" "Boot restore failed"
+        return 1
+    fi
+
+    # Restore EFI if available
+    if [ -d "$efi_backup" ]; then
+        log "INFO" "Restoring EFI from $efi_backup to /efi"
+        if ! rsync "${rsync_opts[@]}" --delete "$efi_backup/" "/efi/"; then
+            log "ERROR" "EFI restore failed"
+            return 1
+        fi
+    fi
+
+    log "INFO" "Restore completed successfully"
+    return 0
+}
+
+# Get the backup path by number
+get_backup_by_number() {
+    local number=$1
+    local timestamps=()
+
+    # Find all backup directories and group them by timestamp and type
+    while IFS= read -r -d $'\0' dir; do
+        local base_name
+        base_name=$(basename "$dir")
+
+        # Extract timestamp and type (pre/post)
+        if [[ "$base_name" =~ ^([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}.[0-9]{2}.[0-9]{2})_(pre|post)_(boot|efi)$ ]]; then
+            local timestamp="${BASH_REMATCH[1]}"
+            local type="${BASH_REMATCH[2]}"
+            local key="${timestamp} ${type}"  # Use space as separator
+
+            # shellcheck disable=SC2076
+            if ! [[ " ${timestamps[*]} " =~ " $key " ]]; then
+                timestamps+=("$key")
+            fi
+        fi
+    done < <(find "$BACKUP_DIR" -maxdepth 1 -type d \( -name "*_pre_*" -o -name "*_post_*" \) -print0)
+
+    # Sort timestamps in reverse chronological order
+    mapfile -t sorted_timestamps < <(printf "%s\n" "${timestamps[@]}" | sort -r)
+
+    # Get the requested timestamp and type
+    if [[ "$number" -gt 0 && "$number" -le "${#sorted_timestamps[@]}" ]]; then
+        echo "${sorted_timestamps[$((number-1))]}"
+        return 0
+    else
+        log "ERROR" "Invalid backup number: $number"
+        return 1
+    fi
+}
+
+# Show help message
+show_help() {
+    cat <<EOF
+Usage: $0 <command> [options]
+
+Commands:
+  list, l            List available backups
+  restore, r <number>  Restore from backup with the given number
+  verify, v <number>   Verify backup integrity
+  help, h             Show this help message
+
+Options:
+  --dry-run         Show what would be done without making changes
+  --verbose, -v      Show more detailed output
+  --quiet, -q        Suppress non-error output
+
+Examples:
+  $0 list
+  $0 restore 1
+  $0 --dry-run restore 2
+  $0 -v restore 3
+  $0 verify 1
+
+Backup location: $BACKUP_DIR
+Log file: $LOG_FILE
+EOF
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        list|l)
+            CMD="list"
+            shift
+            ;;
+        restore|r)
+            CMD="restore"
+            if [[ -n "${2:-}" && ! ${2} =~ ^- ]]; then
+                BACKUP_NUM="$2"
+                shift 2
+            else
+                shift
+            fi
+            ;;
+        verify|v)
+            CMD="verify"
+            if [[ -n "${2:-}" && ! ${2} =~ ^- ]]; then
+                BACKUP_NUM="$2"
+                shift 2
+            else
+                shift
+            fi
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --verbose|-v)
+            LOG_LEVEL=2
+            shift
+            ;;
+        --quiet|-q)
+            LOG_LEVEL=0
+            shift
+            ;;
+        help|h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            log "ERROR" "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# Main command dispatch
+case "${CMD:-help}" in
+    list)
+        list_backups
+        ;;
+    restore)
+        if [ -z "$BACKUP_NUM" ]; then
+            log "ERROR" "No backup number specified"
+            show_help
+            exit 1
+        fi
+
+        log "INFO" "Starting restore of backup #$BACKUP_NUM"
+        if timestamp=$(get_backup_by_number "$BACKUP_NUM"); then
+            if ! restore_backup "$timestamp"; then
+                log "ERROR" "Restore failed"
+                exit 1
+            fi
+        else
+            exit 1
+        fi
+        ;;
+    verify)
+        if [ -z "$BACKUP_NUM" ]; then
+            log "ERROR" "No backup number specified"
+            show_help
+            exit 1
+        fi
+
+        log "INFO" "Verifying backup #$BACKUP_NUM"
+        if timestamp_type=$(get_backup_by_number "$BACKUP_NUM"); then
+            timestamp="${timestamp_type% *}"  # Get timestamp part
+            type="${timestamp_type#* }"        # Get type part (pre/post)
+            boot_backup="$BACKUP_DIR/${timestamp}_${type}_boot"
+            efi_backup="$BACKUP_DIR/${timestamp}_${type}_efi"
+
+            if [ ! -d "$boot_backup" ] && [ ! -d "$efi_backup" ]; then
+                log "ERROR" "No backup found for timestamp: $timestamp ($type)"
+                exit 1
+            fi
+
+            if [ -d "$boot_backup" ] && ! verify_backup "$boot_backup"; then
+                log "ERROR" "Boot backup verification failed"
+                exit 1
+            fi
+
+            if [ -d "$efi_backup" ] && ! verify_backup "$efi_backup"; then
+                log "ERROR" "EFI backup verification failed"
+                exit 1
+            fi
+
+            log "INFO" "Backup verification successful for $timestamp ($type)"
+        else
+            exit 1
+        fi
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac
