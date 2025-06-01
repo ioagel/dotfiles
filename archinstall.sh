@@ -110,9 +110,9 @@ check_and_install_deps() {
 
 download_dotfiles() {
     # Check if dotfiles directory exists
-    if [ ! -d "$HOME/.dotfiles" ]; then
+    if [ ! -d /tmp/.dotfiles ]; then
         info "Downloading dotfiles..."
-        git clone https://github.com/ioagel/dotfiles.git "$HOME/.dotfiles"
+        git clone https://github.com/ioagel/dotfiles.git /tmp/.dotfiles
         success "Dotfiles downloaded successfully."
     fi
 }
@@ -564,7 +564,7 @@ collect_system_config() {
 # Copy dotfiles to home directory
 copy_dotfiles_to_chroot_home() {
     local username="${1:-root}"
-    local source_dir="/root/.dotfiles/"
+    local source_dir=/tmp/.dotfiles/
     local dest_dir
 
     # Determine the destination directory
@@ -641,7 +641,7 @@ timedatectl set-timezone "$TIMEZONE"
 timedatectl set-ntp true
 
 download_dotfiles
-cd /root/.dotfiles
+cd /tmp/.dotfiles
 
 success "Initial checks passed and pre-setup completed."
 

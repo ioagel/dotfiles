@@ -8,6 +8,7 @@
     username: "{{ ansible_env.SUDO_USER }}"
 
   roles:
-    # Snapshots role - completes configuration that requires systemd
     - role: snapshots
       tags: ["snapshots"]
+    - role: network
+      tags: ["network"]

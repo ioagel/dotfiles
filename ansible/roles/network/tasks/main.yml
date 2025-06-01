@@ -1,0 +1,80 @@
+---
+- name: Gather network facts
+  ansible.builtin.setup:
+    gather_subset:
+      - network
+
+- name: Autodetect first active ethernet interface (not bridge/loopback)
+  ansible.builtin.set_fact:
+    detected_eth: "{{ item }}"
+  loop: "{{ ansible_facts.interfaces | select('match', '^e.*') | select('search', '^(?!br|lo).*') | list }}"
+  when: ansible_facts[item]['active'] | default(false)
+  register: detected_eth_result
+  until: detected_eth is defined
+  failed_when: false
+
+- name: Check if bridge0 is up and has an IP
+  ansible.builtin.set_fact:
+    bridge0_ready: >-
+      {{
+        ('bridge0' in ansible_facts.interfaces)
+        and (ansible_facts.bridge0.active | default(false))
+        and (ansible_facts.bridge0.ipv4 is defined)
+        and (ansible_facts.bridge0.ipv4.address is defined)
+      }}
+
+- name: Create bridge0 connection (DHCP, only if missing)
+  ansible.builtin.command: nmcli connection add type bridge con-name bridge0 ifname bridge0
+  args:
+    creates: /etc/NetworkManager/system-connections/bridge0.nmconnection
+  when:
+    - detected_eth is defined and detected_eth != ''
+    - not bridge0_ready
+
+- name: Add ethernet as slave to bridge0 (only if missing)
+  ansible.builtin.command: nmcli connection add type ethernet slave-type bridge con-name 'Bridge connection 1' ifname "{{ detected_eth }}" master bridge0
+  args:
+    creates: "/etc/NetworkManager/system-connections/Bridge connection 1.nmconnection"
+  when:
+    - detected_eth is defined and detected_eth != ''
+    - not bridge0_ready
+
+- name: Bring up bridge0
+  ansible.builtin.command: nmcli connection up bridge0
+  when:
+    - detected_eth is defined and detected_eth != ''
+    - not bridge0_ready
+  changed_when: true
+
+- name: Enable the connection.autoconnect-slaves parameter of the bridge connection.
+  ansible.builtin.command: nmcli connection modify bridge0 connection.autoconnect-slaves 1
+  when:
+    - detected_eth is defined and detected_eth != ''
+    - not bridge0_ready
+  changed_when: true
+
+- name: Reactivate the bridge
+  ansible.builtin.command: nmcli connection up bridge0
+  when:
+    - detected_eth is defined and detected_eth != ''
+    - not bridge0_ready
+  changed_when: true
+
+- name: Wait for bridge0 to be connected with an IP
+  ansible.builtin.setup:
+    gather_subset:
+      - network
+  register: bridge_status
+  until: >
+    ('bridge0' in ansible_facts.interfaces)
+    and (ansible_facts.bridge0.active | default(false))
+    and (ansible_facts.bridge0.ipv4 is defined)
+    and (ansible_facts.bridge0.ipv4.address is defined)
+  retries: 30
+  delay: 2
+  when:
+    - detected_eth is defined and detected_eth != ''
+
+- name: Create KVM bridge
+  ansible.builtin.include_tasks: kvm_bridge.yml
+  when: create_kvm_bridge

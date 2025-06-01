@@ -1,0 +1,80 @@
+---
+# It seems creating a KVM bridge is not needed anymore.
+# KVM can use the bridge0 network interface directly.
+- name: Check if libvirt is installed
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Gather service facts to check libvirt services
+  ansible.builtin.service_facts:
+
+- name: Set fact for KVM availability
+  ansible.builtin.set_fact:
+    kvm_available: >-
+      {{
+        ('qemu-full' in ansible_facts.packages and 'libvirt' in ansible_facts.packages)
+      }}
+
+- name: Set fact for libvirt running status (modular or monolithic)
+  ansible.builtin.set_fact:
+    libvirt_network_available: >-
+      {{
+        (ansible_facts.services['virtnetworkd.service'] is defined and ansible_facts.services['virtnetworkd.service'].state == 'running')
+        or (ansible_facts.services['libvirtd.service'] is defined and ansible_facts.services['libvirtd.service'].state == 'running')
+      }}
+
+- name: Create QEMU network bridge using bridge0
+  ansible.builtin.shell: |
+    virsh net-define /dev/stdin <<EOF
+    <network>
+      <name>{{ kvm_bridge_name }}</name>
+      <forward mode="bridge"/>
+      <bridge name="bridge0"/>
+    </network>
+    EOF
+  register: qemu_bridge_create
+  failed_when:
+    - qemu_bridge_create.rc != 0
+    - "'already exists' not in qemu_bridge_create.stderr"
+  changed_when: qemu_bridge_create.rc == 0 and 'already exists' not in qemu_bridge_create.stderr
+  when:
+    - kvm_available
+    - libvirt_network_available
+    - detected_eth is defined and detected_eth != ''
+
+- name: Check if QEMU network bridge autostart is enabled
+  ansible.builtin.shell: |
+    set -o pipefail
+    virsh net-list --all | awk '$1 == "{{ kvm_bridge_name }}" { print $3 }'
+  register: bridge_autostart_status
+  changed_when: false
+  failed_when: false
+  when:
+    - kvm_available
+    - libvirt_network_available
+    - detected_eth is defined and detected_eth != ''
+
+- name: Start QEMU network bridge
+  ansible.builtin.command: virsh net-start {{ kvm_bridge_name }}
+  register: qemu_bridge_start_cmd
+  failed_when:
+    - qemu_bridge_start_cmd.rc != 0
+    - "'network is already active' not in qemu_bridge_start_cmd.stderr"
+  changed_when:
+    - qemu_bridge_start_cmd.rc == 0
+    - "'network is already active' not in qemu_bridge_start_cmd.stderr"
+  when:
+    - kvm_available
+    - libvirt_network_available
+    - detected_eth is defined and detected_eth != ''
+
+- name: Enable autostart for QEMU network bridge
+  ansible.builtin.command: virsh net-autostart {{ kvm_bridge_name }}
+  register: qemu_bridge_autostart_cmd
+  changed_when: qemu_bridge_autostart_cmd.rc == 0
+  when:
+    - kvm_available
+    - libvirt_network_available
+    - detected_eth is defined and detected_eth != ''
+    - bridge_autostart_status.rc == 0
+    - bridge_autostart_status.stdout.strip() != "yes"

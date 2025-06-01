@@ -1,0 +1,3 @@
+---
+create_kvm_bridge: false
+kvm_bridge_name: bridge0-net
