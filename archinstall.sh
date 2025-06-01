@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-# Exit on error, undefined variables, and pipefail
-set -eo pipefail
+set -euo pipefail
 
-# Constants (change these to your preferences)
-TIMEZONE="Europe/Athens"
-KEYMAP="us"
+# DEFAULTS (Change these as needed)
+SYSTEM_HOSTNAME="${SYSTEM_HOSTNAME:-archlinux}"
+USER_NAME="${USER_NAME:-ioangel}"
+USER_FULL_NAME="${USER_FULL_NAME:-Ioannis Angelakopoulos}"
+
+TIMEZONE="${TIMEZONE:-Europe/Athens}" # Default timezone only for installing, ansible will set it later
+KEYMAP="${KEYMAP:-us}"                # Default keymap only for installing, ansible will set it later
 
 # Function to clean up any existing LUKS containers and mounts
 cleanup() {
@@ -56,6 +59,16 @@ warning() {
 error() {
     echo -e "${RED}[ERROR] $1${NC}" >&2
     exit 1
+}
+
+pause_for_user() {
+    local msg="${1:-Press any key to continue...}"
+    echo -ne "$msg"
+    # Disable echo, read one key, then re-enable echo
+    stty -echo
+    read -r -n 1 -s
+    stty echo
+    echo
 }
 
 # Check if running as root
@@ -503,16 +516,29 @@ install_base_system() {
 
 # Function to collect system configuration
 collect_system_config() {
+    local system_hostname
+    local user_name
+    local user_full_name
+
     info "Collecting system configuration..."
 
     # Get hostname
-    SYSTEM_HOSTNAME=$(gum input --placeholder "Enter system hostname (default: archlinux)")
+    system_hostname=$(gum input --placeholder "Enter system hostname (default: ${SYSTEM_HOSTNAME})")
+    if [ -n "$system_hostname" ]; then
+        SYSTEM_HOSTNAME="$system_hostname"
+    fi
 
     # Get username
-    USER_NAME=$(gum input --placeholder "Enter username (default: ioangel)")
+    user_name=$(gum input --placeholder "Enter username (default: ${USER_NAME})")
+    if [ -n "$user_name" ]; then
+        USER_NAME="$user_name"
+    fi
 
     # Get user full name
-    USER_FULL_NAME=$(gum input --placeholder "Enter your full name (default: Ioannis Angelakopoulos)" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    user_full_name=$(gum input --placeholder "Enter your full name (default: ${USER_FULL_NAME})" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ -n "$user_full_name" ]; then
+        USER_FULL_NAME="$user_full_name"
+    fi
 
     # Get user password (required)
     while true; do
@@ -535,12 +561,36 @@ collect_system_config() {
     success "System configuration collected"
 }
 
-# Function to run Ansible playbook in chroot
-run_ansible_playbook() {
-    info "Running Ansible playbook in chroot..."
+# Copy dotfiles to home directory
+copy_dotfiles_to_chroot_home() {
+    local username="${1:-root}"
+    local source_dir="/root/.dotfiles/"
+    local dest_dir
 
-    # Copy dotfiles to chroot using rsync
-    rsync -a --delete "$HOME/.dotfiles/" /mnt/root/.dotfiles/
+    # Determine the destination directory
+    if [[ "$username" == "root" ]]; then
+        dest_dir="/mnt/$username"
+    else
+        dest_dir="/mnt/home/$username"
+    fi
+
+    if [[ ! -d "$dest_dir" ]]; then
+        error "Home directory for $username does not exist."
+    fi
+
+    info "Copying dotfiles to home directory of $username..."
+    rsync -a --delete "$source_dir" "${dest_dir}/.dotfiles/"
+    # Change ownership to the user, if not root
+    if [[ "$username" != "root" ]]; then
+        # we need to chown inside the chroot environment
+        arch-chroot /mnt bash -c "chown -R $username:$username /home/$username/.dotfiles/"
+    fi
+    success "Dotfiles copied to $username home directory"
+}
+
+# Function to run Ansible install playbook in chroot
+setup_with_ansible() {
+    info "Running Ansible Install playbook in chroot..."
 
     # Build ansible-playbook command with conditional variables
     local ansible_cmd="ansible-playbook install.yml -e user_password='$USER_PASSWORD'"
@@ -586,15 +636,20 @@ check_and_install_deps
 # Clean up any existing state
 cleanup
 
-info "Initial checks passed. Starting Arch Linux installation..."
-
-loadkeys $KEYMAP
-timedatectl set-timezone $TIMEZONE
+loadkeys "$KEYMAP"
+timedatectl set-timezone "$TIMEZONE"
 timedatectl set-ntp true
 
 download_dotfiles
+cd /root/.dotfiles
 
-cd "$HOME/.dotfiles"
+success "Initial checks passed and pre-setup completed."
+
+pause_for_user "Installation will continue after you press any key..."
+clear
+
+# Start the installation
+info "Starting the installation process..."
 
 collect_system_config # Collect system configuration
 configure_encryption  # Call the encryption configuration function
@@ -603,4 +658,26 @@ select_partition_disks # Select disks for partitioning
 create_partitions      # Create the partitions
 install_base_system    # Install the base system
 
-run_ansible_playbook # Run Ansible playbook in chroot
+# Copy dotfiles to home directory of root
+copy_dotfiles_to_chroot_home "root"
+
+setup_with_ansible # Run Ansible Install playbook in chroot
+
+# Copy dotfiles to home directory of $USER_NAME, now that the user has been created by Ansible
+copy_dotfiles_to_chroot_home "$USER_NAME"
+
+# Remove .dotfiles from root home directory, we don't need it anymore
+info "Removing .dotfiles from root home directory..."
+rm -rf /mnt/root/.dotfiles
+
+# Unmount the partitions
+info "Unmounting partitions..."
+umount -R /mnt
+
+# Installation is complete
+echo
+info "Installation complete. Reboot to the freshly installed system  and log in as user: '$USER_NAME'."
+info "Change to the ~/.dotfiles directory and run the following script: ./post-install.sh"
+echo
+
+exit 0

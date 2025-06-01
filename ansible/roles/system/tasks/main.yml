@@ -35,8 +35,8 @@
   ansible.builtin.copy:
     dest: /etc/vconsole.conf
     content: |
-      KEYMAP=us
-      KEYMAP_TOGGLE=gr
+      KEYMAP={{ keymap }}
+      KEYMAP_TOGGLE={{ keymap_toggle }}
       FONT={{ console_font }}
     mode: "0644"
 
