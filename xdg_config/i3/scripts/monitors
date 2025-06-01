@@ -27,7 +27,12 @@ echo "Found connected monitor: $CONNECTED_MONITOR"
 if is_laptop || systemd-detect-virt -q; then
     echo "Running in a VM or on a laptop, setting resolution to 1920x1080."
     xrandr --output "$CONNECTED_MONITOR" --primary --mode 1920x1080 --pos 0x0 --rotate normal
+
+    # Set the wallpaper folder for the VM or laptop (folder in ~/.Pictures/wallpapers)
+    echo "normal" > ~/.wallpaper-folder
 else
     echo "Running on main desktop, setting resolution to 5120x1440."
     xrandr --output "$CONNECTED_MONITOR" --primary --mode 5120x1440 --pos 0x0 --rotate normal
+    # Set the wallpaper folder for the main desktop (folder in ~/.Pictures/wallpapers)
+    echo "super-ultrawide" > ~/.wallpaper-folder
 fi

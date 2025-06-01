@@ -324,7 +324,9 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 2
 exec_always --no-startup-id sh -c 'killall xsettingsd 2>/dev/null || true; xsettingsd'
 
 # set wallpaper and change it every 10 minutes
-exec_always --no-startup-id wallpaper-changer -d ~/Pictures/wallpapers/super-ultrawide
+# .wallpaper-folder file contains the folder name where the wallpapers are, for the current monitor
+# It is created by the ~/.config/i3/scripts/monitors script
+exec_always --no-startup-id sh -c 'wallpaper-changer -d "$HOME/Pictures/wallpapers/$(cat ~/.wallpaper-folder)"'
 
 # set powersavings for display:
 exec --no-startup-id xset s 480 dpms 600 600 600
