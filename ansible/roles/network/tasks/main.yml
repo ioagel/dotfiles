@@ -61,17 +61,16 @@
   changed_when: true
 
 - name: Wait for bridge0 to be connected with an IP
-  ansible.builtin.setup:
-    gather_subset:
-      - network
+  ansible.builtin.command: ip addr show bridge0
   register: bridge_status
   until: >
-    ('bridge0' in ansible_facts.interfaces)
-    and (ansible_facts.bridge0.active | default(false))
-    and (ansible_facts.bridge0.ipv4 is defined)
-    and (ansible_facts.bridge0.ipv4.address is defined)
+    bridge_status.rc == 0
+    and 'inet ' in bridge_status.stdout
+    and 'state UP' in bridge_status.stdout
   retries: 30
   delay: 2
+  failed_when: false
+  changed_when: false
   when:
     - detected_eth is defined and detected_eth != ''
 

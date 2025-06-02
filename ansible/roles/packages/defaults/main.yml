@@ -112,10 +112,11 @@ pacman_packages:
   - gnome-calendar
   - gnome-text-editor
   - gnome-keyring
+  - gnome-online-accounts
+  - gnome-control-center
   - hunspell
   - hunspell-en_us
   - hunspell-el
-  - geary
   - xclip
   - mpv
   - xdg-desktop-portal
@@ -175,6 +176,7 @@ pacman_packages:
   - gvfs-wsdd
   - duf
   - usage # required by mise, for completions to work
+  - evolution
 
 # GPU packages for bare metal systems (have only AMD GPUs)
 gpu_packages_baremetal:

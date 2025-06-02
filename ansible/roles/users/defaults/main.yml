@@ -14,3 +14,80 @@ additional_groups:
   - "adm" # system monitoring
   - "input" # input devices
 shell: "/bin/bash"
+# yamllint disable-line rule:line-length
+ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9WrVPo7Gh/NuUmje/mDEAw4UE90FRZDL9iC5HWTd5qr/nt4viIkrC7Xyo9n/sa2qyFLaruPbecKDCmhcbu5QZXHPrH1w8mvI2gNS214K2XxPdbmXQyD1y7lidnMp3WJhl+DrAWdeHgcQ8ttX5D5V/vOYfWYLHsCwY2EatDj8pO7gV+S3KYqbw8IyzTPooYcRXi5ojKRABU0KIlV1BnBAP3XPlM6a5Lw5zdc9sJMAvSBYR+IOZ3EZM7EmtMrKCrKj1lAUO0Kw0m0VIbT0MoJHJ6uUuy5R0QWoxtZCWCxyyucGrygP0ZRmmKP9s4y8c+89cTiG6iPWi0bRQ0F8bKOCQadiwavaE5Mmoz01yLJ7sszZqB10UzSVGhgbEIWpLrYfy4Vb1iP93dz2eWDFnB9HjUx0gaqKgEZggVWbl9qOS0Wdfg3Q3QNArSeFv5Cy86jFvA+iPkkLhEeWaaifPHXI77kT5dtQAit078OSvjtt//SRVOBCUc1Afcmws13koZLwOtSi/XHc97X8sj61B22U7wmGi5q7CoVYRWtBd3UKIprD/k8hXa56Ts6zwqLddiwBmqLZHsaZnCqb3sXAG12kof4/8udps10fWqVaSEERL+OiUlC5VodXICwBZJ82Y7W8Zpmf4HhdLZ2OfS75fjNhvPaViVliofEPLSyw8x5vGTw=="
+
+# btrfs home subvolumes
+btrfs_home_subvolumes:
+  cache:
+    mode: "0755"
+    path: "{{ username }}/.cache"
+  downloads:
+    mode: "0755"
+    path: "{{ username }}/Downloads"
+  isos:
+    mode: "0755"
+    path: "{{ username }}/ISOs"
+  gnupg:
+    mode: "0700"
+    path: "{{ username }}/.gnupg"
+  ssh:
+    mode: "0700"
+    path: "{{ username }}/.ssh"
+  docker:
+    mode: "0700"
+    path: "{{ username }}/.docker"
+  mozilla:
+    mode: "0700"
+    path: "{{ username }}/.mozilla"
+  evolution:
+    mode: "0700"
+    path: "{{ username }}/.local/share/evolution"
+  evolution-config:
+    mode: "0700"
+    path: "{{ username }}/.config/evolution"
+  synology-drive-config:
+    mode: "0700"
+    path: "{{ username }}/.SynologyDrive"
+  synology-drive-data:
+    mode: "0700"
+    path: "{{ username }}/SynologyDrive"
+  brave:
+    mode: "0700"
+    path: "{{ username }}/.config/BraveSoftware"
+  google-chrome:
+    mode: "0700"
+    path: "{{ username }}/.config/google-chrome"
+  1password:
+    mode: "0700"
+    path: "{{ username }}/.config/1Password"
+  gnome-keyring:
+    mode: "0700"
+    path: "{{ username }}/.local/share/keyrings"
+  mise:
+    mode: "0755"
+    path: "{{ username }}/.local/share/mise"
+  jetbrains:
+    mode: "0700"
+    path: "{{ username }}/.local/share/JetBrains"
+  jetbrains-config:
+    mode: "0755"
+    path: "{{ username }}/.config/JetBrains"
+  code:
+    mode: "0755"
+    path: "{{ username }}/.vscode"
+  code-config:
+    mode: "0755"
+    path: "{{ username }}/.config/Code"
+  cursor:
+    mode: "0755"
+    path: "{{ username }}/.cursor"
+  cursor-config:
+    mode: "0755"
+    path: "{{ username }}/.config/Cursor"
+  windsurf:
+    mode: "0755"
+    path: "{{ username }}/.windsurf"
+  windsurf-config:
+    mode: "0755"
+    path: "{{ username }}/.config/Windsurf"

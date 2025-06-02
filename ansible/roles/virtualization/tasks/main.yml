@@ -78,23 +78,30 @@
     line: "LIBVIRT_DEFAULT_URI=qemu:///system"
     state: present
 
-- name: Remove existing ACLs on libvirt images directory
-  ansible.builtin.command:
-    cmd: setfacl -R -b /var/lib/libvirt/images
-  changed_when: false
-  failed_when: false
+# Not sure if this is needed
+# - name: Remove existing ACLs on libvirt images directory
+#   ansible.builtin.command:
+#     cmd: setfacl -R -b /var/lib/libvirt/images
+#   changed_when: false
+#   failed_when: false
 
 - name: Grant user recursive access to libvirt images directory
-  ansible.builtin.command:
-    cmd: "setfacl -R -m u:{{ username }}:rwX /var/lib/libvirt/images"
-  register: setfacl_recursive
-  changed_when: setfacl_recursive.rc == 0
+  ansible.posix.acl:
+    path: /var/lib/libvirt/images
+    entity: "{{ username }}"
+    etype: user
+    permissions: rwX
+    recursive: true
+    state: present
 
 - name: Set default ACL for new files/directories in libvirt images
-  ansible.builtin.command:
-    cmd: "setfacl -m d:u:{{ username }}:rwx /var/lib/libvirt/images"
-  register: setfacl_default
-  changed_when: setfacl_default.rc == 0
+  ansible.posix.acl:
+    path: /var/lib/libvirt/images
+    entity: "{{ username }}"
+    etype: user
+    permissions: rwx
+    default: true
+    state: present
 
 - name: Enable nested virtualization for AMD processors
   ansible.builtin.copy:
@@ -154,4 +161,33 @@
     mode: "0644"
     owner: root
     group: root
+  when: install_virtualbox
+
+- name: Create the required subvolume for VirtualBox VMs
+  community.general.btrfs_subvolume:
+    name: "/@home/{{ username }}/VirtualBox VMs"
+    state: present
+  when: install_virtualbox
+
+- name: Disable Copy On Write (btrfs) for VirtualBox VMs
+  ansible.builtin.shell: |
+    set -o pipefail
+    if ! lsattr -d "/home/{{ username }}/VirtualBox VMs" | grep -q 'C'; then
+      chattr -R +C "/home/{{ username }}/VirtualBox VMs"
+      echo "CoW disabled"
+    else
+      echo "CoW already disabled"
+    fi
+  args:
+    executable: /bin/bash
+  register: vbox_cow_result
+  changed_when: "'CoW already disabled' not in vbox_cow_result.stdout"
+  when: install_virtualbox
+
+- name: Set the permissions for the VirtualBox VMs directory
+  ansible.builtin.file:
+    path: "/home/{{ username }}/VirtualBox VMs"
+    mode: "0755"
+    owner: "{{ username }}"
+    group: "{{ username }}"
   when: install_virtualbox

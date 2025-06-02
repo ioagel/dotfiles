@@ -4,12 +4,19 @@
     name: "{{ username }}"
     state: present
 
+- name: Check if zsh is available
+  ansible.builtin.stat:
+    path: /usr/bin/zsh
+  register: zsh_available
+
+# During install and initial setup, leave the shell as bash
+# After setup, switch to zsh
 - name: Create user
   ansible.builtin.user:
     name: "{{ username }}"
     group: "{{ username }}"
     groups: "{{ additional_groups }}"
-    shell: "{{ shell }}"
+    shell: "{{ '/usr/bin/zsh' if zsh_available.stat.exists else shell }}"
     comment: "{{ user_full_name }}"
     create_home: true
     password: "{{ user_password | password_hash('sha512') }}"
@@ -29,8 +36,35 @@
     mode: "0440"
     validate: /usr/sbin/visudo -cf %s
 
+- name: Create the required directories for the user
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+  loop:
+    - "/home/{{ username }}/.config"
+    - "/home/{{ username }}/.local/share"
+
+- name: Create the required subvolumes for the user
+  community.general.btrfs_subvolume:
+    name: "/@home/{{ item }}"
+    state: present
+  loop: "{{ btrfs_home_subvolumes.values() | map(attribute='path') | list }}"
+
+- name: Set the permissions for the required subvolumes for the user
+  ansible.builtin.file:
+    path: "/home/{{ item.path }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+  loop: "{{ btrfs_home_subvolumes.values() }}"
+
+# We need to install the public SSH key for the user after the subvolumes are created
+# otherwise the ~/.ssh subvolume will not be created
 - name: Install public SSH key for user
   ansible.posix.authorized_key:
     user: "{{ username }}"
-    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9WrVPo7Gh/NuUmje/mDEAw4UE90FRZDL9iC5HWTd5qr/nt4viIkrC7Xyo9n/sa2qyFLaruPbecKDCmhcbu5QZXHPrH1w8mvI2gNS214K2XxPdbmXQyD1y7lidnMp3WJhl+DrAWdeHgcQ8ttX5D5V/vOYfWYLHsCwY2EatDj8pO7gV+S3KYqbw8IyzTPooYcRXi5ojKRABU0KIlV1BnBAP3XPlM6a5Lw5zdc9sJMAvSBYR+IOZ3EZM7EmtMrKCrKj1lAUO0Kw0m0VIbT0MoJHJ6uUuy5R0QWoxtZCWCxyyucGrygP0ZRmmKP9s4y8c+89cTiG6iPWi0bRQ0F8bKOCQadiwavaE5Mmoz01yLJ7sszZqB10UzSVGhgbEIWpLrYfy4Vb1iP93dz2eWDFnB9HjUx0gaqKgEZggVWbl9qOS0Wdfg3Q3QNArSeFv5Cy86jFvA+iPkkLhEeWaaifPHXI77kT5dtQAit078OSvjtt//SRVOBCUc1Afcmws13koZLwOtSi/XHc97X8sj61B22U7wmGi5q7CoVYRWtBd3UKIprD/k8hXa56Ts6zwqLddiwBmqLZHsaZnCqb3sXAG12kof4/8udps10fWqVaSEERL+OiUlC5VodXICwBZJ82Y7W8Zpmf4HhdLZ2OfS75fjNhvPaViVliofEPLSyw8x5vGTw=="
+    key: "{{ ssh_public_key }}"
     state: present
