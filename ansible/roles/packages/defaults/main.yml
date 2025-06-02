@@ -94,6 +94,7 @@ pacman_packages:
   - python-pipx
   - python-pip
   - python-i3ipc
+  - python-pyfuse3 # required by borg, to mount borg repos
   - bat
   - maim
   - xdotool
@@ -172,6 +173,8 @@ pacman_packages:
   - gvfs-afc
   - gvfs-dnssd
   - gvfs-wsdd
+  - duf
+  - usage # required by mise, for completions to work
 
 # GPU packages for bare metal systems (have only AMD GPUs)
 gpu_packages_baremetal:
