@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "**/i3/config*": "i3",
+    "**/i3/config.d/*": "i3",
+    "**/scripts/*": "shellscript",
+    "**/bin/*": "shellscript",
+    "**/.zsh/**/*": "shellscript",
+    // "*.yml": "ansible",
+    // "*.yaml": "ansible"
+  },
+  "ansible.python.interpreterPath": "/usr/bin/python3",
+  "ansible.validation.lint.enabled": true
+}
