@@ -146,3 +146,28 @@
     name: "{{ aur_packages }}"
     use: yay
     state: present
+
+## Setup SDDM theme
+- name: Copy SDDM theme
+  ansible.builtin.copy:
+    src: sddm/floulabs
+    dest: /usr/share/sddm/themes
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create SDDM config directory if it doesn't exist
+  ansible.builtin.file:
+    path: /etc/sddm.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy SDDM config
+  ansible.builtin.copy:
+    src: sddm/default.conf
+    dest: /etc/sddm.conf.d/default.conf
+    owner: root
+    group: root
+    mode: "0644"

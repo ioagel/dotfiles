@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Post-install configuration script
 # Runs post-install roles that require systemd services
 
@@ -59,10 +59,13 @@ echo ""
 # Run the playbook
 cd "$DOTFILES_DIR"
 if ansible-playbook -i ansible/inventory.yml "$PLAYBOOK_PATH"; then
+    log_info "Setting up dotfiles..."
+    source setup-dotfiles.sh
+
     echo ""
-    log_success "============================================="
-    log_success "  POST-INSTALL CONFIGURATION COMPLETED!"
-    log_success "============================================="
+    log_success "================================================================"
+    log_success "  POST-INSTALL CONFIGURATION COMPLETED! Reboot to apply changes."
+    log_success "================================================================"
 else
     echo ""
     log_error "Post-install configuration failed! Check errors above"
