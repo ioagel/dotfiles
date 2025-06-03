@@ -1,11 +1,74 @@
 #!/usr/bin/env bash
 
+#==============================================================================
+# Arch Linux Installation Script
+#==============================================================================
+#
+# DESCRIPTION:
+#   This script automates the installation of Arch Linux with BTRFS subvolumes
+#   and optional LUKS encryption. It supports both interactive disk selection
+#   and command-line specification of partitions.
+#
+# REQUIREMENTS:
+#   - UEFI boot mode
+#   - Internet connection
+#   - Booted from Arch Linux installation media
+#
+# USAGE:
+#   sudo ./archinstall.sh [OPTIONS]
+#
+# OPTIONS:
+#   -e PARTITION     EFI partition (e.g., /dev/sda1)
+#   -b PARTITION     Boot partition (required with encryption, e.g., /dev/sda2)
+#   -r PARTITION     Root partition (e.g., /dev/sda3 or /dev/sdb1)
+#   -S               Skip formatting the EFI partition (use when it's already formatted)
+#
+# EXAMPLES:
+#   # Interactive mode:
+#   sudo ./archinstall.sh
+#
+#   # Encrypted setup with specific partitions:
+#   sudo ./archinstall.sh -e /dev/sda1 -b /dev/sda2 -r /dev/sdb1
+#
+#   # Non-encrypted setup with specific partitions:
+#   sudo ./archinstall.sh -e /dev/sda1 -r /dev/sda2
+#
+#   # Using existing EFI partition (skip formatting):
+#   sudo ./archinstall.sh -e /dev/sda1 -b /dev/sda2 -r /dev/sdb1 -S
+#
+# FEATURES:
+#   - UEFI boot with GRUB bootloader
+#   - BTRFS filesystem with optimized subvolumes
+#   - Optional LUKS encryption
+#   - Snapper for system snapshots
+#   - Ansible-based post-installation configuration
+#
+# WORKFLOW:
+#   1. Check prerequisites (root, UEFI mode)
+#   2. Install required dependencies
+#   3. Configure partitioning (interactive or from command line)
+#   4. Optional disk encryption setup
+#   5. Create and mount filesystems
+#   6. Install base system packages
+#   7. Configure system settings (hostname, users, etc.)
+#   8. Set up bootloader and encryption (if enabled)
+#   9. Finalize with Ansible configuration
+#
+# NOTE: This script will format specified partitions. Use with caution!
+#==============================================================================
+
 set -euo pipefail
 
 # DEFAULTS (Change these as needed)
 SYSTEM_HOSTNAME="${SYSTEM_HOSTNAME:-archlinux}"
 USER_NAME="${USER_NAME:-ioangel}"
 USER_FULL_NAME="${USER_FULL_NAME:-Ioannis Angelakopoulos}"
+
+# Partition override variables
+EFI_PARTITION=""
+BOOT_PARTITION=""
+ROOT_PARTITION=""
+SKIP_EFI_FORMAT=false
 
 TIMEZONE="${TIMEZONE:-Europe/Athens}" # Default timezone only for installing, ansible will set it later
 KEYMAP="${KEYMAP:-us}"                # Default keymap only for installing, ansible will set it later
@@ -25,9 +88,12 @@ cleanup() {
     done
 }
 
-while getopts ":d:" OPT; do
+while getopts ":e:b:r:S" OPT; do
     case ${OPT} in
-    d) TARGET_DISK="${OPTARG}" ;;
+    e) EFI_PARTITION="${OPTARG}" ;;
+    b) BOOT_PARTITION="${OPTARG}" ;;
+    r) ROOT_PARTITION="${OPTARG}" ;;
+    S) SKIP_EFI_FORMAT=true ;;
     *) error "Invalid option: -${OPT}" ;;
     esac
 done
@@ -55,6 +121,7 @@ success() {
 warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
+
 # Function to display error messages
 error() {
     echo -e "${RED}[ERROR] $1${NC}" >&2
@@ -177,6 +244,56 @@ get_disk_info() {
 
 # Function to select disks for EFI/boot and root partitions
 select_partition_disks() {
+    # If we're using explicit partitions, skip the interactive selection
+    if [[ -n "$EFI_PARTITION" ]]; then
+        info "Using user-specified partitions"
+
+        # Determine parent disks
+        if [[ "$ENABLE_ENCRYPTION" = true ]]; then
+            if [[ -z "$BOOT_PARTITION" ]]; then
+                error "Boot partition (-b) must be specified when encryption is enabled"
+            fi
+            if [[ -z "$ROOT_PARTITION" ]]; then
+                error "Root partition (-r) must be specified when encryption is enabled"
+            fi
+
+            # Determine parent disks from partitions
+            EFI_BOOT_DISK=$(lsblk -no PKNAME "/dev/$(basename "$EFI_PARTITION")" | xargs -I{} echo "/dev/{}")
+            ROOT_DISK=$(lsblk -no PKNAME "/dev/$(basename "$ROOT_PARTITION")" | xargs -I{} echo "/dev/{}")
+        else
+            if [[ -z "$ROOT_PARTITION" ]]; then
+                error "Root partition (-r) must be specified"
+            fi
+
+            # For non-encrypted setup, just need to determine disks
+            EFI_BOOT_DISK=$(lsblk -no PKNAME "/dev/$(basename "$EFI_PARTITION")" | xargs -I{} echo "/dev/{}")
+            ROOT_DISK=$(lsblk -no PKNAME "/dev/$(basename "$ROOT_PARTITION")" | xargs -I{} echo "/dev/{}")
+        fi
+
+        # Verify partitions exist
+        for part in "$EFI_PARTITION" "$BOOT_PARTITION" "$ROOT_PARTITION"; do
+            if [[ -n "$part" && ! -b "/dev/$(basename "$part")" ]]; then
+                error "Partition $part does not exist"
+            fi
+        done
+
+        # Using the specified partitions directly
+        EFI_PART="/dev/$(basename "$EFI_PARTITION")"
+        if [[ -n "$BOOT_PARTITION" ]]; then
+            BOOT_PART="/dev/$(basename "$BOOT_PARTITION")"
+        else
+            BOOT_PART=""
+        fi
+        ROOT_PART="/dev/$(basename "$ROOT_PARTITION")"
+
+        success "Using specified partitions:"
+        success "EFI partition: $EFI_PART"
+        [[ -n "$BOOT_PART" ]] && success "Boot partition: $BOOT_PART"
+        success "Root partition: $ROOT_PART"
+        return
+    fi
+
+    # Original interactive selection logic
     info "Scanning for available disks..."
     # Get a list of disks with their sizes and types
     mapfile -t disks < <(lsblk -dplnx SIZE -o NAME | awk '$1~/^\/dev\/(sd[a-z]|nvme[0-9]n[0-9]|vd[a-z])$/{print $1}' | while read -r disk; do get_disk_info "$disk"; done)
@@ -384,72 +501,142 @@ create_partitions() {
     info "Creating partitions..."
 
     if [ "$ENABLE_ENCRYPTION" = true ]; then
-        # Prepare both disks
-        prepare_disk "$EFI_BOOT_DISK"
-        prepare_disk "$ROOT_DISK"
+        # Check if we're using pre-defined partitions
+        if [[ -n "$EFI_PARTITION" ]]; then
+            # Use pre-defined partitions
+            EFI_PART="/dev/$(basename "$EFI_PARTITION")"
+            BOOT_PART="/dev/$(basename "$BOOT_PARTITION")"
+            ROOT_PART="/dev/$(basename "$ROOT_PARTITION")"
 
-        # Create partitions on EFI/boot disk
-        info "Creating EFI and boot partitions on $EFI_BOOT_DISK"
-        parted "$EFI_BOOT_DISK" mkpart primary fat32 1MiB 1024MiB
-        parted "$EFI_BOOT_DISK" set 1 esp on
-        parted "$EFI_BOOT_DISK" mkpart primary ext4 1024MiB 2048MiB
+            # Skip disk preparation since we're using existing partitions
+            info "Using existing partitions, skipping disk preparation"
 
-        # Get root partition size
-        ROOT_SIZE=$(get_root_partition_size "$ROOT_DISK")
+            # Format partitions (conditionally for EFI)
+            info "Formatting partitions..."
+            if [[ "$SKIP_EFI_FORMAT" != true ]]; then
+                info "Formatting EFI partition..."
+                mkfs.fat -F32 -n EFI "$EFI_PART"
+            else
+                info "Skipping EFI partition formatting as requested"
+            fi
 
-        # Create encrypted partition on root disk
-        info "Creating encrypted partition on $ROOT_DISK"
-        parted "$ROOT_DISK" mkpart primary btrfs 1MiB "$ROOT_SIZE"
+            # Format boot partition
+            mkfs.ext4 -F -L boot "$BOOT_PART"
 
-        # Force kernel to reread partition table
-        partprobe "$ROOT_DISK"
+            # Set up encryption on root partition
+            info "Setting up encryption..."
+            # Wipe any existing filesystem signatures
+            wipefs -a "$ROOT_PART"
+            # Force overwrite any existing LUKS header
+            cryptsetup luksFormat --force-password "$ROOT_PART" <<<"$ENCRYPTION_PASSWORD"
+            cryptsetup open "$ROOT_PART" cryptroot <<<"$ENCRYPTION_PASSWORD"
 
-        # Set up encryption
-        info "Setting up encryption..."
-        # Wipe any existing filesystem signatures
-        wipefs -a "${ROOT_DISK}1"
-        # Force overwrite any existing LUKS header
-        cryptsetup luksFormat --force-password "${ROOT_DISK}1" <<<"$ENCRYPTION_PASSWORD"
-        cryptsetup open "${ROOT_DISK}1" cryptroot <<<"$ENCRYPTION_PASSWORD"
+            # Format encrypted root
+            mkfs.btrfs -f -L root /dev/mapper/cryptroot
 
-        # Format partitions with force flag
-        info "Formatting partitions..."
-        mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
-        mkfs.ext4 -F -L boot "${EFI_BOOT_DISK}2"
-        mkfs.btrfs -f -L root /dev/mapper/cryptroot
+            # Create and mount Btrfs subvolumes
+            setup_btrfs_subvolumes "/dev/mapper/cryptroot" "/mnt"
 
-        # Create and mount Btrfs subvolumes
-        setup_btrfs_subvolumes "/dev/mapper/cryptroot" "/mnt"
+            # Mount EFI and boot partitions
+            mount_efi_boot "$EFI_PART" "$BOOT_PART" "/mnt"
+        else
+            # Original partitioning logic
+            # Prepare both disks
+            prepare_disk "$EFI_BOOT_DISK"
+            prepare_disk "$ROOT_DISK"
 
-        # Mount EFI and boot partitions
-        mount_efi_boot "${EFI_BOOT_DISK}1" "${EFI_BOOT_DISK}2" "/mnt"
+            # Create partitions on EFI/boot disk
+            info "Creating EFI and boot partitions on $EFI_BOOT_DISK"
+            parted "$EFI_BOOT_DISK" mkpart primary fat32 1MiB 1024MiB
+            parted "$EFI_BOOT_DISK" set 1 esp on
+            parted "$EFI_BOOT_DISK" mkpart primary ext4 1024MiB 2048MiB
+
+            # Get root partition size
+            ROOT_SIZE=$(get_root_partition_size "$ROOT_DISK")
+
+            # Create encrypted partition on root disk
+            info "Creating encrypted partition on $ROOT_DISK"
+            parted "$ROOT_DISK" mkpart primary btrfs 1MiB "$ROOT_SIZE"
+
+            # Force kernel to reread partition table
+            partprobe "$ROOT_DISK"
+
+            # Set up encryption
+            info "Setting up encryption..."
+            # Wipe any existing filesystem signatures
+            wipefs -a "${ROOT_DISK}1"
+            # Force overwrite any existing LUKS header
+            cryptsetup luksFormat --force-password "${ROOT_DISK}1" <<<"$ENCRYPTION_PASSWORD"
+            cryptsetup open "${ROOT_DISK}1" cryptroot <<<"$ENCRYPTION_PASSWORD"
+
+            # Format partitions with force flag
+            info "Formatting partitions..."
+            mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
+            mkfs.ext4 -F -L boot "${EFI_BOOT_DISK}2"
+            mkfs.btrfs -f -L root /dev/mapper/cryptroot
+
+            # Create and mount Btrfs subvolumes
+            setup_btrfs_subvolumes "/dev/mapper/cryptroot" "/mnt"
+
+            # Mount EFI and boot partitions
+            mount_efi_boot "${EFI_BOOT_DISK}1" "${EFI_BOOT_DISK}2" "/mnt"
+        fi
     else
-        # Prepare single disk
-        prepare_disk "$EFI_BOOT_DISK"
+        # Non-encrypted setup
+        if [[ -n "$EFI_PARTITION" ]]; then
+            # Use pre-defined partitions
+            EFI_PART="/dev/$(basename "$EFI_PARTITION")"
+            ROOT_PART="/dev/$(basename "$ROOT_PARTITION")"
 
-        # Create partitions on single disk
-        info "Creating partitions on $EFI_BOOT_DISK"
-        parted "$EFI_BOOT_DISK" mkpart primary fat32 1MiB 1024MiB
-        parted "$EFI_BOOT_DISK" set 1 esp on
+            # Skip disk preparation since we're using existing partitions
+            info "Using existing partitions, skipping disk preparation"
 
-        # Get root partition size
-        ROOT_SIZE=$(get_root_partition_size "$EFI_BOOT_DISK")
+            # Format partitions (conditionally for EFI)
+            info "Formatting partitions..."
+            if [[ "$SKIP_EFI_FORMAT" != true ]]; then
+                info "Formatting EFI partition..."
+                mkfs.fat -F32 -n EFI "$EFI_PART"
+            else
+                info "Skipping EFI partition formatting as requested"
+            fi
 
-        parted "$EFI_BOOT_DISK" mkpart primary btrfs 1024MiB "$ROOT_SIZE"
+            # Format root partition
+            mkfs.btrfs -f -L root "$ROOT_PART"
 
-        # Force kernel to reread partition table
-        partprobe "$EFI_BOOT_DISK"
+            # Create and mount Btrfs subvolumes
+            setup_btrfs_subvolumes "$ROOT_PART" "/mnt"
 
-        # Format partitions with force flag
-        info "Formatting partitions..."
-        mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
-        mkfs.btrfs -f -L root "${EFI_BOOT_DISK}2"
+            # Mount EFI partition
+            mount_efi_boot "$EFI_PART" "" "/mnt"
+        else
+            # Original partitioning logic
+            # Prepare single disk
+            prepare_disk "$EFI_BOOT_DISK"
 
-        # Create and mount Btrfs subvolumes
-        setup_btrfs_subvolumes "${EFI_BOOT_DISK}2" "/mnt"
+            # Create partitions on single disk
+            info "Creating partitions on $EFI_BOOT_DISK"
+            parted "$EFI_BOOT_DISK" mkpart primary fat32 1MiB 1024MiB
+            parted "$EFI_BOOT_DISK" set 1 esp on
 
-        # Mount EFI partition
-        mount_efi_boot "${EFI_BOOT_DISK}1" "" "/mnt"
+            # Get root partition size
+            ROOT_SIZE=$(get_root_partition_size "$EFI_BOOT_DISK")
+
+            parted "$EFI_BOOT_DISK" mkpart primary btrfs 1024MiB "$ROOT_SIZE"
+
+            # Force kernel to reread partition table
+            partprobe "$EFI_BOOT_DISK"
+
+            # Format partitions with force flag
+            info "Formatting partitions..."
+            mkfs.fat -F32 -n EFI "${EFI_BOOT_DISK}1"
+            mkfs.btrfs -f -L root "${EFI_BOOT_DISK}2"
+
+            # Create and mount Btrfs subvolumes
+            setup_btrfs_subvolumes "${EFI_BOOT_DISK}2" "/mnt"
+
+            # Mount EFI partition
+            mount_efi_boot "${EFI_BOOT_DISK}1" "" "/mnt"
+        fi
     fi
 
     success "Partitions created and mounted successfully"
@@ -605,7 +792,19 @@ setup_with_ansible() {
     # doesn't support boolean values in the command line
     if [ "$ENABLE_ENCRYPTION" = true ]; then
         ansible_cmd="$ansible_cmd -e '{\"enable_encryption\": true}'"
-        ansible_cmd="$ansible_cmd -e encrypted_device='${ROOT_DISK}1'"
+
+        # Use the actual root partition provided via command line
+        if [[ -n "$ROOT_PARTITION" ]]; then
+            # Use exactly what the user provided, preserving the partition number
+            encrypted_device="/dev/$(basename "$ROOT_PARTITION")"
+            info "Using specified encrypted device: $encrypted_device"
+        else
+            # Only use ROOT_DISK with suffix if no explicit partition was provided
+            encrypted_device="${ROOT_DISK}1"
+            info "Using default encrypted device: $encrypted_device"
+        fi
+
+        ansible_cmd="$ansible_cmd -e encrypted_device='$encrypted_device'"
         ansible_cmd="$ansible_cmd -e encryption_password='$ENCRYPTION_PASSWORD'"
     else
         ansible_cmd="$ansible_cmd -e '{\"enable_encryption\": false}'"
@@ -628,40 +827,65 @@ setup_with_ansible() {
 # Clear the screen
 clear
 
-# Initial checks
+# Display the title
+echo -e "${BLUE}${BOLD}Arch Linux Installation Script${NC}"
+echo -e "${BLUE}${BOLD}==============================${NC}"
+echo
+
+# Check if running as root
 check_root
-check_uefi # Call the UEFI check function
+
+# Check if system is in UEFI mode
+check_uefi
+
+# Check and install dependencies
 check_and_install_deps
 
 # Clean up any existing state
 cleanup
 
+# Set keymap and time
 loadkeys "$KEYMAP"
 timedatectl set-timezone "$TIMEZONE"
 timedatectl set-ntp true
 
+# Download dotfiles
 download_dotfiles
 cd /tmp/.dotfiles
 
-success "Initial checks passed and pre-setup completed."
+# Show warning about destructive operations
+echo -e "\n${RED}${BOLD}WARNING: DESTRUCTIVE OPERATION${NC}"
+echo -e "${RED}This script will ${BOLD}FORMAT${NC}${RED} the selected partitions and any existing data will be ${BOLD}PERMANENTLY LOST${NC}${RED}.${NC}"
+echo -e "${RED}Make sure you have ${BOLD}BACKED UP${NC}${RED} any important data before proceeding.${NC}"
+echo
 
-pause_for_user "Installation will continue after you press any key..."
+if ! gum confirm "Do you understand the risks and want to proceed?"; then
+    error "Installation aborted by user."
+fi
+
+# Configure encryption
+configure_encryption
+
+# Select partitions/disks
+select_partition_disks
+
+# Create partitions and filesystems
+create_partitions
+
+sleep 2
 clear
 
-# Start the installation
-info "Starting the installation process..."
+# Collect system configuration
+collect_system_config
 
-collect_system_config # Collect system configuration
-configure_encryption  # Call the encryption configuration function
-
-select_partition_disks # Select disks for partitioning
-create_partitions      # Create the partitions
-install_base_system    # Install the base system
+# Install base system
+install_base_system
 
 # Copy dotfiles to home directory of root
 copy_dotfiles_to_chroot_home "root"
 
-setup_with_ansible # Run Ansible Install playbook in chroot
+# Run Ansible install playbook in chroot
+setup_with_ansible
 
 # Copy dotfiles to home directory of $USER_NAME, now that the user has been created by Ansible
 copy_dotfiles_to_chroot_home "$USER_NAME"

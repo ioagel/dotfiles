@@ -133,6 +133,11 @@
     name: virtualbox-ext-oracle
     state: present
     use: yay
+  register: virtualbox_extension_pack
+  retries: 5 # retry 5 times because sometimes it strangely fails
+  delay: 10
+  until: virtualbox_extension_pack is not failed
+  ignore_errors: true  # ignore errors because it is not mandatory to have the extension pack
   become: true
   become_user: "{{ username }}"
   when: install_virtualbox
