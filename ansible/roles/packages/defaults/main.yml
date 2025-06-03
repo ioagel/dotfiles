@@ -177,6 +177,7 @@ pacman_packages:
   - duf
   - usage # required by mise, for completions to work
   - evolution
+  - mysql-workbench
 
 # GPU packages for bare metal systems (have only AMD GPUs)
 gpu_packages_baremetal:
@@ -196,29 +197,33 @@ gpu_packages_vm_kvm:
 gpu_packages_vm_vmware_compatible:
   - xf86-video-vmware
 
-aur_packages:
+chaotic_aur_packages:
   - yaru-gtk-theme
   - yaru-icon-theme
   - google-chrome
   - brave-bin
   - neovim-remote
   - visual-studio-code-bin
-  - cursor-extracted
-  - windsurf
-  - caffeine-ng
-  - lazydocker-bin
+  - lazydocker
   - 1password
-  - 1password-cli
   - rofi-greenclip
-  - xkblayout-state-git
   - synology-drive
-  - checkupdates-with-aur
   - nautilus-open-any-terminal
   - resvg
-  - vagrant
   - update-grub
   - btrfs-desktop-notification
   - btrfs-assistant
+  - mysql-clients
+  - libmysqlclient
+
+aur_packages:
+  - windsurf
+  - cursor-extracted
+  - caffeine-ng
+  - 1password-cli
+  - xkblayout-state-git
+  - checkupdates-with-aur
+  - vagrant
 
 services:
   - NetworkManager
