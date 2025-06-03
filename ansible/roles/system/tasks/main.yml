@@ -202,3 +202,6 @@
     name: cleanup-after-snapshot.service
     enabled: true
     daemon_reload: true
+
+- name: Include CA certificates tasks
+  ansible.builtin.include_tasks: ca_certificates.yml

@@ -165,7 +165,7 @@ sudo rmdir "$MOUNT_POINT"
 
 # Create flag file for post-reboot cleanup
 info "Setting up post-reboot cleanup..."
-sudo touch /efi/snapshot-adopted
+sudo touch /.snapshots/snapshot-adopted
 
 success "Snapshot $SNAPSHOT_NUM successfully adopted!"
 success "Snapshot is now the default subvolume and writable"

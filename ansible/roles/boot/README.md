@@ -84,7 +84,7 @@ This role configures the boot system for Arch Linux, including GRUB bootloader a
 ## Notes
 
 - The role automatically detects the UUID of encrypted devices for reliable booting
-- For encrypted systems, a keyfile is generated and stored in `/efi/crypto_keyfile.bin`
+- For encrypted systems, a keyfile is generated and stored in `/efi/crypto_keyfile_<UUID>.bin`
 - **Boot Partition Encryption**: This role assumes `/boot` partition is **unencrypted** (common setup). GRUB's `cryptodisk` and `luks` modules are only needed if GRUB must read from encrypted storage. With unencrypted `/boot`, GRUB can access kernel and initramfs files without decryption support.
 - The `grub-btrfs-overlayfs` hook is included for snapshot booting support with grub-btrfs
 - Hardware-accelerated checksums are enabled with the `crc32c` module for Btrfs

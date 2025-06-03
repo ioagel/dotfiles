@@ -1,0 +1,27 @@
+---
+- name: Ensure ca-certificates directory exists
+  ansible.builtin.file:
+    path: /etc/ca-certificates/trust-source/anchors/
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Install vault CA root certificate
+  ansible.builtin.copy:
+    src: vault-ca-root.crt
+    dest: /etc/ca-certificates/trust-source/anchors/vault-ca-root.crt
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: update ca certificates
+
+- name: Install vault CA intermediate certificate
+  ansible.builtin.copy:
+    src: vault-ca-int.crt
+    dest: /etc/ca-certificates/trust-source/anchors/vault-ca-int.crt
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: update ca certificates

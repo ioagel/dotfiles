@@ -262,7 +262,7 @@ rollback_snapshot() {
     # Create flag file for post-reboot cleanup for root rollbacks
     if [[ "$config" == "root" ]]; then
       log_info "Setting up post-reboot cleanup..."
-      sudo touch /efi/snapshot-adopted
+      sudo touch /.snapshots/snapshot-adopted
       log_warning "Please reboot your system to complete the rollback"
       log_info "Stale locks will be automatically cleaned up after reboot"
     else
