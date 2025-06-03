@@ -128,16 +128,6 @@ error() {
     exit 1
 }
 
-pause_for_user() {
-    local msg="${1:-Press any key to continue...}"
-    echo -ne "$msg"
-    # Disable echo, read one key, then re-enable echo
-    stty -echo
-    read -r -n 1 -s
-    stty echo
-    echo
-}
-
 # Check if running as root
 check_root() {
     if [ "$(id -u)" -ne 0 ]; then
