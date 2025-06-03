@@ -1,18 +1,33 @@
 ---
+- name: Get UUID of encrypted device
+  ansible.builtin.shell: |
+    set -o pipefail
+    blkid -s UUID -o value {{ encrypted_device }}
+  args:
+    executable: /bin/bash
+  register: encrypted_device_uuid
+  when: enable_encryption
+  changed_when: false
+
+- name: Set crypto keyfile name
+  ansible.builtin.set_fact:
+    keyfile: "crypto_keyfile_{{ encrypted_device_uuid.stdout }}.bin"
+  when: enable_encryption
+
 - name: Generate encryption keyfile
   ansible.builtin.shell: |
     set -o pipefail
-    dd bs=512 count=4 if=/dev/random of=/efi/crypto_keyfile.bin iflag=fullblock
-    chmod 600 /efi/crypto_keyfile.bin
+    dd bs=512 count=4 if=/dev/random of=/efi/{{ keyfile }} iflag=fullblock
+    chmod 600 /efi/{{ keyfile }}
   args:
     executable: /bin/bash
-    creates: /efi/crypto_keyfile.bin
+    creates: /efi/{{ keyfile }}
   when: enable_encryption
 
 - name: Check if keyfile is already added to LUKS
   ansible.builtin.shell: |
     set -o pipefail
-    cryptsetup luksOpen --key-file /efi/crypto_keyfile.bin --test-passphrase {{ encrypted_device }}
+    cryptsetup luksOpen --key-file /efi/{{ keyfile }} --test-passphrase {{ encrypted_device }}
   args:
     executable: /bin/bash
   register: keyfile_test
@@ -23,21 +38,11 @@
 - name: Add keyfile to LUKS
   ansible.builtin.shell: |
     set -o pipefail
-    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/crypto_keyfile.bin
+    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/{{ keyfile }}
   args:
     executable: /bin/bash
   when: enable_encryption and keyfile_test.rc != 0
   changed_when: true
-
-- name: Get UUID of encrypted device
-  ansible.builtin.shell: |
-    set -o pipefail
-    blkid -s UUID -o value {{ encrypted_device }}
-  args:
-    executable: /bin/bash
-  register: encrypted_device_uuid
-  when: enable_encryption
-  changed_when: false
 
 - name: Configure mkinitcpio.conf for encryption
   ansible.builtin.lineinfile:
@@ -64,7 +69,7 @@
 
 - name: Set mkinitcpio FILES for encryption
   ansible.builtin.set_fact:
-    mkinitcpio_files_final: "{{ mkinitcpio_files + ['/efi/crypto_keyfile.bin'] }}"
+    mkinitcpio_files_final: "{{ mkinitcpio_files + ['/efi/' + keyfile] }}"
   when: enable_encryption
 
 - name: Set mkinitcpio FILES for non-encryption
@@ -152,7 +157,7 @@
     regexp: "^GRUB_CMDLINE_LINUX="
     line: >-
       GRUB_CMDLINE_LINUX="cryptdevice=UUID={{ encrypted_device_uuid.stdout }}:cryptroot
-      root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/crypto_keyfile.bin"
+      root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/{{ keyfile }}"
     backup: true
   when: enable_encryption
 
