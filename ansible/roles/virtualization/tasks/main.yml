@@ -130,7 +130,8 @@
 
 - name: Install VirtualBox Extension Pack
   kewlfft.aur.aur:
-    name: virtualbox-ext-oracle
+    # need to use aur because it will choose by default chaotic aur, and there are version conflicts
+    name: aur/virtualbox-ext-oracle
     state: present
     use: yay
   register: virtualbox_extension_pack

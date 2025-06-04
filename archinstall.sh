@@ -167,9 +167,9 @@ check_and_install_deps() {
 
 download_dotfiles() {
     # Check if dotfiles directory exists
-    if [ ! -d /tmp/.dotfiles ]; then
+    if [ ! -d /tmp/dotfiles ]; then
         info "Downloading dotfiles..."
-        git clone https://github.com/ioagel/dotfiles.git /tmp/.dotfiles
+        git clone https://github.com/ioagel/dotfiles.git /tmp/dotfiles
         success "Dotfiles downloaded successfully."
     fi
 }
@@ -741,7 +741,7 @@ collect_system_config() {
 # Copy dotfiles to home directory
 copy_dotfiles_to_chroot_home() {
     local username="${1:-root}"
-    local source_dir=/tmp/.dotfiles/
+    local source_dir=/tmp/dotfiles/
     local dest_dir
 
     # Determine the destination directory
@@ -841,7 +841,7 @@ timedatectl set-ntp true
 
 # Download dotfiles
 download_dotfiles
-cd /tmp/.dotfiles
+cd /tmp/dotfiles
 
 # Show warning about destructive operations
 echo -e "\n${RED}${BOLD}WARNING: DESTRUCTIVE OPERATION${NC}"

@@ -1,0 +1,49 @@
+---
+- name: Check if Chaotic AUR GPG key is present
+  command: pacman-key --list-keys 3056513887B78AEB
+  register: chaotic_aur_key_check
+  changed_when: false
+  failed_when: false
+
+- name: Import Chaotic AUR GPG key
+  command: pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+  when: chaotic_aur_key_check.rc != 0
+  changed_when: true
+
+- name: Check if key is already locally signed
+  command: pacman-key --list-sigs 3056513887B78AEB
+  register: key_sig_output
+  changed_when: false
+
+- name: Sign the key if not already locally signed
+  command: pacman-key --lsign-key 3056513887B78AEB
+  when: key_sig_output.stdout | regex_search('^sig\s+L\s+', multiline=True) is none
+  changed_when: true
+
+- name: Download and install chaotic-keyring
+  ansible.builtin.command: pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst
+  args:
+    creates: "/usr/share/pacman/keyrings/chaotic.gpg"
+
+- name: Download and install chaotic-mirrorlist
+  ansible.builtin.command: pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst
+  args:
+    creates: "/etc/pacman.d/chaotic-mirrorlist"
+
+- name: Ensure Chaotic AUR repo block is present in /etc/pacman.conf
+  ansible.builtin.blockinfile:
+    path: /etc/pacman.conf
+    block: |
+      [chaotic-aur]
+      Include = /etc/pacman.d/chaotic-mirrorlist
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Chaotic AUR"
+  register: chaotic_aur_repo_block
+
+- name: Update system and sync mirrorlist (optional)
+  ansible.builtin.command: pacman -Syu --noconfirm
+  when: chaotic_aur_repo_block.changed
+
+- name: Install Chaotic AUR packages
+  community.general.pacman:
+    name: "{{ chaotic_aur_packages }}"
+    state: present

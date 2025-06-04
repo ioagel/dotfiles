@@ -197,6 +197,8 @@ gpu_packages_vm_kvm:
 gpu_packages_vm_vmware_compatible:
   - xf86-video-vmware
 
+chaotic_aur_enabled: true
+
 chaotic_aur_packages:
   - yaru-gtk-theme
   - yaru-icon-theme
