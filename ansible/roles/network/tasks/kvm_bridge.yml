@@ -1,6 +1,6 @@
 ---
 # It seems creating a KVM bridge is not needed anymore.
-# KVM can use the bridge0 network interface directly.
+# KVM can use the br0 network interface directly.
 - name: Check if libvirt is installed
   ansible.builtin.package_facts:
     manager: auto
@@ -23,13 +23,13 @@
         or (ansible_facts.services['libvirtd.service'] is defined and ansible_facts.services['libvirtd.service'].state == 'running')
       }}
 
-- name: Create QEMU network bridge using bridge0
+- name: Create QEMU network bridge using br0
   ansible.builtin.shell: |
     virsh net-define /dev/stdin <<EOF
     <network>
       <name>{{ kvm_bridge_name }}</name>
       <forward mode="bridge"/>
-      <bridge name="bridge0"/>
+      <bridge name="br0"/>
     </network>
     EOF
   register: qemu_bridge_create
