@@ -880,6 +880,9 @@ setup_with_ansible
 # Copy dotfiles to home directory of $USER_NAME, now that the user has been created by Ansible
 copy_dotfiles_to_chroot_home "$USER_NAME"
 
+# Restore from Borg
+source ./scripts/borg-restore-function.sh
+
 # Remove .dotfiles from root home directory, we don't need it anymore
 info "Removing .dotfiles from root home directory..."
 rm -rf /mnt/root/.dotfiles
