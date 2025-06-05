@@ -431,6 +431,9 @@ bindsym $mod+F12 exec --no-startup-id i3-gnome-pomodoro stop
 # Theme toggle
 bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/theme-toggle
 
+# Only for KVM copy/paste
+exec --no-startup-id sh -c 'if [ "$(systemd-detect-virt --vm 2>/dev/null)" = "kvm" ] && command -v spice-vdagent >/dev/null 2>&1; then exec spice-vdagent; fi'
+
 ##### Start GUI apps on login
 # if you do not use dex: exec --no-startup-id dex --autostart --environment i3
 # you need to have tray apps started manually one by one:
