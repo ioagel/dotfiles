@@ -13,6 +13,7 @@ kvm_packages:
   - guestfs-tools # Guest filesystem tools
   - libosinfo # Operating system information database
   - dnsmasq # DHCP/DNS for libvirt virtual networks (still needed)
+  - usbutils # A collection of USB tools to query connected USB devices (needed for USB passthrough)
 
 # Optional packages (can be removed if not needed)
 kvm_optional_packages:
