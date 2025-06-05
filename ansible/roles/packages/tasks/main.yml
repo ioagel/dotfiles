@@ -67,6 +67,7 @@
   loop:
     - { name: virtualbox-guest-utils, when: "oracle" }
     - { name: qemu-guest-agent, when: "kvm" }
+    - { name: spice-vdagent, when: "kvm" }
     - { name: open-vm-tools, when: "vmware" }
     - { name: hyperv, when: "microsoft" }
 
