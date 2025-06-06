@@ -6,11 +6,9 @@
 
   vars:
     username: "{{ ansible_env.SUDO_USER }}"
-    is_laptop: "{{ ansible_facts.devices.power.BAT0 is defined or ansible_facts.devices.power.BAT1 is defined }}"
 
   roles:
     - role: snapshots
       tags: ["snapshots"]
     - role: network
       tags: ["network"]
-      when: not is_laptop

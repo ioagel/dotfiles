@@ -1,113 +1,176 @@
 ---
+# WiFi Configuration
+- name: Find WiFi interface
+  set_fact:
+    wifi_interface: "{{ ansible_facts.interfaces | select('match', '^w.*') | first }}"
+  when: ansible_facts.interfaces | select('match', '^w.*') | list | length > 0
+
+- name: Check if WiFi is already connected
+  set_fact:
+    wifi_connected: "{{ ansible_facts[wifi_interface].ipv4 is defined and ansible_facts[wifi_interface].ipv4|length > 0 }}"
+  when: wifi_interface is defined
+
+- name: Configure WiFi connection if not connected
+  block:
+    - name: Create WiFi connection with DHCP
+      community.general.nmcli:
+        conn_name: "{{ wifi_ssid }}"
+        ifname: "{{ wifi_interface }}"
+        type: wifi
+        ssid: "{{ wifi_ssid }}"
+        autoconnect: yes
+        state: present
+        method4: auto
+        method6: ignore
+        wifi:
+          mode: infrastructure
+        wifi_sec:
+          key-mgmt: wpa-psk
+          psk: "{{ wifi_password }}"
+
+    - name: Connect to WiFi
+      community.general.nmcli:
+        conn_name: "{{ wifi_ssid }}"
+        ifname: "{{ wifi_interface }}"
+        state: up
+
+    - name: Wait for WiFi connection
+      ansible.builtin.wait_for_connection:
+        timeout: 30
+
+    - name: Verify WiFi IP assignment
+      ansible.builtin.setup:
+        gather_subset: '!all,network'
+      register: network_facts
+      changed_when: false
+
+    - name: Update WiFi connected status
+      set_fact:
+        wifi_connected: "{{ network_facts.ansible_facts[ansible_facts[wifi_interface].device].ipv4 is defined }}"
+      when: wifi_interface is defined and network_facts.ansible_facts[ansible_facts[wifi_interface].device] is defined
+
+  when:
+    - wifi_interface is defined
+    - not (wifi_connected | default(false))
+
+# Only proceed with Ethernet/bridge setup if Wi-Fi is not connected
+# or if we specifically want to use Ethernet
 - name: Find first active physical ethernet interface
   set_fact:
     detected_eth: "{{ item }}"
   loop: "{{ ansible_facts.interfaces | select('match', '^e.*') | list }}"
-  when: ansible_facts[item].active | default(false)
+  when: >
+    ansible_facts[item].active | default(false) and
+    (wifi_connected | default(false) == false or item == 'enp0s25')
   register: detected_eth_result
-  failed_when: detected_eth is not defined
-  until: detected_eth is defined
-
-- name: Disconnect physical interface before enslaving to bridge
-  community.general.nmcli:
-    conn_name: "{{ detected_eth }}"
-    state: absent
-  ignore_errors: yes
-
-- name: Create bridge interface (br0) with DHCP
-  community.general.nmcli:
-    conn_name: br0
-    ifname: br0
-    type: bridge
-    autoconnect: yes
-    state: present
-    method4: auto  # DHCP
-    method6: ignore
-    stp: false
-    mac: "{{ ansible_facts[detected_eth].macaddress }}"
-
-- name: Bridge physical interface to br0
-  community.general.nmcli:
-    conn_name: br0-slave
-    type: ethernet
-    ifname: "{{ detected_eth }}"
-    master: br0
-    slave_type: bridge
-    autoconnect: yes
-    state: present
-
-- name: Check current timeout value for br0
-  command: nmcli -g connection.wait-device-timeout con show br0
-  register: br0_timeout
-  changed_when: false
-
-- name: Set wait-device-timeout to 0 for br0
-  ansible.builtin.command: nmcli con modify br0 connection.wait-device-timeout 0
-  when: br0_timeout.stdout != '0'
-
-- name: Check current timeout value for bridge slave
-  command: nmcli -g connection.wait-device-timeout con show br0-slave
-  register: br0_slave_timeout
-  changed_when: false
-
-- name: Set wait-device-timeout to 0 for bridge slave
-  ansible.builtin.command: nmcli con modify br0-slave connection.wait-device-timeout 0
-  when: br0_slave_timeout.stdout != '0'
-
-# Synology NAS vlan network
-- name: Check if vlan20 connection exists
-  ansible.builtin.shell: nmcli -t -f NAME con show | grep -q "^vlan20$" || echo "not_exists"
-  register: vlan20_exists
-  changed_when: false
-
-- name: Create VLAN interface with static IP
-  community.general.nmcli:
-    conn_name: vlan20
-    type: vlan
-    ifname: vlan20
-    vlandev: "{{ detected_eth }}"
-    vlanid: 20
-    ip4: "192.168.20.{{ range(100, 254) | random }}/24" # let's hope we avoid conflicts
-    method6: ignore
-    autoconnect: yes
-    state: present
-  when: vlan20_exists.stdout == "not_exists"
-
-- name: Check if br0 is active
-  command: nmcli -t -f NAME,DEVICE con show --active
-  register: active_conns
-  changed_when: false
-
-- name: Bring up bridge br0 if not active
-  community.general.nmcli:
-    conn_name: br0
-    state: up
-  when: "'br0' not in active_conns.stdout"
-
-- name: Bring up bridge slave if not active
-  community.general.nmcli:
-    conn_name: br0-slave
-    state: up
-  when: "'br0-slave' not in active_conns.stdout"
-
-- name: Bring up vlan20 if not active
-  community.general.nmcli:
-    conn_name: vlan20
-    state: up
-  when: "'vlan20' not in active_conns.stdout"
-
-- name: Wait for br0 to be connected with an IP
-  ansible.builtin.command: ip addr show br0
-  register: bridge_status
-  until: >
-    bridge_status.rc == 0
-    and 'inet ' in bridge_status.stdout
-    and 'state UP' in bridge_status.stdout
-  retries: 30
-  delay: 2
   failed_when: false
-  changed_when: false
+  loop_control:
+    label: "{{ item }}"
 
-- name: Create KVM bridge
-  ansible.builtin.include_tasks: kvm_bridge.yml
-  when: create_kvm_bridge
+# Only continue with bridge setup if we have an Ethernet interface
+- block:
+    - name: Disconnect physical interface before enslaving to bridge
+      community.general.nmcli:
+        conn_name: "{{ detected_eth }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Create bridge interface (br0) with DHCP
+      community.general.nmcli:
+        conn_name: br0
+        ifname: br0
+        type: bridge
+        autoconnect: yes
+        state: present
+        method4: auto  # DHCP
+        method6: ignore
+        stp: false
+        mac: "{{ ansible_facts[detected_eth].macaddress }}"
+
+    - name: Bridge physical interface to br0
+      community.general.nmcli:
+        conn_name: br0-slave
+        type: ethernet
+        ifname: "{{ detected_eth }}"
+        master: br0
+        slave_type: bridge
+        autoconnect: yes
+        state: present
+
+    - name: Check current timeout value for br0
+      command: nmcli -g connection.wait-device-timeout con show br0
+      register: br0_timeout
+      changed_when: false
+
+    - name: Set wait-device-timeout to 0 for br0
+      ansible.builtin.command: nmcli con modify br0 connection.wait-device-timeout 0
+      when: br0_timeout.stdout != '0'
+
+    - name: Check current timeout value for bridge slave
+      command: nmcli -g connection.wait-device-timeout con show br0-slave
+      register: br0_slave_timeout
+      changed_when: false
+
+    - name: Set wait-device-timeout to 0 for bridge slave
+      ansible.builtin.command: nmcli con modify br0-slave connection.wait-device-timeout 0
+      when: br0_slave_timeout.stdout != '0'
+
+    # Synology NAS vlan network
+    - name: Check if vlan20 connection exists
+      ansible.builtin.shell: nmcli -t -f NAME con show | grep -q "^vlan20$" || echo "not_exists"
+      register: vlan20_exists
+      changed_when: false
+
+    - name: Create VLAN interface with static IP
+      community.general.nmcli:
+        conn_name: vlan20
+        type: vlan
+        ifname: vlan20
+        vlandev: "{{ detected_eth }}"
+        vlanid: 20
+        ip4: "192.168.20.{{ range(100, 254) | random }}/24" # let's hope we avoid conflicts
+        method6: ignore
+        autoconnect: yes
+        state: present
+      when: vlan20_exists.stdout == "not_exists"
+
+    - name: Check if br0 is active
+      command: nmcli -t -f NAME,DEVICE con show --active
+      register: active_conns
+      changed_when: false
+
+    - name: Bring up bridge br0 if not active
+      community.general.nmcli:
+        conn_name: br0
+        state: up
+      when: '"br0" not in active_conns.stdout'
+
+    - name: Bring up bridge slave if not active
+      community.general.nmcli:
+        conn_name: br0-slave
+        state: up
+      when: '"br0-slave" not in active_conns.stdout'
+
+    - name: Bring up vlan20 if not active
+      community.general.nmcli:
+        conn_name: vlan20
+        state: up
+      when: '"vlan20" not in active_conns.stdout'
+
+    - name: Wait for br0 to be connected with an IP
+      ansible.builtin.command: ip addr show br0
+      register: bridge_status
+      until: >
+        bridge_status.rc == 0
+        and 'inet ' in bridge_status.stdout
+        and 'state UP' in bridge_status.stdout
+      retries: 30
+      delay: 2
+      failed_when: false
+      changed_when: false
+
+    - name: Create KVM bridge
+      ansible.builtin.include_tasks: kvm_bridge.yml
+      when: create_kvm_bridge | default(false)
+
+  when: detected_eth is defined and not (wifi_connected | default(false))
