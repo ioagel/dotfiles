@@ -9,6 +9,9 @@
 #   and optional LUKS encryption. It supports both interactive disk selection
 #   and command-line specification of partitions.
 #
+# WIFI: Connect to a network, using: # iwctl --passphrase PASSPHRASE station DEVICE connect SSID
+# Console Font: # setfont ter-132b
+#
 # REQUIREMENTS:
 #   - UEFI boot mode
 #   - Internet connection

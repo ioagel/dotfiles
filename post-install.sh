@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+# Default values
+WIFI_SSID=""
+WIFI_PASSWORD=""
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -51,14 +55,48 @@ echo ""
 
 log_info "Running post-install roles that require systemd:"
 log_info "- snapshots (snapper configs, service startup)"
+if [ -n "$WIFI_SSID" ] && [ -n "$WIFI_PASSWORD" ]; then
+    log_info "- network (including WiFi configuration for SSID: $WIFI_SSID)"
+else
+    log_info "- network (Ethernet only, no WiFi credentials provided)"
+fi
 log_info "- [future roles as added]"
 echo ""
 log_info "Note: You may be prompted for your sudo password"
 echo ""
 
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --wifi-ssid=*)
+            WIFI_SSID="${1#*=}"
+            shift
+            ;;
+        --wifi-password=*)
+            WIFI_PASSWORD="${1#*=}"
+            shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# Build ansible-playbook command
+ANSIBLE_CMD="ansible-playbook -i ansible/inventory.yml"
+
+# Add WiFi credentials if provided
+if [ -n "$WIFI_SSID" ] && [ -n "$WIFI_PASSWORD" ]; then
+    ANSIBLE_CMD+=" -e wifi_ssid=\"$WIFI_SSID\" -e wifi_password=\"$WIFI_PASSWORD\""
+elif [ -n "$WIFI_SSID" ] || [ -n "$WIFI_PASSWORD" ]; then
+    log_warning "Both --wifi-ssid and --wifi-password must be provided to configure WiFi"
+fi
+
 # Run the playbook
 cd "$DOTFILES_DIR"
-if ansible-playbook -i ansible/inventory.yml "$PLAYBOOK_PATH"; then
+log_info "Running: $ANSIBLE_CMD \"$PLAYBOOK_PATH\""
+if eval "$ANSIBLE_CMD \"$PLAYBOOK_PATH\""; then
     log_info "Setting up dotfiles..."
     source setup-dotfiles.sh
 
