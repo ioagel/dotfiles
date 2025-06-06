@@ -100,6 +100,7 @@ user_dirs=(
     "${CONFIG_DIR}/easyeffects/output"
     "${LOCAL_DIR}/bin"
     "${LOCAL_DIR}/lib"
+    "${LOCAL_DIR}/share/applications"
 )
 for dir in "${user_dirs[@]}"; do
     mkdir -p "$dir"
