@@ -9,6 +9,8 @@ pacman_packages:
   - ntfs-3g
   - plocate
   - smartmontools
+  - inetutils # provides 'hostname' used in scripts
+  - diff-so-fancy # used by git: g df
   - bash-completion
   - stow
   - tldr
