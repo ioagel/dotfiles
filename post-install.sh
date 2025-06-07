@@ -4,10 +4,6 @@
 
 set -euo pipefail
 
-# Default values
-WIFI_SSID=""
-WIFI_PASSWORD=""
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -30,6 +26,43 @@ log_warning() {
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
 }
+
+# Help message function
+print_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo
+    echo "Optional arguments:"
+    echo "  --wifi-ssid=SSID         Provide WiFi SSID for network configuration"
+    echo "  --wifi-password=PASSWORD Provide WiFi password for network configuration"
+    echo "  -h, --help               Show this help message and exit"
+}
+
+# Default values
+WIFI_SSID=""
+WIFI_PASSWORD=""
+
+# Parse command line arguments EARLY
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --wifi-ssid=*)
+            WIFI_SSID="${1#*=}"
+            shift
+            ;;
+        --wifi-password=*)
+            WIFI_PASSWORD="${1#*=}"
+            shift
+            ;;
+        -h|--help)
+            print_help
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            print_help
+            exit 1
+            ;;
+    esac
+done
 
 # Get script directory (should be dotfiles root)
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -64,24 +97,6 @@ log_info "- [future roles as added]"
 echo ""
 log_info "Note: You may be prompted for your sudo password"
 echo ""
-
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --wifi-ssid=*)
-            WIFI_SSID="${1#*=}"
-            shift
-            ;;
-        --wifi-password=*)
-            WIFI_PASSWORD="${1#*=}"
-            shift
-            ;;
-        *)
-            log_error "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
 
 # Build ansible-playbook command
 ANSIBLE_CMD="ansible-playbook -i ansible/inventory.yml"
