@@ -12,3 +12,5 @@
       tags: ["snapshots"]
     - role: network
       tags: ["network"]
+    - role: thinkpad
+      tags: ["thinkpad"]

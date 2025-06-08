@@ -1,0 +1,5 @@
+---
+- name: Restart display manager
+  ansible.builtin.systemd_service:
+    name: sddm
+    state: restarted

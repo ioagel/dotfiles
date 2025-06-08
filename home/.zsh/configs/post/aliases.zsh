@@ -60,3 +60,7 @@ alias sm="snap-manager"
 alias snapshots="snap-manager list --config all"
 alias snap="snap-manager create" # default config: root
 alias snap-home="snap-manager create --config home"
+
+# For laptop only
+alias batt-optimal='sudo systemctl restart set-batt-thresholds-optimal.service'
+alias batt-default='sudo systemctl restart set-batt-thresholds-default.service'

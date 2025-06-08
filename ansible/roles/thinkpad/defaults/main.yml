@@ -1,0 +1,4 @@
+---
+# Default thresholds (can override in playbook)
+batt_threshold_start: 75
+batt_threshold_end: 80

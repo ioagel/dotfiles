@@ -1,0 +1,126 @@
+---
+- name: Check if battery device exists (laptop detection)
+  ansible.builtin.stat:
+    path: /sys/class/power_supply/BAT0
+  register: battery_device
+
+- name: End play if not a laptop
+  ansible.builtin.meta: end_play
+  when: not battery_device.stat.exists
+
+- name: Install touchpad driver package
+  ansible.builtin.pacman:
+    name: xf86-input-libinput
+    state: present
+    update_cache: yes
+
+- name: Make sure the xorg config path exists
+  ansible.builtin.file:
+    path: /etc/X11/xorg.conf.d
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: Deploy touchpad config for ThinkPad L14 AMD
+  ansible.builtin.copy:
+    src: 30-touchpad.conf
+    dest: /etc/X11/xorg.conf.d/30-touchpad.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart display manager
+
+- name: Deploy battery threshold script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/batt-thresholds.sh
+    content: |
+      #!/bin/bash
+
+      START_THRESHOLD_FILE="/sys/class/power_supply/BAT0/charge_control_start_threshold"
+      END_THRESHOLD_FILE="/sys/class/power_supply/BAT0/charge_control_end_threshold"
+
+      OPTIMAL_START={{ batt_threshold_start }}
+      OPTIMAL_END={{ batt_threshold_end }}
+      DEFAULT_START=0
+      DEFAULT_END=100
+
+      set_thresholds() {
+        local start_val=$1
+        local end_val=$2
+
+        # Write end first, then start
+        echo $end_val > $END_THRESHOLD_FILE
+        echo $start_val > $START_THRESHOLD_FILE
+        sleep 0.1
+
+        # Read back values
+        local actual_start=$(cat $START_THRESHOLD_FILE)
+        local actual_end=$(cat $END_THRESHOLD_FILE)
+
+        if [[ "$actual_start" != "$start_val" || "$actual_end" != "$end_val" ]]; then
+          # EC rejected different start/end, fallback to unified threshold (end_val)
+          echo "⚠️ EC rejected separate thresholds; setting both to $end_val"
+          echo $end_val > $START_THRESHOLD_FILE
+          echo $end_val > $END_THRESHOLD_FILE
+        fi
+
+        echo "Set thresholds: start=$(cat $START_THRESHOLD_FILE), end=$(cat $END_THRESHOLD_FILE)"
+      }
+
+      if [[ "$1" == "optimal" ]]; then
+        set_thresholds $OPTIMAL_START $OPTIMAL_END
+      elif [[ "$1" == "default" ]]; then
+        set_thresholds $DEFAULT_START $DEFAULT_END
+      else
+        echo "Usage: $0 {optimal|default}"
+        exit 1
+      fi
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Deploy systemd service for optimal battery thresholds
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/set-batt-thresholds-optimal.service
+    content: |
+      [Unit]
+      Description=Set ThinkPad battery charge thresholds to optimal
+      After=multi-user.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/local/bin/batt-thresholds.sh optimal
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Deploy systemd service for default battery thresholds
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/set-batt-thresholds-default.service
+    content: |
+      [Unit]
+      Description=Reset ThinkPad battery charge thresholds to default
+      After=multi-user.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/local/bin/batt-thresholds.sh default
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Enable and start optimal battery thresholds service
+  ansible.builtin.systemd_service:
+    name: set-batt-thresholds-optimal.service
+    daemon_reload: yes
+    enabled: yes
+    state: started

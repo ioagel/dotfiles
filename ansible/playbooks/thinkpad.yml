@@ -1,0 +1,9 @@
+---
+# ThinkPad laptop configuration playbook
+- name: Configure ThinkPad laptop-specific settings
+  hosts: localhost
+  become: true
+  roles:
+    - role: thinkpad
+  tags:
+    - thinkpad
