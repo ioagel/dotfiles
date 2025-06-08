@@ -101,6 +101,7 @@ pacman_packages:
   - maim
   - xdotool
   - xorg-xrandr
+  - xorg-xinput
   - docker
   - docker-buildx
   - pigz

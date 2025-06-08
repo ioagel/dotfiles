@@ -5,6 +5,8 @@
 #   ./power-profile             # Polybar format (default)
 #   ./power-profile --i3blocks  # i3blocks format
 
+source ~/.local/lib/utils.sh
+
 # Get current power profile
 current_profile=$(/usr/bin/powerprofilesctl get)
 
@@ -25,6 +27,10 @@ output_profile() {
     local ICON="$1"
     local COLOR="$2"
     local TEXT="$3"
+
+    if is_laptop; then
+        TEXT=""
+    fi
 
     if [[ "$FORMAT_TYPE" == "polybar" ]]; then
         # Polybar format using F tags
