@@ -329,4 +329,21 @@ else
     warning "'build-rofi-config' command not found. Skipping."
 fi
 
+# Synology Drive Ignore Dirs
+if [[ -d ~/.SynologyDrive ]]; then
+    log "Setting up Synology Drive ignore dirs..."
+    if [[ -d ~/.local/share/synology-drive-ignore-nm ]]; then
+        cd ~/.local/share/synology-drive-ignore-nm || error "Failed to cd to Synology Drive ignore dirs directory."
+        git pull
+        cd - || error "Failed to cd back to previous directory."
+    else
+        log "Cloning Synology Drive ignore dirs..."
+        git clone https://github.com/ioagel/synology-drive-ignore-nm.git ~/.local/share/synology-drive-ignore-nm || error "Failed to clone Synology Drive ignore dirs."
+    fi
+    cd ~/.local/share/synology-drive-ignore-nm || error "Failed to cd to Synology Drive ignore dirs directory."
+    npm install
+    node index.js --ignore=.venv
+    cd - || error "Failed to cd back to previous directory."
+fi
+
 log "**** Dotfiles installation script finished! ****"
