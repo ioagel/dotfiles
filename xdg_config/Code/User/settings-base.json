@@ -118,40 +118,88 @@
   "vim.highlightedyank.duration": 250,
   "vim.normalModeKeyBindings": [
     {
-      "before": ["g", "p", "d"],
-      "commands": ["editor.action.peekDefinition"]
+      "before": [
+        "g",
+        "p",
+        "d"
+      ],
+      "commands": [
+        "editor.action.peekDefinition"
+      ]
     },
     {
-      "before": ["g", "h"],
-      "commands": ["editor.action.showDefinitionPreviewHover"]
+      "before": [
+        "g",
+        "h"
+      ],
+      "commands": [
+        "editor.action.showDefinitionPreviewHover"
+      ]
     },
     {
-      "before": ["g", "i"],
-      "commands": ["editor.action.goToImplementation"]
+      "before": [
+        "g",
+        "i"
+      ],
+      "commands": [
+        "editor.action.goToImplementation"
+      ]
     },
     {
-      "before": ["g", "p", "i"],
-      "commands": ["editor.action.peekImplementation"]
+      "before": [
+        "g",
+        "p",
+        "i"
+      ],
+      "commands": [
+        "editor.action.peekImplementation"
+      ]
     },
     {
-      "before": ["g", "q"],
-      "commands": ["editor.action.quickFix"]
+      "before": [
+        "g",
+        "q"
+      ],
+      "commands": [
+        "editor.action.quickFix"
+      ]
     },
     {
-      "before": ["g", "r"],
-      "commands": ["editor.action.referenceSearch.trigger"]
+      "before": [
+        "g",
+        "r"
+      ],
+      "commands": [
+        "editor.action.referenceSearch.trigger"
+      ]
     },
     {
-      "before": ["g", "t"],
-      "commands": ["editor.action.goToTypeDefinition"]
+      "before": [
+        "g",
+        "t"
+      ],
+      "commands": [
+        "editor.action.goToTypeDefinition"
+      ]
     },
     {
-      "before": ["g", "p", "t"],
-      "commands": ["editor.action.peekTypeDefinition"]
+      "before": [
+        "g",
+        "p",
+        "t"
+      ],
+      "commands": [
+        "editor.action.peekTypeDefinition"
+      ]
     },
     {
-      "before": ["<leader>", "e"],
-      "commands": ["workbench.view.explorer"]
+      "before": [
+        "<leader>",
+        "e"
+      ],
+      "commands": [
+        "workbench.view.explorer"
+      ]
     }
   ],
   "vim.easymotion": true,
@@ -179,20 +227,23 @@
   "xml.symbols.maxItemsComputed": 10000,
   "vs-kubernetes": {
     "vs-kubernetes.crd-code-completion": "enabled",
-    "vs-kubernetes.kubeconfig": "/data/SynologyDrive/1_Projects/2023_02_FlouLabs_Infra_k3s/WIP/infra-k3s/kubeconfig.three_masters",
+    "vs-kubernetes.kubeconfig": "~/SynologyDrive/1_Projects/2023_02_FlouLabs_Infra_k3s/WIP/infra-k3s/kubeconfig.three_masters",
     "vs-kubernetes.knownKubeconfigs": [
-      "/home/ioangel/.kube/config.k3s-single",
-      "/data/SynologyDrive/1_Projects/2012_01-MTDS/WIP/mtds-current/kubeconfig.k3d",
-      "/home/ioangel/.kube/config",
-      "/data/SynologyDrive/1_Projects/2023_02_FlouLabs_Infra_k3s/WIP/infra-k3s/kubeconfig.three_masters"
+      "~/.kube/config.k3s-single",
+      "~/SynologyDrive/1_Projects/2012_01-MTDS/WIP/mtds-current/kubeconfig.k3d",
+      "~/.kube/config",
+      "~/SynologyDrive/1_Projects/2023_02_FlouLabs_Infra_k3s/WIP/infra-k3s/kubeconfig.three_masters"
     ]
   },
   "projectManager.git.baseFolders": [
-    "/data/SynologyDrive/1_Projects",
+    "~/SynologyDrive/1_Projects",
     "~/code"
   ],
   "sops.configPath": "./.sops.yaml",
-  "docker.containers.description": ["ContainerName", "Status"],
+  "docker.containers.description": [
+    "ContainerName",
+    "Status"
+  ],
   "docker.containers.label": "ContainerName",
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
@@ -201,7 +252,7 @@
   "workbench.productIconTheme": "fluent-icons",
   "gitProjectManager.baseProjectsFolders": [
     "~/code",
-    "/data/SynologyDrive/1_Projects"
+    "~/SynologyDrive/1_Projects"
   ],
   "go.toolsManagement.autoUpdate": true,
   "remote.SSH.remotePlatform": {
@@ -373,8 +424,12 @@
   "[markdown]": {
     "diffEditor.ignoreTrimWhitespace": false
   },
-  "fontAwesomeAutocomplete.patterns": ["**/*.html*"],
-  "fontAwesomeAutocomplete.disableTriggerWordAutoClearPatterns": ["**/*.html*"],
+  "fontAwesomeAutocomplete.patterns": [
+    "**/*.html*"
+  ],
+  "fontAwesomeAutocomplete.disableTriggerWordAutoClearPatterns": [
+    "**/*.html*"
+  ],
   "fontAwesomeAutocomplete.insertionTemplate": {
     "**/*.html*": "{style} {prefix}{name}"
   },
