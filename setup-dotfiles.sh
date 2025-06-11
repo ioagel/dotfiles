@@ -329,7 +329,7 @@ else
     warning "'build-rofi-config' command not found. Skipping."
 fi
 
-# Synology Drive Ignore Dirs
+# Synology Drive Ignore Dirs (node_modules by default, plus custom ignore dirs)
 if [[ -d ~/.SynologyDrive ]]; then
     log "Setting up Synology Drive ignore dirs..."
     if [[ -d ~/.local/share/synology-drive-ignore-nm ]]; then
