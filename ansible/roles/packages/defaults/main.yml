@@ -104,6 +104,7 @@ pacman_packages:
   - xorg-xinput
   - docker
   - docker-buildx
+  - docker-compose
   - pigz
   - the_silver_searcher
   - ripgrep
