@@ -330,7 +330,7 @@ else
 fi
 
 # Synology Drive Ignore Dirs (node_modules by default, plus custom ignore dirs)
-if [[ -d ~/.SynologyDrive ]]; then
+if [[ -d ~/.SynologyDrive ]] && [[ -f ~/.SynologyDrive/SynologyDrive.app/conf/filter-v4150 ]]; then
     log "Setting up Synology Drive ignore dirs..."
     if [[ -d ~/.local/share/synology-drive-ignore-nm ]]; then
         cd ~/.local/share/synology-drive-ignore-nm || error "Failed to cd to Synology Drive ignore dirs directory."
