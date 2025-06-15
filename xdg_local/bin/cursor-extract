@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+if [ ! -d /opt/cursor-bin ]; then
+    echo "cursor-bin directory not found"
+    exit 1
+fi
+
+cd /opt/cursor-bin
+
+if [ ! -f cursor-bin.AppImage ]; then
+    echo "cursor-bin.AppImage not found"
+    exit 1
+fi
+
+if file cursor-bin.AppImage | grep -q "POSIX shell script"; then
+    echo "cursor-bin.AppImage is already extracted"
+    exit 0
+fi
+
+# Remove all files and directories in /opt/cursor-bin except cursor-bin.AppImage
+shopt -s extglob dotglob
+sudo rm -rf !(cursor-bin.AppImage)
+
+# extract cursor-bin.AppImage
+sudo ./cursor-bin.AppImage --appimage-extract
+# Move all files including hidden ones from squashfs-root to current directory
+shopt -s dotglob
+sudo mv squashfs-root/.* . 2>/dev/null || true  # Move hidden files
+sudo mv squashfs-root/* . 2>/dev/null || true   # Move non-hidden files
+
+# Remove the squashfs-root directory
+sudo rm -rf squashfs-root
+
+# remove cursor-bin.AppImage
+sudo rm -f cursor-bin.AppImage
+sudo mv AppRun cursor-bin.AppImage
+
+exit 0

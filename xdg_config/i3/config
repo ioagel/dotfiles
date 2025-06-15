@@ -359,6 +359,7 @@ for_window [class="Org.gnome.Boxes"] floating enable
 
 # set floating (nontiling) for special apps
 for_window [class="battle.net.exe"] floating enable
+for_window [class="steam_app_0"] floating enable
 for_window [class="steam_proton"] floating enable
 for_window [class="bottles"] floating enable
 for_window [class="VirtualBox Manager"] floating enable

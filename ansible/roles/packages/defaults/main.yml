@@ -224,7 +224,7 @@ chaotic_aur_packages:
 
 aur_packages:
   - windsurf
-  - cursor-extracted
+  - cursor-bin
   - caffeine-ng
   - 1password-cli
   - xkblayout-state-git
