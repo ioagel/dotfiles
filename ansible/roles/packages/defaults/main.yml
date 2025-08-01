@@ -148,6 +148,7 @@ pacman_packages:
   - cups-pdf
   - system-config-printer
   - hplip
+  - python-pyqt5
   - btop
   - htop
   - tree
