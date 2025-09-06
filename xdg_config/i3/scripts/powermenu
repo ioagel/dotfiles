@@ -35,12 +35,14 @@ fi
 declare -A menu
 
 # Menu with keys/commands
+# Make sure we revert the keyboard layout to US before running some of the commands,
+# because I cannot unlock the system with the Greek keyboard layout.
 menu=(
     ["  Shutdown"]="$HOME/.config/i3/scripts/i3-safe-exit shutdown"
     ["  Reboot"]="$HOME/.config/i3/scripts/i3-safe-exit reboot"
-    ["  Suspend"]="systemctl suspend"
-    ["  Hibernate"]="systemctl hibernate"
-    ["  Lock"]="$HOME/.config/i3/scripts/blur-lock"
+    ["  Suspend"]="setxkbmap us && systemctl suspend"
+    ["  Hibernate"]="setxkbmap us && systemctl hibernate"
+    ["  Lock"]="setxkbmap us && $HOME/.config/i3/scripts/blur-lock"
     ["  Logout"]="$HOME/.config/i3/scripts/i3-safe-exit logout"
     ["  Cancel"]=""
 )
