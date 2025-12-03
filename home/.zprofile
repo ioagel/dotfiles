@@ -29,7 +29,8 @@ export SUDO_EDITOR=$EDITOR
 # Set terminal
 export TERMINAL=wezterm
 # Set browser
-export BROWSER=brave
+# export BROWSER=brave
+export BROWSER=google-chrome-stable
 
 # GUI Theming & Toolkits
 export QT_QPA_PLATFORMTHEME=qt5ct

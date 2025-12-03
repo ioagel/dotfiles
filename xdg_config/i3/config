@@ -15,7 +15,7 @@ set $terminal_instance org.wezfurlong.wezterm
 set $file_manager_cmd thunar
 set $file_manager_instance thunar
 # Define default note taking app instance name
-set $note_app_cmd obsidiAn
+set $note_app_cmd obsidian
 set $note_app_instance obsidian
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -381,6 +381,10 @@ for_window [window_role="About"] floating enable
 # set position of floating window
 for_window [class=".*"] move position center
 
+#for_window [window_type="dialog"] floating enable, move position center
+#for_window [window_role="pop-up"] floating enable, move position center
+#for_window [class="Zenity"] floating enable, move position center
+
 ##############################
 # color settings for windows #
 ##############################
@@ -456,6 +460,9 @@ exec --no-startup-id caffeine
 
 # Start Easyeffects for EQing Presonus speakers
 exec --no-startup-id easyeffects --hide-window
+
+# Start Screenshot app
+exec --no-startup-id flameshot
 
 # Start btrfs desktop notifier
 exec --no-startup-id btrfs-desktop-notification

@@ -40,9 +40,9 @@ declare -A menu
 menu=(
     ["  Shutdown"]="$HOME/.config/i3/scripts/i3-safe-exit shutdown"
     ["  Reboot"]="$HOME/.config/i3/scripts/i3-safe-exit reboot"
-    ["  Suspend"]="setxkbmap us && systemctl suspend"
-    ["  Hibernate"]="setxkbmap us && systemctl hibernate"
-    ["  Lock"]="setxkbmap us && $HOME/.config/i3/scripts/blur-lock"
+    ["  Suspend"]="systemctl suspend"
+    ["  Hibernate"]="systemctl hibernate"
+    ["  Lock"]="$HOME/.config/i3/scripts/blur-lock"
     ["  Logout"]="$HOME/.config/i3/scripts/i3-safe-exit logout"
     ["  Cancel"]=""
 )
