@@ -443,5 +443,14 @@
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "java.completion.importOrder": [
+  "java",
+  "jakarta",
+  "javax",
+  "org",
+  "com",
+  "net"
+],
+"java.saveActions.organizeImports": true
 }
