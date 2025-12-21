@@ -14,3 +14,4 @@
 **/polybar/profile_layouts/active_layout.ini
 **/rofi/base.rasi
 .item_expirations.txt
+lazy-lock.json
