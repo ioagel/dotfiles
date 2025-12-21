@@ -343,6 +343,10 @@ if [[ -d ~/.SynologyDrive ]] && [[ -f ~/.SynologyDrive/SynologyDrive.app/conf/fi
     cd ~/.local/share/synology-drive-ignore-nm || error "Failed to cd to Synology Drive ignore dirs directory."
     npm install
     node index.js --ignore=.venv
+    node index.js --ignore=dist
+    node index.js --ignore=build
+    node index.js --ignore=target
+    node index.js --ignore=.git
     cd - || error "Failed to cd back to previous directory."
 fi
 
