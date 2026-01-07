@@ -1,0 +1,14 @@
+#!/bin/sh
+
+sync_from_erebus() {
+  rsync -aHAX --numeric-ids --delete --info=progress2 \
+    -e "ssh -p 22" \
+    erebus:~/.git-repos/  ~/.git-repos/
+}
+
+sync_to_erebus() {
+    rsync -aHAX --numeric-ids --delete --info=progress2 \
+      -e "ssh -p 22" \
+      ~/.git-repos/  erebus:~/.git-repos/
+  }
+
