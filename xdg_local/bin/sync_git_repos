@@ -1,14 +1,25 @@
 #!/bin/sh
 
 sync_from_erebus() {
-  rsync -aHAX --numeric-ids --delete --info=progress2 \
-    -e "ssh -p 22" \
-    erebus:~/.git-repos/  ~/.git-repos/
+    rsync -aHAX --numeric-ids --delete --info=progress2 \
+        -e "ssh -p 22" \
+        erebus:~/.git-repos/ ~/.git-repos/
 }
 
 sync_to_erebus() {
     rsync -aHAX --numeric-ids --delete --info=progress2 \
-      -e "ssh -p 22" \
-      ~/.git-repos/  erebus:~/.git-repos/
-  }
+        -e "ssh -p 22" \
+        ~/.git-repos/ erebus:~/.git-repos/
+}
 
+sync_to_synology() {
+    rsync -aHAX --numeric-ids --delete --info=progress2 \
+        -e "ssh -p 22" \
+        ~/.git-repos/ ds1621:~/.git-repos/
+}
+
+sync_from_synology() {
+    rsync -aHAX --numeric-ids --delete --info=progress2 \
+        -e "ssh -p 22" \
+        ds1621:~/.git-repos/ ~/.git-repos/
+}
