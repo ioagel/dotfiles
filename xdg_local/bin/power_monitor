@@ -1,0 +1,41 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+while true; do
+    # 1. CPU Power (Fast read from hwmon)
+    CPU_RAW=$(cat /sys/class/hwmon/hwmon*/curr1_input 2> /dev/null | head -n 1)
+    [ -z "$CPU_RAW" ] && CPU_RAW=$(cat /sys/class/hwmon/hwmon*/power1_input 2> /dev/null | head -n 1)
+    CPU_WATTS=$(echo "scale=2; $CPU_RAW / 1000000" | bc)
+
+    # 2. Get GPU Power (Targeting the ACTUAL sensor, not the limit)
+    # We look for power1_average, but skip files containing "cap" or "max"
+    GPU_FILE=$(ls /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2> /dev/null | head -n 1)
+
+    # Fallback for some RX 580 drivers that use power1_input
+    if [ -z "$GPU_FILE" ]; then
+        GPU_FILE=$(ls /sys/class/drm/card*/device/hwmon/hwmon*/power1_input 2> /dev/null | head -n 1)
+    fi
+
+    if [ -f "$GPU_FILE" ]; then
+        GPU_RAW=$(cat "$GPU_FILE")
+        # Ensure we aren't just reading a zero or the max 145W cap
+        GPU_WATTS=$(echo "scale=2; $GPU_RAW / 1000000" | bc)
+    else
+        GPU_WATTS="N/A"
+    fi
+
+    tput clear
+    echo -e "==========================================="
+    echo -e "   7950X + RX 580 EFFICIENCY DASHBOARD"
+    echo -e "==========================================="
+    echo -e "CPU Pkg Power:   ${GREEN}${CPU_WATTS} Watts${NC}"
+    echo -e "GPU Power Draw:  ${GREEN}${GPU_WATTS} Watts${NC}"
+    echo -e "-------------------------------------------"
+    echo -e "CPU EPP Mode:    $(cat /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference | head -n 1)"
+    echo -e "GPU Level:       $(cat /sys/class/drm/card*/device/power_dpm_force_performance_level | head -n 1)"
+    echo -e "==========================================="
+    echo "Press [Ctrl+C] to exit"
+    sleep 1
+done
