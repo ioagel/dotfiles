@@ -14,7 +14,7 @@ polybar-msg cmd quit
 # killall -q polybar
 
 # Wait until the processes have been shut down
-while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+while pgrep -u $UID -x polybar > /dev/null; do sleep 1; done
 
 # source the active theme if it exists
 ACTIVE_THEME_FILE="$HOME/.config/themes/active-theme.sh"
@@ -23,6 +23,10 @@ if [ -f "$ACTIVE_THEME_FILE" ]; then
 else
     echo "[WARN] Active theme file not found: $ACTIVE_THEME_FILE. Polybar might use default colors." | tee -a /tmp/polybar_main.log
 fi
+
+# Set the environment variable for the CPU temp path
+HWMON_PATH=$(grep -l "k10temp" /sys/class/hwmon/hwmon*/name | sed 's/name/temp1_input/')
+export HWMON_PATH
 
 # --- Launch Polybar ---
 # Decide how many monitors we have and display the appropriate bars
@@ -48,7 +52,7 @@ else
     # Set the default profile
     export POLYBAR_PROFILE="default" # main desktop
 
-    if command -v systemd-detect-virt &>/dev/null && systemd-detect-virt -q; then # detect if running in a VM
+    if command -v systemd-detect-virt &> /dev/null && systemd-detect-virt -q; then # detect if running in a VM
         export POLYBAR_PROFILE="vm"
     elif is_laptop; then # detect if running in a laptop
         export POLYBAR_PROFILE="laptop"
