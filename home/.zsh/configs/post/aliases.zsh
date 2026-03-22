@@ -65,6 +65,9 @@ alias snap-home="snap-manager create --config home"
 alias batt-optimal='sudo systemctl restart set-batt-thresholds-optimal.service'
 alias batt-default='sudo systemctl restart set-batt-thresholds-default.service'
 
+# Arch related
+alias mypkgs="{ expac --timefmt='%Y-%m-%d %T' '%l\tRepo\t%n' -Q \$(pacman -Qenq); expac --timefmt='%Y-%m-%d %T' '%l\tAUR \t%n' -Q \$(pacman -Qemq); } | sort -rn"
+
 ##### World of Warcraft
 # You should use `clean-wow-cache` only as a **troubleshooting step**, not as a regular maintenance routine. Clearing the cache is technically a "performance reset"—the next time you launch the game, your GPU has to re-calculate every shader from scratch, which causes temporary stuttering and longer loading screens.
 
