@@ -287,10 +287,12 @@ ln -sf "${CONFIG_DIR}/yazi/themes/theme-${THEME}.toml" "${CONFIG_DIR}/yazi/theme
 # VS Code and related editor settings (Cursor, Windsurf, etc)
 log "Setting up VS Code and related editor settings..."
 # Create symlinks (overwrite if they exist and are not already correct)
-ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"
-ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Windsurf/User/settings.json"
-ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.cursor/argv.json"
-ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.windsurf/argv.json"
+ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Cursor/User/settings.json"  2> /dev/null || echo "Cursor is not installed"
+ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Windsurf/User/settings.json" 2> /dev/null || echo "Windsurf is not installed"
+ln -sf "${CONFIG_DIR}/Code/User/settings.json" "${CONFIG_DIR}/Antigravity/User/settings.json" 2> /dev/null || echo "Antigravity is not installed"
+ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.cursor/argv.json" 2> /dev/null || echo "Cursor is not installed"
+ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.windsurf/argv.json" 2> /dev/null || echo "Windsurf is not installed"
+ln -sf "${HOME}/.vscode/argv.json" "${HOME}/.antigravity/argv.json" 2> /dev/null || echo "Antigravity is not installed"
 # Build the VS Code settings
 if command -v build-vscode-settings &>/dev/null; then
     log "Running build-vscode-settings..."
