@@ -3,6 +3,15 @@
 # Toggle Polybar visibility
 bindsym $mod+m exec --no-startup-id ~/.config/polybar/scripts/toggle-polybar.sh
 
+# Toggle Polybar visibility only in VM-0
+bindsym $mod+Ctrl+F1 exec --no-startup-id pgrep -f "polybar vm-0" | xargs -I {} polybar-msg -p {} cmd toggle
+
+# Toggle Polybar visibility only in VM-1
+bindsym $mod+Ctrl+F2 exec --no-startup-id pgrep -f "polybar vm-1" | xargs -I {} polybar-msg -p {} cmd toggle
+
+# Toggle Polybar visibility only in VM-2
+bindsym $mod+Ctrl+F3 exec --no-startup-id pgrep -f "polybar vm-2" | xargs -I {} polybar-msg -p {} cmd toggle
+
 # Toggle system tray visibility
 bindsym $mod+Shift+m exec --no-startup-id polybar-msg action systray module_toggle
 
