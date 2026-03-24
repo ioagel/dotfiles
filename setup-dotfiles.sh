@@ -348,7 +348,6 @@ if [[ -d ~/.SynologyDrive ]] && [[ -f ~/.SynologyDrive/SynologyDrive.app/conf/fi
     node index.js --ignore=dist
     node index.js --ignore=build
     node index.js --ignore=target
-    node index.js --ignore=.git
     cd - || error "Failed to cd back to previous directory."
 fi
 
