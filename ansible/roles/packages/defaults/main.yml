@@ -172,7 +172,6 @@ pacman_packages:
   - pacman-contrib
   - libreoffice-fresh
   - libreoffice-fresh-el
-  - gvfs
   - gvfs-goa
   - gvfs-google
   - gvfs-smb
