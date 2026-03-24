@@ -75,6 +75,7 @@ virtualbox_packages:
   - virtualbox
   - virtualbox-host-dkms
   - virtualbox-guest-iso
+  - virtualbox-ext-oracle # TODO: without chaotic-aur this will fail
 
 # VirtualBox user groups
 virtualbox_user_groups:

@@ -1,6 +1,7 @@
 ---
 pacman_packages:
   - ruby
+  - ruby-erb
   - go
   - nodejs
   - npm
@@ -51,7 +52,6 @@ pacman_packages:
   - thunar-volman
   - nautilus
   - seahorse
-  - seahorse-nautilus
   - sushi
   - nautilus-share
   - nautilus-image-converter
@@ -86,7 +86,6 @@ pacman_packages:
   - pipewire-jack
   - pipewire-pulse
   - gst-plugin-pipewire
-  - libpulse
   - wireplumber
   - sof-firmware
   - imagemagick
@@ -96,6 +95,7 @@ pacman_packages:
   - python-pipx
   - python-pip
   - python-i3ipc
+  - python-passlib
   - python-pyfuse3 # required by borg, to mount borg repos
   - bat
   - maim
@@ -118,6 +118,7 @@ pacman_packages:
   - gnome-keyring
   - gnome-online-accounts
   - gnome-control-center
+  - gedit
   - hunspell
   - hunspell-en_us
   - hunspell-el
@@ -160,7 +161,6 @@ pacman_packages:
   - qt5-svg
   - brightnessctl
   - gtk4
-  - libadwaita
   - fuse2
   - flatpak
   - imv
@@ -172,6 +172,7 @@ pacman_packages:
   - pacman-contrib
   - libreoffice-fresh
   - libreoffice-fresh-el
+  - gvfs
   - gvfs-goa
   - gvfs-google
   - gvfs-smb
@@ -183,6 +184,41 @@ pacman_packages:
   - usage # required by mise, for completions to work
   - evolution
   - mysql-workbench
+  - lazydocker
+  - resvg
+  - btrfs-assistant
+  - alsa-scarlett-gui # Vocaster two audio interface GUI
+  - ansible-lint
+  - expac # alpm data (pacman database) extraction utility
+  - otf-font-awesome
+  - hcloud # Hetzner Cloud CLI
+  - bc # An arbitrary precision calculator language: needed by power_monitor script
+  - mangohud # A Vulkan overlay layer for monitoring FPS, temperatures, CPU/GPU load and more.
+  - lib32-mangohud
+  - wget
+  - vault
+  - unrar
+  - stress-ng # Software to stress test a computer system in various selectable ways
+  - sshpass # Fool ssh into accepting an interactive password non-interactively
+  - shfmt # Format shell programs
+  - openbsd-netcat # TCP/IP swiss army knife. OpenBSD variant.
+  - neovim
+  - libva-utils # Intel VA-API Media Applications and Scripts for libva: vainfo utility
+  - inkscape
+  - gparted
+  - gemini-cli # For AI assistance
+  - gamemode # A daemon/lib combo that allows games to request a set of optimisations be temporarily applied to the host OS
+  - lib32-gamemode
+  - dnsmasq
+  - signal-desktop
+  - discord
+  - woff2-font-awesome
+  - shellcheck
+  - ttf-montserrat
+  - inter-font
+  - terminus-font
+  - gimp
+  - cpupower
 
 # GPU packages for bare metal systems (have only AMD GPUs)
 gpu_packages_baremetal:
@@ -192,6 +228,8 @@ gpu_packages_baremetal:
   - lib32-vulkan-radeon
   - corectrl
   - nvtop
+  - lact
+  - amdgpu_top
 
 # GPU packages for KVM/QEMU virtual machines
 gpu_packages_vm_kvm:
@@ -202,35 +240,66 @@ gpu_packages_vm_kvm:
 gpu_packages_vm_vmware_compatible:
   - xf86-video-vmware
 
+cachyos_enabled: true
+
+cachyos_packages:
+  - linux-cachyos
+  - linux-cachyos-headers
+  - linux-cachyos-lts
+  - linux-cachyos-lts-headers
+  - cachyos-kernel-manager
+  - cachyos-settings
+  - cachyos-rate-mirrors
+  - cachyos-v4-mirrorlist
+  - cachyos-v3-mirrorlist
+  - cachyos-mirrorlist
+  - cachyos-keyring
+  - obs-studio-browser
+  - proton-cachyos-slr
+
 chaotic_aur_enabled: true
 
 chaotic_aur_packages:
   - yaru-gtk-theme
   - yaru-icon-theme
   - google-chrome
-  - brave-bin
   - neovim-remote
   - visual-studio-code-bin
-  - lazydocker
-  - 1password
-  - rofi-greenclip
   - synology-drive
   - nautilus-open-any-terminal
-  - resvg
-  - update-grub
   - btrfs-desktop-notification
-  - btrfs-assistant
   - mysql-clients
   - libmysqlclient
 
 aur_packages:
-  - windsurf
-  - cursor-bin
+  - antigravity
   - caffeine-ng
+  - 1password
   - 1password-cli
   - xkblayout-state-git
-  - checkupdates-with-aur
   - vagrant
+  - nitrogen
+  - obs-studio-browser # if cachyos is not enabled it installs this from AUR
+  - obs-pipewire-audio-capture
+  # A simple and lightweight app for running Windows games using UMU-Launcher
+  # If cachyos or chaotic_aur is not enabled it installs this from AUR
+  - faugus-launcher
+  - gpu-viewer
+  - jetbrains-toolbox
+  - autocutsel # synchronizes the two copy/paste buffers mainly used by X applications
+  - viber
+  - twitch-dl-bin
+  - mqtt-explorer # For Home assistant and Cerbo Solar
+  # - python-tinytuya # OPTIONAL for Tuya devices
+  # Vocaster two audi ointerface
+  - scarlett2
+  - scarlett2-firmware
+  - geekbench # Can be installed from cachyos repo if enabled
+  - localsend # An open source cross-platform alternative to AirDrop: Can be installed from cachyos or chaotic-aur repo if enabled
+  - spotify # Can be installed from chaotic-aur repo if enabled
+  - wowup-cf-bin # World of Warcraft addon updater (with CurseForge support): Can be installed from chaotic-aur repo if enabled
+  - update-grub # Can be installed from chaotic-aur repo if enabled
+  - rofi-greenclip # Can be installed from chaotic-aur repo if enabled
 
 services:
   - NetworkManager
