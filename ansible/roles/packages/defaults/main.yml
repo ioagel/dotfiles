@@ -253,8 +253,10 @@ cachyos_packages:
   - cachyos-v3-mirrorlist
   - cachyos-mirrorlist
   - cachyos-keyring
-  - obs-studio-browser
   - proton-cachyos-slr
+  - chwd # CachyOS Hardware Detection Tool: TODO: need to run "sudo chwd -a" after installation
+  - falcond # TODO: remember to enable the systemd service after installation: sudo systemctl enable --now falcond.service
+  - falcond-gui
 
 chaotic_aur_enabled: true
 

@@ -101,3 +101,5 @@ alias mypkgs="{ expac --timefmt='%Y-%m-%d %T' '%l\tRepo\t%n' -Q \$(pacman -Qenq)
 # **Would you like me to show you how to add a "Cache Size" indicator to your `htop` or a terminal alias so you can see how much of that 10GB is actually being used?**
 alias clean-wow-cache='rm -rf ~/.cache/mesa_shader_cache && echo "WoW Shader Cache Cleared. Next launch will compile fresh shaders."'
 alias shader-wow-status='du -sh ~/.cache/mesa_shader_cache'
+# Pin OBS (Cores 16-31) when streaming WoW (pinned to Cores 0-15)
+alias stream_wow_on='sudo taskset -a -cp 16-31 $(pgrep -x obs) && sudo taskset -a -cp 0-15 $(pgrep -i "WoWClassic.exe")'

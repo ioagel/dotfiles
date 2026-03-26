@@ -1,6 +1,6 @@
 [Default Applications]
 application/octet-stream=org.gnome.gedit.desktop
-x-scheme-handler/jetbrains=jetbrains-toolbox.desktop
+x-scheme-handler/jetbrains=jetbrainsd.desktop
 application/json=Neovim.desktop
 application/pdf=org.gnome.Papers.desktop
 application/xhtml+xml=google-chrome.desktop
