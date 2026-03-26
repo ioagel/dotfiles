@@ -147,6 +147,25 @@
     use: yay
     state: present
 
+# TODO: ENABLE THIS WHEN WE HAVE THE CACHYOS REPOS SETUP IMPLEMENTED
+#- name: Ensure falcond user profile directory exists
+#  ansible.builtin.file:
+#    path: /usr/share/falcond/profiles/user
+#    state: directory
+#    mode: "2775"
+#    owner: root
+#    group: falcond
+#  when: "'falcond' in (pacman_packages + cachyos_packages)"
+#
+#- name: Install falcond Proton profile override
+#  ansible.builtin.copy:
+#    src: falcond-proton.conf
+#    dest: /usr/share/falcond/profiles/user/proton.conf
+#    mode: "0644"
+#    owner: root
+#    group: falcond
+#  when: "'falcond' in (pacman_packages + cachyos_packages)"
+
 ## Setup SDDM theme
 - name: Copy SDDM theme
   ansible.builtin.copy:
