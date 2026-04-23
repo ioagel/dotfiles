@@ -7,5 +7,12 @@ BLUR="10x8"
 
 $SCREENSHOT
 magick $PICTURE -blur $BLUR $PICTURE
+
+# Force keyboard layout to US before locking
+setxkbmap -layout us -option 'ctrl:nocaps'
+
 i3lock -i $PICTURE
 rm $PICTURE
+
+# Restore full keyboard settings (us,gr layouts, toggle option, xcape) after unlock
+~/.config/i3/scripts/setup-keyboard
