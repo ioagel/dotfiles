@@ -353,7 +353,7 @@ for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
 for_window [class="gnome-calculator" instance="gnome-calculator"] floating enable
 for_window [class="pavucontrol"] floating enable
 for_window [class="Solaar"] floating enable
-for_window [class="1Password"] floating enable
+for_window [class="1password"] floating enable
 for_window [class="Caffeine"] floating enable
 for_window [class="Org.gnome.Boxes"] floating enable
 
