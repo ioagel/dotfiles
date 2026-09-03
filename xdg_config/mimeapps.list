@@ -36,6 +36,7 @@ x-scheme-handler/victron-connect=VictronConnect.desktop
 application/vnd.tcpdump.pcap=vim.desktop
 video/x-flv=mpv.desktop
 x-scheme-handler/antigravity=antigravity.desktop
+x-scheme-handler/codex=chatgpt.desktop
 
 [Added Associations]
 application/octet-stream=xed.desktop;org.gnome.gedit.desktop;

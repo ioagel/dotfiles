@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+#
+# toggle-ipv6: Enable, disable, toggle, or check IPv6 status on Arch Linux (with persistence across reboots)
+#
+
+set -euo pipefail
+
+SYSCTL_CONF="/etc/sysctl.d/40-ipv6.conf"
+SCRIPT_ARGS=("$@")
+
+function check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        exec sudo "$0" "${SCRIPT_ARGS[@]}"
+    fi
+}
+
+function get_status() {
+    local val
+    val=$(sysctl -n net.ipv6.conf.all.disable_ipv6 2>/dev/null || echo "0")
+    if [[ "$val" -eq 1 ]]; then
+        echo "disabled"
+    else
+        echo "enabled"
+    fi
+}
+
+function show_status() {
+    local status
+    status=$(get_status)
+    echo "=========================================="
+    if [[ "$status" == "enabled" ]]; then
+        echo -e " IPv6 Status: \033[32mENABLED (Permanent)\033[0m"
+    else
+        echo -e " IPv6 Status: \033[31mDISABLED (Permanent)\033[0m"
+    fi
+    echo "=========================================="
+    
+    echo -e "\n[Active Sysctl Values]"
+    sysctl net.ipv6.conf.all.disable_ipv6 net.ipv6.conf.default.disable_ipv6 net.ipv6.conf.br0.accept_ra 2>/dev/null || true
+
+    if [[ -f "$SYSCTL_CONF" ]]; then
+        echo -e "\n[Persistent Config: $SYSCTL_CONF]"
+        cat "$SYSCTL_CONF"
+    fi
+
+    echo -e "\n[Active IPv6 Addresses]"
+    ip -6 addr show scope global 2>/dev/null || echo "None"
+
+    echo -e "\n[IPv6 Default Route]"
+    ip -6 route show default 2>/dev/null || echo "None"
+
+    if [[ "$status" == "enabled" ]]; then
+        echo -e "\n[Connectivity Test]"
+        if ping -6 -c 1 -W 2 2606:4700:4700::1111 >/dev/null 2>&1; then
+            echo -e " Internet IPv6 (Cloudflare): \033[32mREACHABLE\033[0m"
+        else
+            echo -e " Internet IPv6 (Cloudflare): \033[31mUNREACHABLE\033[0m"
+        fi
+    fi
+}
+
+function enable_ipv6() {
+    check_root
+    echo "Enabling IPv6 and saving permanent configuration to $SYSCTL_CONF..."
+    
+    cat << 'SYSCONF' > "$SYSCTL_CONF"
+# Persistent IPv6 Configuration
+net.ipv6.conf.all.disable_ipv6 = 0
+net.ipv6.conf.default.disable_ipv6 = 0
+net.ipv6.conf.br0.disable_ipv6 = 0
+
+# Allow bridge interfaces to accept Router Advertisements (SLAAC)
+net.ipv6.conf.all.accept_ra = 2
+net.ipv6.conf.default.accept_ra = 2
+net.ipv6.conf.br0.accept_ra = 2
+SYSCONF
+
+    sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null
+    sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null
+    sysctl -w net.ipv6.conf.br0.disable_ipv6=0 >/dev/null 2>&1 || true
+    sysctl -w net.ipv6.conf.all.accept_ra=2 >/dev/null
+    sysctl -w net.ipv6.conf.default.accept_ra=2 >/dev/null
+    sysctl -w net.ipv6.conf.br0.accept_ra=2 >/dev/null 2>&1 || true
+    sysctl -p "$SYSCTL_CONF" >/dev/null 2>&1 || true
+
+    echo "Refreshing NetworkManager connection..."
+    if systemctl is-active --quiet NetworkManager; then
+        nmcli connection up br0 >/dev/null 2>&1 || true
+    fi
+
+    echo -e "\033[32mIPv6 is now ENABLED permanently.\033[0m"
+    sleep 1
+    show_status
+}
+
+function disable_ipv6() {
+    check_root
+    echo "Disabling IPv6 and saving permanent configuration to $SYSCTL_CONF..."
+    
+    cat << 'SYSCONF' > "$SYSCTL_CONF"
+# Persistent IPv6 Configuration (Disabled)
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.br0.disable_ipv6 = 1
+SYSCONF
+
+    sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null
+    sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null
+    sysctl -w net.ipv6.conf.br0.disable_ipv6=1 >/dev/null 2>&1 || true
+    sysctl -p "$SYSCTL_CONF" >/dev/null 2>&1 || true
+
+    echo -e "\033[31mIPv6 is now DISABLED permanently.\033[0m"
+    show_status
+}
+
+function toggle_ipv6() {
+    local status
+    status=$(get_status)
+    if [[ "$status" == "enabled" ]]; then
+        disable_ipv6
+    else
+        enable_ipv6
+    fi
+}
+
+case "${1:-status}" in
+    on|enable|start)
+        enable_ipv6
+        ;;
+    off|disable|stop)
+        disable_ipv6
+        ;;
+    toggle)
+        toggle_ipv6
+        ;;
+    status)
+        show_status
+        ;;
+    *)
+        echo "Usage: $(basename "$0") {on|off|toggle|status}"
+        exit 1
+        ;;
+esac

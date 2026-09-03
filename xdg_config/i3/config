@@ -282,6 +282,9 @@ bindsym $mod+Shift+p exec ~/.config/i3/scripts/power-profiles-menu
 
 bindsym $mod+Ctrl+m exec --no-startup-id pavucontrol
 
+# Start WezTerm and immediately launch herdr
+bindsym $mod+Shift+h exec wezterm start -- herdr
+
 #############################################
 # autostart applications/services on login: #
 #############################################

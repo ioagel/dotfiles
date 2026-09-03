@@ -26,7 +26,7 @@ config = {
 		bottom = 0
 	},
 
-	default_prog = { "zellij" },
+	-- default_prog = { "zellij" },
 
 	-- Enable OSC 52 clipboard integration (make zelliz support copy/paste)
 	enable_kitty_keyboard = true,

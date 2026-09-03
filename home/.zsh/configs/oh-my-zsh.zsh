@@ -34,7 +34,6 @@ plugins=(
     web-search
     copyfile
     copybuffer
-    mise
 )
 
 ZSH_DISABLE_COMPFIX="true"

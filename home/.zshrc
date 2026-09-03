@@ -52,6 +52,8 @@ _load_settings() {
 }
 _load_settings "$ZSH_DIR/configs"
 
+eval "$(~/.local/bin/mise activate zsh)"
+
 # Load common path configuration (used in ~/.xprofile also)
 [[ -f ~/.path_common.sh ]] && source ~/.path_common.sh
 
