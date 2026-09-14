@@ -49,6 +49,7 @@ shadow-exclude = [
   "class_g = 'i3-frame'",
   "class_g = 'Polybar'",
   "class_g = 'steam_app_0'",
+  "name = 'World of Warcraft'",
   "_GTK_FRAME_EXTENTS"
 ];
 
@@ -91,7 +92,8 @@ fade-delta = 8;
 
 # Specify a list of conditions of windows that should not be faded.
 fade-exclude = [
-  "class_g = 'steam_app_0'"
+  "class_g = 'steam_app_0'",
+  "name = 'World of Warcraft'"
 ];
 # fade-exclude = [
 #   "class_g = 'i3-frame'"
@@ -166,6 +168,7 @@ opacity-rule = [
   "90:class_g = 'org.wezfurlong.wezterm'",
   "100:class_g = 'steam_app_0'",
   "100:class_g = 'Antigravity'",
+  "100:name = 'World of Warcraft'",
   "100:_GTK_FRAME_EXTENTS"
 ];
 
@@ -186,6 +189,7 @@ rounded-corners-exclude = [
   "class_g = 'i3-frame'",
   "class_g = 'Polybar'",
   "class_g = 'steam_app_0'",
+  "name = 'World of Warcraft'",
   "_GTK_FRAME_EXTENTS"
 ];
 
@@ -240,6 +244,7 @@ blur-background-exclude = [
   # Brakes rounded corners, if you do not exclude dunst
   "class_g = 'Dunst'",
   "class_g = 'steam_app_0'",
+  "name = 'World of Warcraft'",
   "_GTK_FRAME_EXTENTS"
 ];
 
@@ -393,7 +398,7 @@ detect-client-leader = true;
 # May not be supported in all driver versions
 # Works best with the newer Mesa drivers (20.0+)
 # Complements your existing glx-no-stencil and glx-no-rebind-pixmap settings
-glx-use-copysubbuffermemory = true;
+# glx-use-copysubbuffermemory = true;
 
 # Disable the use of damage information.
 # This cause the whole screen to be redrawn every time, instead of the part of the screen
@@ -418,7 +423,7 @@ use-damage = true
 # Has a small performance cost
 # Most beneficial when you encounter specific synchronization issues
 # Works in conjunction with your existing glx backend and VSync settings
-xrender-sync-fence = true;
+xrender-sync-fence = false;
 
 # GLX backend: Use specified GLSL fragment shader for rendering window
 # contents. Read the man page for a detailed explanation of the interface.
