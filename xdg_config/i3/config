@@ -469,3 +469,6 @@ exec --no-startup-id flameshot
 
 # Start btrfs desktop notifier
 exec --no-startup-id btrfs-desktop-notification
+
+# Start Joplin Notes
+exec --no-startup-id joplin-desktop
