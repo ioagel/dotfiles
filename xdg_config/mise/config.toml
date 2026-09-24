@@ -3,4 +3,6 @@ idiomatic_version_file_enable_tools = ["ruby"]
 
 [tools]
 herdr = "latest"
-ruby = "4.0.6"
+node = "latest"
+ruby = "latest"
+uv = "latest"
