@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+declare -A devices=(
+  ["Proxmox Mixalis"]="e8:80:88:be:22:2a"
+  ["Synology NAS"]="90:09:d0:08:3a:eb"
+  ["erebus"]="c8:7f:54:56:c1:bd"
+  ["pve01"]="30:85:a9:8e:9f:03"
+  ["pve02"]="3c:97:0e:3d:d4:a7"
+  ["pve03"]="7c:2b:e1:13:e8:e8"
+  ["pve04"]="00:e0:67:1f:a5:64"
+  ["pve05"]="98:fa:9b:bb:db:49"
+  ["pve06"]="c8:5b:76:e0:da:43"
+)
+if ! command -v rofi >/dev/null 2>&1 || ! command -v wakeonlan >/dev/null 2>&1; then
+  notify-send -u critical "Wake-on-LAN" "Install rofi and wakeonlan first" 2>/dev/null || true
+  exit 1
+fi
+selection=$(printf '%s\n' "${!devices[@]}" | sort | rofi -dmenu -i -p "Wake device" -theme "$HOME/.config/rofi/wolmenu.rasi")
+[[ -n "$selection" ]] || exit 0
+wakeonlan "${devices[$selection]}" >/dev/null
+notify-send "Wake-on-LAN" "Magic packet sent to $selection" 2>/dev/null || true

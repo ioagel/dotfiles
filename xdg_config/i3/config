@@ -162,6 +162,7 @@ bindsym $mod+q kill
 
 # exit-menu
 bindsym $mod+Shift+e exec ~/.config/i3/scripts/powermenu
+bindsym $mod+Shift+w exec --no-startup-id ~/.config/i3/scripts/wol-menu
 
 # Lock the system
 # lock with a picture:

@@ -1,0 +1,11 @@
+@import "config.rasi"
+
+window {
+    width: 400px;
+}
+
+listview {
+    lines: 9;
+    columns: 1;
+    scrollbar: false;
+}
