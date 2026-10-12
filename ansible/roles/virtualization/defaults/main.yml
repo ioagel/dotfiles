@@ -2,7 +2,9 @@
 #### KVM/QEMU and libvirt ####
 # KVM/QEMU and libvirt packages
 kvm_packages:
-  - qemu-full # Full QEMU with all features
+  # Use qemu-desktop instead of qemu-full: qemu-full pulls in qemu-chardev-baum -> brltty,
+  # which installs /etc/X11/xinit/xinitrc.d/90xbrlapi and stalls SDDM -> i3 X11 login for ~2m13s.
+  - qemu-desktop
   - libvirt # Virtualization API
   - virt-install # Command line VM installation tool
   - virt-manager # GUI for managing VMs

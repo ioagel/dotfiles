@@ -33,6 +33,22 @@
     regexp: "^#NoProgressBar$"
     line: "ILoveCandy"
 
+# If brltty (Braille display driver) is ever pulled in as a dependency (e.g. by qemu-full -> qemu-chardev-baum),
+# it installs /etc/X11/xinit/xinitrc.d/90xbrlapi. During SDDM/X11 login, /usr/share/sddm/scripts/Xsession
+# sources all executable scripts in /etc/X11/xinit/xinitrc.d/ synchronously before starting i3.
+# When brltty is not running, /usr/bin/xbrlapi hangs for ~2m13s waiting for a BrlAPI TCP connection timeout,
+# stalling the SDDM -> i3 login for over 2 minutes.
+- name: Prevent 90xbrlapi from being extracted by pacman (stalls SDDM -> i3 login for ~2m)
+  ansible.builtin.replace:
+    path: /etc/pacman.conf
+    regexp: "(?:# Prevent brltty's X11 startup script from being extracted\\.\\n(?:#.*\\n)*)?^#?NoExtract\\s*=.*$"
+    replace: |
+      # Prevent brltty's X11 startup script from being extracted.
+      # SDDM's Xsession runs /etc/X11/xinit/xinitrc.d/90xbrlapi synchronously before starting i3;
+      # when brltty is not running, /usr/bin/xbrlapi hangs for ~2m13s waiting for a TCP timeout,
+      # causing SDDM login to stall for over 2 minutes.
+      NoExtract = etc/X11/xinit/xinitrc.d/90xbrlapi
+
 - name: Disable debug packages in makepkg.conf
   ansible.builtin.lineinfile:
     path: /etc/makepkg.conf
