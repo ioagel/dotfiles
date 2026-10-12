@@ -5,9 +5,9 @@
 #==============================================================================
 #
 # DESCRIPTION:
-#   This script automates the installation of Arch Linux with BTRFS subvolumes
-#   and optional LUKS encryption. It supports both interactive disk selection
-#   and command-line specification of partitions.
+#   This script automates the installation of Arch Linux with BTRFS subvolumes.
+#   The former encrypted-install path is disabled until it supports encrypted
+#   Btrfs /boot and USB-key provisioning safely.
 #
 # WIFI: Connect to a network, using: # iwctl --passphrase PASSPHRASE station DEVICE connect SSID
 # Console Font: # setfont ter-132b
@@ -22,16 +22,13 @@
 #
 # OPTIONS:
 #   -e PARTITION     EFI partition (e.g., /dev/sda1)
-#   -b PARTITION     Boot partition (required with encryption, e.g., /dev/sda2)
+#   -b PARTITION     Legacy boot partition option (encrypted install disabled)
 #   -r PARTITION     Root partition (e.g., /dev/sda3 or /dev/sdb1)
 #   -S               Skip formatting the EFI partition (use when it's already formatted)
 #
 # EXAMPLES:
 #   # Interactive mode:
 #   sudo ./archinstall.sh
-#
-#   # Encrypted setup with specific partitions:
-#   sudo ./archinstall.sh -e /dev/sda1 -b /dev/sda2 -r /dev/sdb1
 #
 #   # Non-encrypted setup with specific partitions:
 #   sudo ./archinstall.sh -e /dev/sda1 -r /dev/sda2
@@ -42,7 +39,7 @@
 # FEATURES:
 #   - UEFI boot with GRUB bootloader
 #   - BTRFS filesystem with optimized subvolumes
-#   - Optional LUKS encryption
+#   - Encrypted installs currently stop before partition formatting
 #   - Snapper for system snapshots
 #   - Ansible-based post-installation configuration
 #
@@ -50,11 +47,11 @@
 #   1. Check prerequisites (root, UEFI mode)
 #   2. Install required dependencies
 #   3. Configure partitioning (interactive or from command line)
-#   4. Optional disk encryption setup
+#   4. Reject the unported encrypted-install path before formatting
 #   5. Create and mount filesystems
 #   6. Install base system packages
 #   7. Configure system settings (hostname, users, etc.)
-#   8. Set up bootloader and encryption (if enabled)
+#   8. Set up bootloader
 #   9. Finalize with Ansible configuration
 #
 # NOTE: This script will format specified partitions. Use with caution!
@@ -798,7 +795,6 @@ setup_with_ansible() {
         fi
 
         ansible_cmd="$ansible_cmd -e encrypted_device='$encrypted_device'"
-        ansible_cmd="$ansible_cmd -e encryption_password='$ENCRYPTION_PASSWORD'"
     else
         ansible_cmd="$ansible_cmd -e '{\"enable_encryption\": false}'"
     fi
@@ -858,6 +854,12 @@ fi
 
 # Configure encryption
 configure_encryption
+
+# The encrypted installer still partitions a separate ext4 /boot and is not
+# compatible with the USB-key/encrypted-Btrfs boot role. Fail before formatting.
+if [ "$ENABLE_ENCRYPTION" = true ]; then
+    error "Encrypted installation is temporarily disabled: the installer still creates a separate ext4 /boot. Use a reviewed encrypted-Btrfs installer before formatting disks."
+fi
 
 # Select partitions/disks
 select_partition_disks

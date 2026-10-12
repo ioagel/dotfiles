@@ -1,48 +1,95 @@
 ---
+- name: Detect root mount before changing boot configuration
+  ansible.builtin.command: findmnt -no SOURCE -T /
+  register: root_mount_source
+  changed_when: false
+  check_mode: false
+
+- name: Refuse non-encrypted mode on an encrypted root
+  ansible.builtin.assert:
+    that: (enable_encryption | bool) or 'cryptroot' not in root_mount_source.stdout
+    fail_msg: >-
+      Root is mounted from cryptroot, but enable_encryption is false. Refusing
+      to replace the working encrypted boot configuration.
+
+- name: Require existing USB-key encrypted Btrfs boot configuration
+  ansible.builtin.assert:
+    that:
+      - encrypted_device | length > 0
+      - luks_usb_keyfile is match('^/efi/[^/]+$')
+      - encrypted_grub_efi_loader is match('^/efi/.+[.]efi$')
+      - encrypted_grub_early_config is match('^/efi/.+[.]cfg$')
+      - mkinitcpio_files | length == 0
+    fail_msg: >-
+      Encrypted boot must already be provisioned with an external USB key and
+      GRUB EFI loader; pass their paths explicitly and keep mkinitcpio_files
+      empty. This role will not create a key, add a LUKS slot, or embed a key.
+  when: enable_encryption
+
+- name: Check encrypted root and USB boot files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ luks_usb_keyfile }}"
+    - "{{ encrypted_grub_efi_loader }}"
+    - "{{ encrypted_grub_early_config }}"
+  register: encrypted_boot_files
+  when: enable_encryption
+
+- name: Refuse to alter an incompletely provisioned encrypted boot
+  ansible.builtin.assert:
+    that: encrypted_boot_files.results | map(attribute='stat.exists') | min
+    fail_msg: "USB key, GRUB EFI loader, or early GRUB config is missing."
+  when: enable_encryption
+
+- name: Check that /boot is inside Btrfs root
+  ansible.builtin.command: findmnt -no FSTYPE,TARGET -T /boot
+  register: boot_mount
+  changed_when: false
+  check_mode: false
+  when: enable_encryption
+
+- name: Refuse separate or unencrypted /boot for this boot mode
+  ansible.builtin.assert:
+    that: boot_mount.stdout.split() == ['btrfs', '/']
+    fail_msg: "Encrypted boot requires /boot inside the Btrfs root filesystem."
+  when: enable_encryption
+
 - name: Get UUID of encrypted device
-  ansible.builtin.shell: |
-    set -o pipefail
-    blkid -s UUID -o value {{ encrypted_device }}
-  args:
-    executable: /bin/bash
+  ansible.builtin.command: "blkid -s UUID -o value {{ encrypted_device }}"
   register: encrypted_device_uuid
   when: enable_encryption
   changed_when: false
+  check_mode: false
 
-- name: Set crypto keyfile name
-  ansible.builtin.set_fact:
-    keyfile: "crypto_keyfile_{{ encrypted_device_uuid.stdout }}.bin"
-  when: enable_encryption
-
-- name: Generate encryption keyfile
-  ansible.builtin.shell: |
-    set -o pipefail
-    dd bs=512 count=4 if=/dev/random of=/efi/{{ keyfile }} iflag=fullblock
-    chmod 600 /efi/{{ keyfile }}
-  args:
-    executable: /bin/bash
-    creates: /efi/{{ keyfile }}
-  when: enable_encryption
-
-- name: Check if keyfile is already added to LUKS
-  ansible.builtin.shell: |
-    set -o pipefail
-    cryptsetup luksOpen --key-file /efi/{{ keyfile }} --test-passphrase {{ encrypted_device }}
-  args:
-    executable: /bin/bash
-  register: keyfile_test
-  failed_when: false
+- name: Identify USB EFI filesystem
+  ansible.builtin.command: findmnt -no SOURCE,FSTYPE,TARGET -T /efi
+  register: efi_mount
   changed_when: false
+  check_mode: false
   when: enable_encryption
 
-- name: Add keyfile to LUKS
-  ansible.builtin.shell: |
-    set -o pipefail
-    echo "{{ encryption_password }}" | cryptsetup luksAddKey {{ encrypted_device }} /efi/{{ keyfile }}
-  args:
-    executable: /bin/bash
-  when: enable_encryption and keyfile_test.rc != 0
-  changed_when: true
+- name: Require a separately mounted FAT EFI filesystem
+  ansible.builtin.assert:
+    that:
+      - efi_mount.stdout.split()[1:] == ['vfat', '/efi']
+    fail_msg: "/efi must be a separately mounted FAT filesystem containing the USB key."
+  when: enable_encryption
+
+- name: Get UUID of USB EFI filesystem
+  ansible.builtin.command: "blkid -s UUID -o value {{ efi_mount.stdout.split()[0] }}"
+  register: efi_device_uuid
+  changed_when: false
+  check_mode: false
+  when: enable_encryption
+
+- name: Verify existing USB key unlocks encrypted root
+  ansible.builtin.command: >-
+    cryptsetup open --test-passphrase --key-file {{ luks_usb_keyfile }} {{ encrypted_device }}
+  changed_when: false
+  check_mode: false
+  no_log: true
+  when: enable_encryption
 
 - name: Configure mkinitcpio.conf for encryption
   ansible.builtin.lineinfile:
@@ -60,28 +107,23 @@
     backup: true
   when: not enable_encryption
 
+- name: Set required initramfs modules
+  ansible.builtin.set_fact:
+    mkinitcpio_modules_final: >-
+      {{ (mkinitcpio_modules + (['vfat', 'usb_storage', 'uas'] if enable_encryption else [])) | unique | list }}
+
 - name: Configure mkinitcpio MODULES
   ansible.builtin.lineinfile:
     path: /etc/mkinitcpio.conf
     regexp: "^MODULES="
-    line: "MODULES=({{ mkinitcpio_modules | join(' ') }})"
+    line: "MODULES=({{ mkinitcpio_modules_final | join(' ') }})"
     backup: true
-
-- name: Set mkinitcpio FILES for encryption
-  ansible.builtin.set_fact:
-    mkinitcpio_files_final: "{{ mkinitcpio_files + ['/efi/' + keyfile] }}"
-  when: enable_encryption
-
-- name: Set mkinitcpio FILES for non-encryption
-  ansible.builtin.set_fact:
-    mkinitcpio_files_final: "{{ mkinitcpio_files }}"
-  when: not enable_encryption
 
 - name: Configure mkinitcpio FILES
   ansible.builtin.lineinfile:
     path: /etc/mkinitcpio.conf
     regexp: "^FILES="
-    line: "FILES=({{ mkinitcpio_files_final | join(' ') }})"
+    line: "FILES=({{ mkinitcpio_files | join(' ') }})"
     backup: true
 
 - name: Regenerate initramfs
@@ -128,6 +170,7 @@
     lspci -nn | grep -E "1002:(67df|6fdf|6798|6818|6819)" || true
   register: polaris_gpu_check
   changed_when: false
+  check_mode: false
 
 - name: Set Polaris GPU detection fact
   ansible.builtin.set_fact:
@@ -157,7 +200,16 @@
     regexp: "^GRUB_CMDLINE_LINUX="
     line: >-
       GRUB_CMDLINE_LINUX="cryptdevice=UUID={{ encrypted_device_uuid.stdout }}:cryptroot
-      root=/dev/mapper/cryptroot cryptkey=rootfs:/efi/{{ keyfile }}"
+      root=/dev/mapper/cryptroot
+      cryptkey=/dev/disk/by-uuid/{{ efi_device_uuid.stdout }}:vfat:{{ luks_usb_keyfile | regex_replace('^/efi', '') }}"
+    backup: true
+  when: enable_encryption
+
+- name: Enable GRUB cryptodisk for encrypted Btrfs /boot
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: "^#?GRUB_ENABLE_CRYPTODISK="
+    line: "GRUB_ENABLE_CRYPTODISK=y"
     backup: true
   when: enable_encryption
 
@@ -177,10 +229,10 @@
     backup: true
 
 - name: Remove rootflags auto-generation from GRUB script for rollback compatibility
-  ansible.builtin.lineinfile:
+  ansible.builtin.replace:
     path: /etc/grub.d/10_linux
-    regexp: '^\s*GRUB_CMDLINE_LINUX="rootflags=subvol=\$\{rootsubvol\} \$\{GRUB_CMDLINE_LINUX\}"'
-    line: '	    GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX}"'
+    regexp: 'rootflags=subvol=\$\{rootsubvol\} '
+    replace: ''
     backup: true
 
 - name: Create pacman hooks directory
@@ -208,11 +260,6 @@
       Description = Fixing GRUB rollback compatibility after grub update
       When = PostTransaction
       Exec = /bin/sh -c 'sed -i "s/rootflags=subvol=\${rootsubvol} //" /etc/grub.d/10_linux && grub-mkconfig -o /boot/grub/grub.cfg'
-
-- name: Install GRUB to EFI (removable for encrypted systems)
-  ansible.builtin.command: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --removable
-  changed_when: true
-  when: enable_encryption
 
 - name: Install GRUB to EFI (standard for non-encrypted systems)
   ansible.builtin.command: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=arch

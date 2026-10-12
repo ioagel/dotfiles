@@ -1,0 +1,15 @@
+---
+# Reconcile the already-provisioned USB-key/encrypted-Btrfs boot on this PC.
+# The role does not reinstall the tested EFI loader or change LUKS keyslots.
+- name: Maintain encrypted Btrfs boot
+  hosts: localhost
+  become: true
+  vars:
+    enable_encryption: true
+    encrypted_device: /dev/nvme1n1p2
+    luks_usb_keyfile: /efi/luks-key-56c3e47e-141d-48b1-baf6-52a3d8082454-v2.bin
+    encrypted_grub_efi_loader: /efi/EFI/GRUB-BTRFS/grubx64.efi
+    encrypted_grub_early_config: /efi/EFI/GRUB-BTRFS/early.cfg
+    grub_default: 1
+  roles:
+    - boot

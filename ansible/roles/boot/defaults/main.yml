@@ -2,7 +2,11 @@
 # Boot configuration defaults
 enable_encryption: false
 encrypted_device: "" # Device path (e.g., /dev/sda1) - UUID will be automatically detected
-encryption_password: ""
+# Existing encrypted Btrfs installations must provide these explicitly. The
+# role does not create or enroll a key and never embeds one in the initramfs.
+luks_usb_keyfile: ""
+encrypted_grub_efi_loader: ""
+encrypted_grub_early_config: ""
 
 # GRUB configuration
 grub_timeout: 5
